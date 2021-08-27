@@ -183,25 +183,25 @@ export class BristolBoard<RootElementType extends UIElement> {
 
         this.hammerManager.on('panstart', (evt: HammerInput) => {
             this.lastScrollOffset = [0, 0];
-            if (this.mousePressed(new MouseBtnInputEvent(evt.center.x, evt.center.y, 1, InputEventAction.Down))) {
+            if (this.mousePressed(new MouseBtnInputEvent(evt.center.x * this.resolutionScale, evt.center.y * this.resolutionScale, 1, InputEventAction.Down))) {
                 evt.preventDefault();
             }
         })
         this.hammerManager.on('panend', (evt: HammerInput) => {
             this.lastScrollOffset = [0, 0];
 
-            if (this.mouseReleased(new MouseBtnInputEvent(evt.center.x, evt.center.y, 1, InputEventAction.Up))) {
+            if (this.mouseReleased(new MouseBtnInputEvent(evt.center.x * this.resolutionScale, evt.center.y * this.resolutionScale, 1, InputEventAction.Up))) {
                 evt.preventDefault();
             }
         })
         this.hammerManager.on('pan', (evt: HammerInput) => {
-            ths.scrollDeltaX += evt.deltaX - ths.lastScrollOffset[0];
-            ths.scrollDeltaY += evt.deltaY - ths.lastScrollOffset[1];
-            ths.lastScrollOffset[0] = evt.deltaX;
-            ths.lastScrollOffset[1] = evt.deltaY;
+            ths.scrollDeltaX += evt.deltaX * this.resolutionScale - ths.lastScrollOffset[0];
+            ths.scrollDeltaY += evt.deltaY * this.resolutionScale - ths.lastScrollOffset[1];
+            ths.lastScrollOffset[0] = evt.deltaX * this.resolutionScale;
+            ths.lastScrollOffset[1] = evt.deltaY * this.resolutionScale;
             if (Math.max(Math.abs(this.scrollDeltaX), Math.abs(this.scrollDeltaY)) > 1) {
                 //  console.log(`${this.scrollDeltaX}, ${this.scrollDeltaY}`);
-                ths.mouseDragged(new MouseDraggedInputEvent(evt.center.x, evt.center.y, 1, ths.scrollDeltaX, ths.scrollDeltaY))
+                ths.mouseDragged(new MouseDraggedInputEvent(evt.center.x * this.resolutionScale, evt.center.y * this.resolutionScale, 1, ths.scrollDeltaX, ths.scrollDeltaY))
                 // ths.mouseDragged(evt, this.scrollDeltaX, this.scrollDeltaY);
                 this.scrollDeltaX = 0;
                 this.scrollDeltaY = 0;
@@ -237,8 +237,8 @@ export class BristolBoard<RootElementType extends UIElement> {
         document.addEventListener('mousemove', (evt: MouseEvent) => {
             var parentOffset = ths.canvas.offset();
             //or $(this).offset(); if you really just want the current element's offset
-            var relX = evt.pageX - parentOffset.left;
-            var relY = evt.pageY - parentOffset.top;
+            var relX = (evt.pageX - parentOffset.left) * ths.resolutionScale;
+            var relY = (evt.pageY - parentOffset.top) * ths.resolutionScale;
             let deltaX = relX - ths.iMouseX;
             let deltaY = relY - ths.iMouseY;
             ths.iMouseX = relX;
@@ -248,10 +248,10 @@ export class BristolBoard<RootElementType extends UIElement> {
         document.addEventListener('mousedown', (evt: MouseEvent) => {
             var parentOffset = ths.canvas.offset();
             //or $(this).offset(); if you really just want the current element's offset
-            var relX = evt.pageX - parentOffset.left;
-            var relY = evt.pageY - parentOffset.top;
-            if (relX >= 0 && relX <= parentOffset.left + ths.canvas.width &&
-                relY >= 0 && relY <= parentOffset.top + ths.canvas.height) {
+            var relX = (evt.pageX - parentOffset.left) * ths.resolutionScale;
+            var relY = (evt.pageY - parentOffset.top) * ths.resolutionScale;
+            if (relX >= 0 && relX <= parentOffset.left + ths.canvas.width * ths.resolutionScale &&
+                relY >= 0 && relY <= parentOffset.top + ths.canvas.height * ths.resolutionScale) {
 
                 if (this.mousePressed(new MouseBtnInputEvent(relX, relY, evt.which, InputEventAction.Down))) {
                     evt.preventDefault();
@@ -261,10 +261,10 @@ export class BristolBoard<RootElementType extends UIElement> {
         document.addEventListener('mouseup', (evt: MouseEvent) => {
             var parentOffset = ths.canvas.offset();
             //or $(this).offset(); if you really just want the current element's offset
-            var relX = evt.pageX - parentOffset.left;
-            var relY = evt.pageY - parentOffset.top;
-            if (relX >= 0 && relX <= parentOffset.left + ths.canvas.width &&
-                relY >= 0 && relY <= parentOffset.top + ths.canvas.height) {
+            var relX = (evt.pageX - parentOffset.left) * ths.resolutionScale;
+            var relY = (evt.pageY - parentOffset.top) * ths.resolutionScale;
+            if (relX >= 0 && relX <= parentOffset.left + ths.canvas.width * ths.resolutionScale &&
+                relY >= 0 && relY <= parentOffset.top + ths.canvas.height * ths.resolutionScale) {
                 if (this.mouseReleased(new MouseBtnInputEvent(relX, relY, evt.which, InputEventAction.Up))) {
                     evt.preventDefault();
                 }

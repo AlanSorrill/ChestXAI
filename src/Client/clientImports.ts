@@ -12,9 +12,10 @@ export { FColor, fColor, FColorSwath, FColorDirectory }
 window.fColor = fColor;
 export * from "./Bristol/UIFrame";
 import { BristolBoard } from "./Bristol/BristolBoard";
+export * from "./Bristol/UIElement";
 import { UI_ChestXAI } from './Bristol/RootElement';
 export * from "./Bristol/RootElement";
-export * from "./Bristol/UIElement";
+export * from "./Elements/TestDot";
 
  
 declare global {

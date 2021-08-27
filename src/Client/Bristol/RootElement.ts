@@ -1,8 +1,7 @@
 
 
-import { BristolBoard, UIElement, UIFrame, CoordType } from "../clientImports";
-import { MouseBtnInputEvent } from "./BristolBoard";
-import { UIFrameResult, UIFrame_CornerWidthHeight } from "./UIFrame";
+import { TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType } from "../clientImports";
+
 
 
 
@@ -52,12 +51,12 @@ export class UI_ChestXAI extends UIElement {
             height: brist.height
         }), brist);
     }
-    mousePressed(evt: MouseBtnInputEvent){
-        
+    mousePressed(evt: MouseBtnInputEvent) {
+        this.addChild(new TestDot(UIFrame.Build({x: evt.x, y: evt.y, radius: 10}), this.brist, fColor.green.accent1));
         return true;
     }
-    mouseReleased(evt: MouseBtnInputEvent){
-        
+    mouseReleased(evt: MouseBtnInputEvent) {
+
         return true;
     }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
