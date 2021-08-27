@@ -27,38 +27,13 @@ async function setup() {
 
     app.use('/node_modules/', express.static(path.join(__dirname, '/../../../node_modules/')));
     app.use('/', express.static(path.join(__dirname, '/../../../public/')));
-    // app.use('/editor', express.static(path.join(__dirname, '/../../../public/editor.html')));
-    //app.use(favicon(path.join(__dirname, '/../../public/favicon.ico')))
 
     log.info('Initializing CryptoRouter')
 
     const csserver = await BackendServer.Create(app, httpServer);
 
-    // let cryptoRouter = express.Router();
-    // app.get('/scripts', function (req: Request, res: Response) {
-    //     let authToken: string = (req.query.token ?? null) as string;
-    //     if (authToken == null) {
-    //         return res.status(401).send('Plz add a valid ?token= to query')
-    //     }
-    //     return firebaseAdminAuth.verifyIdToken(authToken).then((decodedIDToken: firebaseAdmin.auth.DecodedIdToken) => {
-    //         let descriptions: R_CremaScriptDescription[] = csserver.executor.listEditableScripts(decodedIDToken.uid);
-    //         res.send(descriptions);
-    //     })
-    // });
-    // app.use('/rest', cryptoRouter);;
 
-
-    //await cryptoServer
-
-    // let munchRef = munchServer;
     global.backend = csserver;
-    // (global as any).session = csserver;
-
-
-    // (cryptoRouter as any).server = csserver;
-    // let router = await cryptoRouter(app, httpServer);
-    // app.use('/crypto', router)
-    // completeWebpackStatusStep('CryptoRouter')
 
 
     log.info('Initializing Webpack DevMiddleware')
@@ -94,7 +69,6 @@ function onError(error) {
         'Pipe ' + PORT :
         'Port ' + PORT;
 
-    // handle specific listen errors with friendly messages
     switch (error.code) {
         case 'EACCES':
             console.error(bind + ' requires elevated privileges');
@@ -109,6 +83,5 @@ function onError(error) {
     }
 }
 
-//console.log('Initializing Server')
 setup();
 export { app, PORT, compiler }
