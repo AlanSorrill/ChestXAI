@@ -287,7 +287,7 @@ export class BristolBoard<RootElementType extends UIElement> {
     }
     rootElement: RootElementType = null;
     mousePressed(evt: MouseBtnInputEvent) {
-        return this.rootElement.mouseP;
+        return this.rootElement.mousePressed(evt);
     }
     mouseReleased(evt: MouseBtnInputEvent) {
         return false;
