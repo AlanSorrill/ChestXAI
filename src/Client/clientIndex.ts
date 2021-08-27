@@ -1,8 +1,4 @@
-
-
-import { UI_ChestXAI } from "./Bristol/RootElement";
-import { UIElement } from "./Bristol/UIElement";
-import { FHTML, BristolBoard, UIFrame } from "./clientImports";
+import {UIElement, UI_ChestXAI FHTML, BristolBoard, UIFrame } from "./clientImports";
 
 
 let body: FHTML<HTMLBodyElement> = new FHTML<HTMLBodyElement>("body");
