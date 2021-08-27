@@ -1,0 +1,103 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "label": "buildPublic",
+            "script": "build",
+            "isBackground": true,
+            "group": "build",
+            // "problemMatcher": ["$ts-webpack", "$tslint-webpack"]
+        },
+        {
+            "type": "npm",
+            "script": "watch",
+            "group": "build",
+            "isBackground": true,
+            //  "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "dependsOn": [
+                "buildFunctions"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "buildFunctions",
+            "command": "npm --prefix ./functions/ run build",
+        },
+        {
+            "type": "shell",
+            "label": "serveFunctions",
+            "command": "npm --prefix ./functions/ run serve",
+            "dependsOn": [
+                "buildPublic"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "serve",
+            "command": "firebase serve",
+            "options": {
+                "shell": {
+                    "executable": ""
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "buildFunctions",
+                "build"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "buildTscMac",
+            "type": "shell",
+            "command": "npx tsc",
+            "group": "build",
+            "problemMatcher": [
+                "$tsc"
+            ]
+        },
+        {
+            "label": "cleanAndBuildTscMac",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "cleanCache",
+                "buildTscMac"
+            ]
+        },
+        {
+            "label": "cleanAndBuildTsc",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "cleanCache",
+                "buildTsc"
+            ]
+        },
+        {
+            "label": "buildTsc",
+            "type": "typescript",
+            "tsconfig": "tsconfig.json",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
+        }
+    ]
+}
