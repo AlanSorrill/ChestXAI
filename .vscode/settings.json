@@ -1,2 +1,27 @@
 {
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "editor.minimap.enabled": false,
+    "explorer.confirmDelete": false,
+    "debug.onTaskErrors": "abort",
+    "editor.acceptSuggestionOnEnter": "off",
+    "editor.fontLigatures": true,
+    "workbench.iconTheme": "vscode-icons",
+    "workbench.colorTheme": "Default Dark+",
+    "debug.toolBarLocation": "docked",
+    "editor.fontFamily": "'Cascadia Code', Consolas, 'Courier New', monospace",
+    "terminal.integrated.fontFamily": "monospace",
+    "editor.fontSize": 10,
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "explorer.confirmDragAndDrop": false,
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    },
+    "editor.mouseWheelZoom": true,
+    "diffEditor.ignoreTrimWhitespace": false,
+    
 }
