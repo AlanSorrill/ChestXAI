@@ -1,10 +1,12 @@
 
 
-import { TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType } from "../clientImports";
-import { Lung } from "../Elements/Lung";
-import { UICorner } from "./UIFrame";
+import { UICorner,UIP_Upload_V0, ChestXAIPage, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, UIPage } from "../clientImports";
+import { UIP_Gallary_V0 } from "../Elements/pages/UIP_Gallary";
 
 
+
+
+let log = logger.local('RootElement');
 
 
 
@@ -43,7 +45,15 @@ import { UICorner } from "./UIFrame";
 
 
 // }
-export class UI_ChestXAI extends UIElement {
+export class UI_ChestXAI extends UIElement implements UrlListener {
+    currentPage: UIPage = null
+
+    static pageTypes = {
+        upload: [UIP_Upload_V0],
+        gallary: [UIP_Gallary_V0]
+    }
+    
+
     constructor(brist: BristolBoard<UI_ChestXAI>) {
         super('rootElem', UIFrame.Build({
             x: 0,
@@ -60,6 +70,37 @@ export class UI_ChestXAI extends UIElement {
             width: 800, height: 800
         }, this.brist);
         this.addChild(lung);
+    }
+    protected setPage(name: ChestXAIPage, version: number) {
+        this.currentPage?.removeFromParent();
+        switch(name){
+            case ChestXAIPage.upload:
+
+            break;
+            case ChestXAIPage.gallary:
+
+            break;
+        }
+    }
+    onValueSet(key: string, value: UrlDataType): void {
+        if (this.currentPage == null) {
+            this.setPage(urlManager.page, urlManager.version);
+            return;
+        }
+        switch (key) {
+            case 'page':
+                if (this.currentPage.pageName != value) {
+                    this.setPage(urlManager.page, urlManager.version);
+                }
+                break;
+            case 'version':
+                if (this.currentPage.versionNumber != value) {
+                    this.setPage(urlManager.page, urlManager.version);
+                }
+                break;
+            default:
+                log.error(`Unknown url parameter ${key}`);
+        }
     }
 
     mousePressed(evt: MouseBtnInputEvent) {
