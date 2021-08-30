@@ -20,14 +20,14 @@ export class BackendServer {
         console.log(`Loading patients from ${directoryPath}`);
         try {
             let patientDirectories = await fs.promises.readdir(directoryPath)
-            for (let i = 0; i < patientDirectories.length; i++) {
-                let imgFolder = `${directoryPath}/${patientDirectories[i]}/study1`;
-                if (fs.existsSync(imgFolder)) {
-                    let imageFiles = await fs.promises.readdir(imgFolder)
-                    log.info(`${patientDirectories[i]} has ${imageFiles.length} images`);
-                    this.addPatient(patientDirectories[i], imageFiles);
-                }
-            }
+            // for (let i = 0; i < patientDirectories.length; i++) {
+            //     let imgFolder = `${directoryPath}/${patientDirectories[i]}/study1`;
+            //     if (fs.existsSync(imgFolder)) {
+            //         let imageFiles = await fs.promises.readdir(imgFolder)
+            //         log.info(`${patientDirectories[i]} has ${imageFiles.length} images`);
+            //         this.addPatient(patientDirectories[i], imageFiles);
+            //     }
+            // }
         } catch (err) {
             console.error(err);
         }

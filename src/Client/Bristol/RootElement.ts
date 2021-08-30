@@ -1,7 +1,6 @@
 
 
-import { UICorner,UIP_Upload_V0, ChestXAIPage, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, UIPage } from "../clientImports";
-import { UIP_Gallary_V0 } from "../Elements/pages/UIP_Gallary";
+import {UIP_Gallary_V0, UICorner,UIP_Upload_V0, ChestXAIPage, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, UIPage } from "../clientImports";
 
 
 

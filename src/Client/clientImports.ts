@@ -41,4 +41,4 @@ declare global {
 }
 
 //Allow client console to access static classes inside webpack
-classes.Rest = Rest;
+window.classes = {Rest: Rest};

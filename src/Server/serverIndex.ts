@@ -4,10 +4,11 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import http from 'http'
 import path from 'path'
-import favicon from 'serve-favicon'
+// import favicon from 'serve-favicon'
 import { clientWebpackConfig, logger, LogLevel, webpackBuildListener } from './serverImports'
 import { BackendServer } from './BackendServer';
 let log = logger.local('ServerIndex');
+log.allowBelowLvl(LogLevel.naughty)
 let httpServer: http.Server;
 const app = express();
 const PORT = 3000;
@@ -16,24 +17,32 @@ const compiler = webpack(clientWebpackConfig, (err?: Error, stats?: Stats) => {
     stats.hasErrors
 }) as webpack.Compiler;
 webpackBuildListener((percentage: number, msg: string, ...args) => {
-    console.log(`${(percentage * 100).toFixed(1)}%`, msg, args)
+    console.log(`${(percentage * 100).toFixed(1)}%`, msg, args.join(' '))
 })
-
 async function setup() {
     log.info('Initializing...');
 
     httpServer = http.createServer(app);
 
+    let rootPath = path.join(__dirname, '/../../');
+    let paths = {
+        nodeModules: path.join(rootPath, '/node_modules'),
+        root: path.join(rootPath, '/public'),
+        favIco: path.join(rootPath, '/public/favicon.ico')
+    }
 
-    app.use('/node_modules/', express.static(path.join(__dirname, '/../../../node_modules/')));
-    app.use('/', express.static(path.join(__dirname, '/../../../public/')));
+    app.use('/node_modules/', express.static(paths.nodeModules));
+    app.use('/', express.static(paths.root));
 
-    log.info('Initializing CryptoRouter')
+    //app.use(favicon(paths.favIco))
+
+
 
     const csserver = await BackendServer.Create(app, httpServer);
 
 
     global.backend = csserver;
+
 
 
     log.info('Initializing Webpack DevMiddleware')
@@ -43,8 +52,9 @@ async function setup() {
     let webpackMiddle = webpackDevMiddleware(compiler, webpackOptions);
 
     webpackMiddle.waitUntilValid(() => {
-        log.info(`Webpack middleware valid`);
-
+        // completeWebpackStatusStep('WebpackDevMiddleware');
+        // webpackStatus.complete = true;
+        log.info(`Webpack Initialized`);
     })
     app.use(webpackMiddle)
     app.use(webpackHotMiddleware(compiler))
@@ -53,12 +63,11 @@ async function setup() {
 
     });
 
-    app.use((req: Request, res: Response, next)=>{
-        log.error(req.url);
-    })
     app.on('error', onError);
     //console.log(config)
 }
+
+
 
 function onError(error) {
     if (error.syscall !== 'listen') {

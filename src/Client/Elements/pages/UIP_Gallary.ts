@@ -1,5 +1,5 @@
-import { UIPage } from "../../clientImports";
-import { ChestXAIPage } from "../UIPage";
+import { UIPage, ChestXAIPage} from "../../clientImports";
+
 
 
 export class UIP_Gallary_V0 extends UIPage {
