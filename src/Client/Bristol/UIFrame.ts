@@ -95,7 +95,7 @@ export class UIFrame_CornerWidthHeight extends UIFrame {
         return (x >= this.leftX() && x <= this.rightX()) && (y >= this.topY() && y <= this.bottomY())
     }
     leftX(): number {
-        switch (this.description.measureCorner) {
+        switch (evalOptionalFunc(this.description.measureCorner, UICorner.upLeft)) {
             default:
             case UICorner.downLeft:
             case UICorner.upLeft:
@@ -104,10 +104,13 @@ export class UIFrame_CornerWidthHeight extends UIFrame {
             case UICorner.upRight:
             case UICorner.downRight:
                 return this.x - evalOptionalFunc(this.description.width);
+
+            case UICorner.center:
+                return this.x - (evalOptionalFunc(this.description.width) / 2);
         }
     }
     topY(): number {
-        switch (this.description.measureCorner) {
+        switch (evalOptionalFunc(this.description.measureCorner, UICorner.upLeft)) {
             default:
             case UICorner.downLeft:
             case UICorner.downRight:
@@ -116,10 +119,12 @@ export class UIFrame_CornerWidthHeight extends UIFrame {
             case UICorner.upLeft:
             case UICorner.upRight:
                 return this.y;
+                case UICorner.center:
+                    return this.y - (evalOptionalFunc(this.description.height) / 2);
         }
     }
     rightX(): number {
-        switch (this.description.measureCorner) {
+        switch (evalOptionalFunc(this.description.measureCorner, UICorner.upLeft)) {
             default:
             case UICorner.downLeft:
             case UICorner.upLeft:
@@ -128,12 +133,14 @@ export class UIFrame_CornerWidthHeight extends UIFrame {
             case UICorner.upRight:
             case UICorner.downRight:
                 return this.x;
+                case UICorner.center:
+                    return this.x + (evalOptionalFunc(this.description.width) / 2);
         }
     }
 
 
     bottomY(): number {
-        switch (this.description.measureCorner) {
+        switch (evalOptionalFunc(this.description.measureCorner, UICorner.upLeft)) {
             default:
             case UICorner.downLeft:
             case UICorner.downRight:
@@ -142,6 +149,10 @@ export class UIFrame_CornerWidthHeight extends UIFrame {
             case UICorner.upLeft:
             case UICorner.upRight:
                 return this.y + evalOptionalFunc(this.description.height);
+
+                
+            case UICorner.center:
+                return this.y + (evalOptionalFunc(this.description.height) / 2);
         }
     }
 
@@ -167,10 +178,10 @@ export class UIFrame_CornerWidthHeight extends UIFrame {
     }
 
     get x(): number {
-        return (evalOptionalFunc(this.description.coordType, CoordType.Relative) == CoordType.Absolute) ? evalOptionalFunc(this.description.x) : (this.hasParent ? evalOptionalFunc(this.description.x) + this.parent.getCornerX(evalOptionalFunc(this.description.parentCorner)) : evalOptionalFunc(this.description.x));
+        return (evalOptionalFunc(this.description.coordType, CoordType.Relative) == CoordType.Absolute) ? evalOptionalFunc(this.description.x) : (this.hasParent ? evalOptionalFunc(this.description.x) + this.parent.getCornerX(evalOptionalFunc(this.description.parentCorner, UICorner.upLeft)) : evalOptionalFunc(this.description.x));
     }
     get y(): number {
-        return (evalOptionalFunc(this.description.coordType, CoordType.Relative) == CoordType.Absolute) ? evalOptionalFunc(this.description.y) : (this.hasParent ? evalOptionalFunc(this.description.y) + this.parent.getCornerX(evalOptionalFunc(this.description.parentCorner)) : evalOptionalFunc(this.description.y));
+        return (evalOptionalFunc(this.description.coordType, CoordType.Relative) == CoordType.Absolute) ? evalOptionalFunc(this.description.y) : (this.hasParent ? evalOptionalFunc(this.description.y) + this.parent.getCornerY(evalOptionalFunc(this.description.parentCorner, UICorner.upLeft)) : evalOptionalFunc(this.description.y));
     }
     constructor(description: UIFrameDescription_CornerWidthHeight, parent: UIFrame = null) {
         super();

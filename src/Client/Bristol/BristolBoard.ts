@@ -166,7 +166,7 @@ export class BristolBoard<RootElementType extends UIElement> {
         //     this.jobExecutor = new JobExecutor();
         //     CerealBox.jobExecutor = this.jobExecutor;
         // }
-        this.canvas.element.addEventListener('resize', (event)=>{
+        this.canvas.element.addEventListener('resize', (event) => {
             ths.onResize();
         })
         this.onResize();
@@ -277,13 +277,13 @@ export class BristolBoard<RootElementType extends UIElement> {
         //     return ths.keyUp(event);
         // })
 
-        buildRootElement(ths).then((rootElem: RootElementType)=>{
-            if(ths.rootElement == null){
+        buildRootElement(ths).then((rootElem: RootElementType) => {
+            if (ths.rootElement == null) {
                 ths.rootElement = rootElem;
             }
             ths.draw();
         })
-     
+
     }
     rootElement: RootElementType = null;
     mousePressed(evt: MouseBtnInputEvent) {
@@ -541,12 +541,7 @@ export class BristolBoard<RootElementType extends UIElement> {
     ellipse(centerX: number, centerY: number, width: number, height: number, stroke: boolean = true, fill: boolean = false) {
         this.ellipseBounds(centerX - width / 2.0, centerY - height / 2.0, width, height, stroke, fill);
     }
-    ellipseFrame(frame: UIFrameResult | UIFrame, stroke: boolean = true, fill: boolean = false) {
-        if(frame instanceof UIFrame){
-            return this.ellipseFrame(frame.lastResult, stroke, fill);
-        }
-        this.ellipseBounds(frame.left, frame.top, frame.width, frame.height, stroke, fill)
-    }
+
     // ellipseFrame(uiFrame: UIFrame, stroke: boolean = true, fill: boolean = false) {
     //     this.ellipseBounds(uiFrame.leftX(), uiFrame.topY(), uiFrame.measureWidth(), uiFrame.measureHeight())
     // }
@@ -602,12 +597,27 @@ export class BristolBoard<RootElementType extends UIElement> {
     rect(x: number, y: number, w: number, h: number) {
         this.ctx.rect(x, y, w, h)
     }
-    rectFrame(frame: UIFrame) {
-        return this.ctx.rect(frame.leftX(), frame.topY(), frame.measureWidth(), frame.measureHeight());
+    ellipseFrame(frame: UIFrameResult | UIFrame, stroke: boolean = true, fill: boolean = false) {
+        if (frame instanceof UIFrame) {
+            return this.ellipseFrame(frame.lastResult, stroke, fill);
+        }
+        this.ellipseBounds(frame.left, frame.top, frame.width, frame.height, stroke, fill)
     }
-    fillRectFrame(frame: UIFrame) {
-        return this.ctx.fillRect(frame.leftX(), frame.topY(), frame.measureWidth(), frame.measureHeight());
+    rectFrame(frame: UIFrameResult | UIFrame, stroke: boolean = true, fill: boolean = false) {
+        if (frame instanceof UIFrame) {
+            return this.rectFrame(frame.lastResult, stroke, fill);
+        }
+        this.ctx.rect(frame.left, frame.top, frame.width, frame.height);
+        if (stroke) {
+            this.ctx.stroke();
+        }
+        if (fill) {
+            this.ctx.fill();
+        }
     }
+    // fillRectFrame(frame: UIFrame) {
+    //     return this.ctx.fillRect(frame.leftX(), frame.topY(), frame.measureWidth(), frame.measureHeight());
+    // }
     mouseScrolled(event: MouseScrolledInputEvent) {
 
     }
@@ -620,7 +630,7 @@ export class BristolBoard<RootElementType extends UIElement> {
     shouldExecJobs(): boolean {
         return false;
     }
-    
+
     // addUiElement(element: UIElement) {
     //     element.parent = this as any;//bad type
     //     this.uiElements.add(element);
@@ -661,13 +671,13 @@ export class BristolBoard<RootElementType extends UIElement> {
         //         element.draw(deltaMs, ths.ctx);
         //     }
         // })
-        // if (this.debuggerFlags.uiFrameOutlines && this.lastMouseOverElem != null) {
-        //     this.lastMouseOverElem.drawUIFrame(true, 1);
-        //     this.fillColor(this.lastMouseOverElem.debugFrameColor);
-        //     this.textAlign(BristolHAlign.Left, BristolVAlign.Bottom)
-        //     this.textSize(8);
-        //     this.ctx.fillText(this.lastMouseOverElem.id, this.mouseX, this.mouseY)
-        // }
+        if (this.debuggerFlags.uiFrameOutlines && this.rootElement != null) {
+            this.rootElement.drawUIFrame(true, 1);
+            this.fillColor(this.rootElement.debugFrameColor);
+            this.textAlign(BristolHAlign.Left, BristolVAlign.Bottom)
+            this.textSize(8);
+            this.ctx.fillText(this.rootElement.id, this.mouseX, this.mouseY)
+        }
 
 
 

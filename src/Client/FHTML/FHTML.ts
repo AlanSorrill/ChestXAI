@@ -57,5 +57,19 @@ export class FHTML<TYPE extends HTMLElement> {
         this.element.appendChild(elem);
         return output;
     }
-    
+    static async loadImage(url: string): Promise<HTMLImageElement> {
+        return new Promise((acc, rej)=>{
+            let img = new Image();
+
+            img.onload = function () {
+                acc(img);
+            }
+            img.onerror = function (err){
+                rej(err);
+            }
+            img.src = url;
+        })
+       
+        
+    }
 }

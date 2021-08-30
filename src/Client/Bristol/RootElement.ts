@@ -1,6 +1,8 @@
 
 
 import { TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType } from "../clientImports";
+import { Lung } from "../Elements/Lung";
+import { UICorner } from "./UIFrame";
 
 
 
@@ -47,12 +49,21 @@ export class UI_ChestXAI extends UIElement {
             x: 0,
             y: 0,
             coordType: CoordType.Absolute,
-            width: brist.width,
-            height: brist.height
+            width: () => brist.width,
+            height: () => brist.height
         }), brist);
+        let ths = this
+        let lung = new Lung({
+            x: () => (ths.frame.lastResult.width / 2),
+            y: () => (ths.frame.lastResult.height / 2),
+            measureCorner: UICorner.center,
+            width: 800, height: 800
+        }, this.brist);
+        this.addChild(lung);
     }
+
     mousePressed(evt: MouseBtnInputEvent) {
-        this.addChild(new TestDot(UIFrame.Build({x: evt.x, y: evt.y, radius: 10}), this.brist, fColor.green.accent1));
+        this.addChild(new TestDot(UIFrame.Build({ x: evt.x, y: evt.y, radius: 10 }), this.brist, fColor.green.accent1));
         return true;
     }
     mouseReleased(evt: MouseBtnInputEvent) {
@@ -60,10 +71,10 @@ export class UI_ChestXAI extends UIElement {
         return true;
     }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
-        this.brist.fillColor(fColor.purple.accent2);
-        this.brist.fillRectFrame(this.frame);
-        this.brist.strokeColor(fColor.green.lighten2);
-        this.brist.strokeWeight(2);
-        this.brist.line(frame.left, frame.top, frame.right, frame.bottom);
+        this.brist.fillColor(fColor.darkMode[0]);
+        this.brist.rectFrame(this.frame, false, true);
+        // this.brist.strokeColor(fColor.green.lighten2);
+        // this.brist.strokeWeight(2);
+        // this.brist.line(frame.left, frame.top, frame.right, frame.bottom);
     }
 }

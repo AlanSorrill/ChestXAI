@@ -16,6 +16,8 @@ export * from "./Bristol/UIElement";
 import { UI_ChestXAI } from './Bristol/RootElement';
 export * from "./Bristol/RootElement";
 export * from "./Elements/TestDot";
+export * from "./Elements/UI_ImageElement";
+
 export * from "./Elements/Lung";
 
  
