@@ -1,21 +1,30 @@
 import { Express } from "express";
 import http from 'http'
 import Path from 'path'
-
 import fs from 'fs';
-import { csvToJson, logger, PatientData, RawScanData } from './serverImports'
-import { LogLevel } from "../Common/Logger";
+
+import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord } from './serverImports'
+
 let log = logger.local('BackendServer');
 log.allowBelowLvl(LogLevel.silly);
 export class BackendServer {
     express: Express;
     httpServer: http.Server;
     patients: Map<string, PatientData> = new Map();
+    indicies: Map<string, ScanRecord[]> = new Map();
     rawPatientData: unknown[];
+
+    static async Create(app: Express, httpServer: http.Server): Promise<BackendServer> {
+        let out = new BackendServer(app, httpServer);
+        await out.onInitialized();
+        return out;
+    }
+
     protected constructor(app: Express, httpServer: http.Server) {
         this.express = app;
         this.httpServer = httpServer;
     }
+
     async onInitialized() {
         let directoryPath = `${__dirname}/../../public/patients`;
         console.log(`Loading patients from ${directoryPath}`);
@@ -24,7 +33,7 @@ export class BackendServer {
             let csvFilePath = Path.join(directoryPath, 'valid.csv');
             let data = csvToJson<RawScanData>(await fs.promises.readFile(csvFilePath, 'utf-8'));
             data.forEach((rawData: RawScanData) => {
-                ths.addPatient(rawData);
+                ths.addScan(rawData);
             })
             this.rawPatientData = data;
             log.info(`Loaded ${this.patients.size} patients`)
@@ -39,30 +48,73 @@ export class BackendServer {
             //         this.addPatient(patientDirectories[i], imageFiles);
             //     }
             // }
-           
+
         } catch (err) {
             console.error(err);
         }
     }
 
-    private addPatient(rawData: RawScanData) {
+    private addScan(rawData: RawScanData) {
         let idParts = PatientData.extractPathParts(rawData);
-        if(idParts == null){
+        if (idParts == null) {
             return;
         }
-        if(this.patients.has(idParts.id)){
-            this.patients.get(idParts.id).addScanRecord(rawData)
+        let record: ScanRecord;
+        if (this.patients.has(idParts.id)) {
+            record = this.patients.get(idParts.id).addScanRecord(rawData)
         } else {
-            this.patients.set(idParts.id, PatientData.parsePatient(rawData))
+            let patient = PatientData.parsePatient(rawData)
+            this.patients.set(idParts.id, patient)
+            record = patient.scanRecords[0];
         }
         
-        
-        
-    }
-    static async Create(app: Express, httpServer: http.Server): Promise<BackendServer> {
-        let out = new BackendServer(app, httpServer);
-        await out.onInitialized();
-        return out;
+
+        for(const key in record){
+            if (typeof record[key] == 'boolean' && record[key] == true) {
+                if(!this.indicies.has(key)){
+                    this.indicies.set(key, []);
+                }
+                this.indicies.get(key).push(record);
+            }
+        }
+       
+
+
     }
 
+
 }
+
+
+
+// {
+//     noFinding: ScanRecord[],
+//     enlargedCardiomediastinum: ScanRecord[],
+//     cardiomegaly: ScanRecord[],
+//     lungOpacity: ScanRecord[],
+//     lungLesion: ScanRecord[],
+//     edema: ScanRecord[],
+//     consolidation: ScanRecord[],
+//     pneumonia: ScanRecord[],
+//     atelectasis: ScanRecord[],
+//     pneumothorax: ScanRecord[],
+//     pleuralEffusion: ScanRecord[],
+//     pleuralOther: ScanRecord[],
+//     fracture: ScanRecord[],
+//     supportDevices: ScanRecord[]
+// } = {
+//         noFinding: [],
+//         enlargedCardiomediastinum: [],
+//         cardiomegaly: [],
+//         lungOpacity: [],
+//         lungLesion: [],
+//         edema: [],
+//         consolidation: [],
+//         pneumonia: [],
+//         atelectasis: [],
+//         pneumothorax: [],
+//         pleuralEffusion: [],
+//         pleuralOther: [],
+//         fracture: [],
+//         supportDevices: []
+//     }

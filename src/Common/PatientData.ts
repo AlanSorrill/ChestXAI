@@ -6,9 +6,7 @@ export enum ScanSide {
     AP = 'AnteriorPosterior'
 }
 export class PatientData {
-    addScanRecord(rawData: RawScanData) {
-        this.scanRecords.push(PatientData.parseScan(rawData))
-    }
+
     id: string
     sex: Sex
     age: number
@@ -19,6 +17,13 @@ export class PatientData {
         this.age = age;
         this.sex = sex;
     }
+
+    addScanRecord(rawData: RawScanData) {
+        let scanData = PatientData.parseScan(rawData, this);
+        this.scanRecords.push(scanData);
+        return scanData
+    }
+
     static extractPathParts(rawData: RawScanData): { id: string, imgName: string } {
         let pathParts = rawData.path.split('/');
         while (pathParts.length > 0 && !pathParts[0].includes('patient')) {
@@ -35,18 +40,21 @@ export class PatientData {
         out.imgName = pathParts.join('/');
         return out;
     }
+
     static parsePatient(rawData: RawScanData): PatientData {
         let pathParts = this.extractPathParts(rawData);
 
         let out = new PatientData(pathParts.id, rawData.age, rawData.sex)
-        out.scanRecords.push(this.parseScan(rawData))
+        out.scanRecords.push(this.parseScan(rawData, out));
         return out;
     }
-    static parseScan(rawData: RawScanData): ScanRecord {
+    
+    static parseScan(rawData: RawScanData, patient: PatientData): ScanRecord {
         let pathParts = this.extractPathParts(rawData);
         let numToBool: (num: number) => boolean = (num: number) => (num == 1);
         return {
             path: pathParts.imgName,
+            patientRef: patient,
             direction: rawData.frontalSlashLateral,
             side: rawData.aPSlashPA == 'AP' ? ScanSide.AP : ScanSide.PA,
             noFinding: numToBool(rawData.noFinding),
@@ -68,6 +76,7 @@ export class PatientData {
 }
 export interface ScanRecord {
     path: string,
+    patientRef: PatientData,
     direction: ScanDirection,
     side: ScanSide,
     noFinding: boolean
