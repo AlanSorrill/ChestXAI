@@ -38,10 +38,7 @@ async function setup() {
 
 
 
-    const csserver = await BackendServer.Create(app, httpServer);
 
-
-    global.backend = csserver;
 
 
 
@@ -55,6 +52,12 @@ async function setup() {
         // completeWebpackStatusStep('WebpackDevMiddleware');
         // webpackStatus.complete = true;
         log.info(`Webpack Initialized`);
+        BackendServer.Create(app, httpServer).then((csserver: BackendServer)=>{
+            global.backend = csserver;
+        });
+
+
+        
     })
     app.use(webpackMiddle)
     app.use(webpackHotMiddleware(compiler))

@@ -6,12 +6,12 @@ declare global {
         replaceAll(a: string, b: string): string;
     }
 
-   
+
 
 }
 
 export type optFunc<T> = T | (() => T);
-export type optTransform<I,O> = O | ((input: I) => O);
+export type optTransform<I, O> = O | ((input: I) => O);
 
 
 
@@ -21,7 +21,7 @@ String.prototype.replaceAll = function (a: string, b: string) {
 export function isNumber(input: number | string) {
     return !isNaN(input as any)
 }
-export function lerp(start: number, end: number, alpha: number){
+export function lerp(start: number, end: number, alpha: number) {
     return start + (end - start) * alpha;
 }
 
@@ -32,8 +32,39 @@ export function evalOptionalFunc<T>(input: optFunc<T>, def: T = null) {
     if (typeof input == 'function') {
         return (input as (() => T))();
     }
-    
+
     return input;
+}
+export function csvToJson<T>(csvText: string) {
+    let csvLines = csvText.split('\r\n');
+    let colTitles = csvLines.shift().split(',').map((oldTitle: string) => cammelCase(oldTitle));
+    let out: T[] = [];
+    for (let i = 0; i < csvLines.length; i++) {
+        let row = csvLines[i].split(',');
+        let rowData = {};
+        for (let col = 0; col < colTitles.length; col++) {
+            rowData[colTitles[col]] = row[col];
+        }
+        out.push(rowData as T);
+    }
+    return out;
+}
+export function cammelCase(text: string, startCapitalized: boolean = false) {
+    text = text.replaceAll('/', 'Slash').replaceAll('.', 'Dot');
+    let toUpper: boolean = false;
+    let out = startCapitalized ? text[0].toUpperCase() : text[0].toLowerCase();
+
+    for (let i = 1; i < text.length; i++) {
+        if (toUpper) {
+            out += text[i].toUpperCase();
+            toUpper = false;
+        } else if (text[i] == ' ') {
+            toUpper = true;
+        } else {
+            out += text[i]
+        }
+    }
+    return out;
 }
 export class Averager {
     maxInd: number = 0;
