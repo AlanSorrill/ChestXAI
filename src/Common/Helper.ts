@@ -36,7 +36,7 @@ export function evalOptionalFunc<T>(input: optFunc<T>, def: T = null) {
     return input;
 }
 export function csvToJson<T>(csvText: string) {
-    let csvLines = csvText.split('\r\n');
+    let csvLines = csvText.split(csvText.includes('\r\n') ? '\r\n' : '\n');
     let colTitles = csvLines.shift().split(',').map((oldTitle: string) => cammelCase(oldTitle));
     let out: T[] = [];
     for (let i = 0; i < csvLines.length; i++) {
@@ -51,6 +51,9 @@ export function csvToJson<T>(csvText: string) {
 }
 export function cammelCase(text: string, startCapitalized: boolean = false) {
     text = text.replaceAll('/', 'Slash').replaceAll('.', 'Dot');
+    if(text.length == 0){
+        return '';
+    }
     let toUpper: boolean = false;
     let out = startCapitalized ? text[0].toUpperCase() : text[0].toLowerCase();
 

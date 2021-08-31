@@ -26,7 +26,7 @@ export class BackendServer {
     }
 
     async onInitialized() {
-        let directoryPath = `${__dirname}/../../public/patients`;
+        let directoryPath = Path.join(__dirname, '/../../public/patients');//`${__dirname}/../../public/patients`;
         console.log(`Loading patients from ${directoryPath}`);
         try {
             let ths = this;
