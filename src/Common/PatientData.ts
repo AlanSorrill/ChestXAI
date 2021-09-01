@@ -17,6 +17,14 @@ export class PatientData {
         this.age = age;
         this.sex = sex;
     }
+    toJson() {
+        return {
+            'id': this.id,
+            'sex': this.sex,
+            'age': this.age,
+            'scanRecords': this.scanRecords.map((record: ScanRecord) => PatientData.stripBackReference(record))
+        }
+    }
 
     addScanRecord(rawData: RawScanData) {
         let scanData = PatientData.parseScan(rawData, this);
@@ -48,7 +56,7 @@ export class PatientData {
         out.scanRecords.push(this.parseScan(rawData, out));
         return out;
     }
-    
+
     static parseScan(rawData: RawScanData, patient: PatientData): ScanRecord {
         let pathParts = this.extractPathParts(rawData);
         let numToBool: (num: number) => boolean = (num: number) => (num == 1);
@@ -73,6 +81,16 @@ export class PatientData {
             supportDevices: numToBool(rawData.supportDevices)
         }
     }
+    static stripBackReference(record: ScanRecord) {
+        let out = {};
+        for (const key in record) {
+            if (key != 'patientRef') {
+                out[key] = record[key]
+            }
+        }
+        return out;
+    }
+
 }
 export interface ScanRecord {
     path: string,

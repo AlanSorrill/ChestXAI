@@ -5,7 +5,9 @@ declare global {
     interface String {
         replaceAll(a: string, b: string): string;
     }
-
+    interface Array<T> {
+        pushAll(arr: T[]): void;
+    }
 
 
 }
@@ -14,7 +16,14 @@ export type optFunc<T> = T | (() => T);
 export type optTransform<I, O> = O | ((input: I) => O);
 
 
-
+Array.prototype.pushAll = function <T>(arr: T[]) {
+    if (arr == null || typeof arr == 'undefined') {
+        return;
+    }
+    for (let i = 0; i < arr.length; i++) {
+        this.push(arr[i]);
+    }
+}
 String.prototype.replaceAll = function (a: string, b: string) {
     return this.split(a).join(b);
 };
@@ -51,7 +60,7 @@ export function csvToJson<T>(csvText: string) {
 }
 export function cammelCase(text: string, startCapitalized: boolean = false) {
     text = text.replaceAll('/', 'Slash').replaceAll('.', 'Dot');
-    if(text.length == 0){
+    if (text.length == 0) {
         return '';
     }
     let toUpper: boolean = false;

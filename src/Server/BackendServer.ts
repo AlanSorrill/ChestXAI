@@ -1,4 +1,4 @@
-import { Express } from "express";
+import { Express, Request, Response } from "express";
 import http from 'http'
 import Path from 'path'
 import fs from 'fs';
@@ -17,6 +17,16 @@ export class BackendServer {
     static async Create(app: Express, httpServer: http.Server): Promise<BackendServer> {
         let out = new BackendServer(app, httpServer);
         await out.onInitialized();
+        app.get('/similar', (req: Request, resp: Response) => {
+            console.log(req.query);
+            let possibilities = [];
+            for (const key in req.query) {
+                if (out.indicies.has(key)) {
+                    possibilities.pushAll(out.indicies.get(key).map((record: ScanRecord) => PatientData.stripBackReference(record)));
+                }
+            }
+            resp.send(JSON.stringify(possibilities));
+        })
         return out;
     }
 
@@ -67,17 +77,17 @@ export class BackendServer {
             this.patients.set(idParts.id, patient)
             record = patient.scanRecords[0];
         }
-        
 
-        for(const key in record){
+
+        for (const key in record) {
             if (typeof record[key] == 'boolean' && record[key] == true) {
-                if(!this.indicies.has(key)){
+                if (!this.indicies.has(key)) {
                     this.indicies.set(key, []);
                 }
                 this.indicies.get(key).push(record);
             }
         }
-       
+
 
 
     }
