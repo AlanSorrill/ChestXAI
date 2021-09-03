@@ -1,6 +1,6 @@
 
 
-import {UIP_Gallary_V0, UICorner,UIP_Upload_V0, ChestXAIPage, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, UIPage } from "../clientImports";
+import { UIP_Gallary_V0, UICorner, UIP_Upload_V0, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger } from "../clientImports";
 
 
 
@@ -45,13 +45,10 @@ let log = logger.local('RootElement');
 
 // }
 export class UI_ChestXAI extends UIElement implements UrlListener {
-    currentPage: UIPage = null
+    currentPage: UIElement = null
+    pageTypes: { upload: (typeof UIP_Upload_V0)[]; gallary: (typeof UIP_Gallary_V0)[]; };
 
-    static pageTypes = {
-        upload: [UIP_Upload_V0],
-        gallary: [UIP_Gallary_V0]
-    }
-    
+
 
     constructor(brist: BristolBoard<UI_ChestXAI>) {
         super('rootElem', UIFrame.Build({
@@ -62,57 +59,47 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
             height: () => brist.height
         }), brist);
         let ths = this
-        let lung = new Lung({
-            x: () => (ths.frame.lastResult.width / 2),
-            y: () => (ths.frame.lastResult.height / 2),
-            measureCorner: UICorner.center,
-            width: 800, height: 800
-        }, this.brist);
-        this.addChild(lung);
-    }
-    protected setPage(name: ChestXAIPage, version: number) {
-        this.currentPage?.removeFromParent();
-        switch(name){
-            case ChestXAIPage.upload:
-
-            break;
-            case ChestXAIPage.gallary:
-
-            break;
+        // let lung = new Lung({
+        //     x: () => (ths.frame.lastResult.width / 2),
+        //     y: () => (ths.frame.lastResult.height / 2),
+        //     measureCorner: UICorner.center,
+        //     width: 800, height: 800
+        // }, this.brist);
+        // this.addChild(lung);
+        this.pageTypes = {
+            upload: [UIP_Upload_V0],
+            gallary: [UIP_Gallary_V0]
         }
+    }
+    protected setPage(name: string, version: number) {
+        this.currentPage?.removeFromParent();
+        let construct: typeof UIElement = this.pageTypes[name][version]
+        let ths = this;
+        this.currentPage = new construct(`page`, UIFrame.Build({
+            x: 0,
+            y: 0,
+            width: () => ths.frame.measureWidth(),
+            height: () => ths.frame.measureHeight()
+        }), this.brist);
+        this.addChild(this.currentPage);
     }
     onValueSet(key: string, value: UrlDataType): void {
-        if (this.currentPage == null) {
-            this.setPage(urlManager.page, urlManager.version);
-            return;
-        }
-        switch (key) {
-            case 'page':
-                if (this.currentPage.pageName != value) {
-                    this.setPage(urlManager.page, urlManager.version);
-                }
-                break;
-            case 'version':
-                if (this.currentPage.versionNumber != value) {
-                    this.setPage(urlManager.page, urlManager.version);
-                }
-                break;
-            default:
-                log.error(`Unknown url parameter ${key}`);
-        }
+
+        this.setPage(urlManager.page, urlManager.version);
     }
 
-    mousePressed(evt: MouseBtnInputEvent) {
-        this.addChild(new TestDot(UIFrame.Build({ x: evt.x, y: evt.y, radius: 10 }), this.brist, fColor.green.accent1));
-        return true;
-    }
-    mouseReleased(evt: MouseBtnInputEvent) {
+    // mousePressed(evt: MouseBtnInputEvent) {
+    //     this.addChild(new TestDot(UIFrame.Build({ x: evt.x, y: evt.y, radius: 10 }), this.brist, fColor.green.accent1));
+    //     return true;
+    // }
+    // mouseReleased(evt: MouseBtnInputEvent) {
 
-        return true;
-    }
+    //     return true;
+    // }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
         this.brist.fillColor(fColor.darkMode[0]);
         this.brist.rectFrame(this.frame, false, true);
+        this.brist.ctx.beginPath();
         // this.brist.strokeColor(fColor.green.lighten2);
         // this.brist.strokeWeight(2);
         // this.brist.line(frame.left, frame.top, frame.right, frame.bottom);

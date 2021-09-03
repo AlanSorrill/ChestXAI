@@ -1,4 +1,4 @@
-
+export * from './Vector'
 
 declare global {
 
@@ -11,9 +11,9 @@ declare global {
 
 
 }
-
-export type optFunc<T> = T | (() => T);
-export type optTransform<I, O> = O | ((input: I) => O);
+//t: title, v: value
+export type optFunc<T> = (T | (() => T)) | { t: string, v: optFunc<T> };
+export type optTransform<I, O> = (O | ((input: I) => O)) | { t: string, v: optTransform<I, O> };
 
 
 Array.prototype.pushAll = function <T>(arr: T[]) {
@@ -33,6 +33,15 @@ export function isNumber(input: number | string) {
 export function lerp(start: number, end: number, alpha: number) {
     return start + (end - start) * alpha;
 }
+export function getOptFuncTitle<T>(input: optFunc<T>, def: string = null): string {
+    if (input == null || input == undefined) {
+        return def;
+    }
+    if (typeof input['t'] == 'string') {
+        return `()=>(${input['t']})`;
+    }
+    return `()=>(${evalOptionalFunc(input) ?? def})`;
+}
 
 export function evalOptionalFunc<T>(input: optFunc<T>, def: T = null) {
     if (input == null || input == undefined) {
@@ -41,8 +50,24 @@ export function evalOptionalFunc<T>(input: optFunc<T>, def: T = null) {
     if (typeof input == 'function') {
         return (input as (() => T))();
     }
+    if (typeof input['t'] == 'string') {
+        return evalOptionalFunc((input as { t: string, v: optFunc<T> }).v, def);
+    }
 
     return input;
+}
+export function evalOptionalTransfrom<I, O>(transform: optTransform<I, O>, input: I, def: O = null) {
+    if (transform == null || transform == undefined) {
+        return def;
+    }
+    if (typeof transform == 'function') {
+        return (transform as ((input: I) => O))(input);
+    }
+    if (typeof transform['t'] == 'string') {
+        return evalOptionalTransfrom((transform as { t: string, v: optTransform<I, O> }).v, input, def);
+    }
+
+    return transform;
 }
 export function csvToJson<T>(csvText: string) {
     let csvLines = csvText.split(csvText.includes('\r\n') ? '\r\n' : '\n');

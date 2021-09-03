@@ -1,13 +1,9 @@
-import { UIPage, ChestXAIPage} from "../../clientImports";
+import { BristolBoard, UIElement, UIFrame_CornerWidthHeight } from "../../clientImports";
 
 
 
-export class UIP_Gallary_V0 extends UIPage {
-    get versionNumber(): number {
-        return 0;
+export class UIP_Gallary_V0 extends UIElement {
+    constructor(id: string, uiFrame: UIFrame_CornerWidthHeight, brist: BristolBoard<any>) {
+        super(id, uiFrame, brist);
     }
-    get pageName(): ChestXAIPage {
-        return ChestXAIPage.gallary;
-    }
-
 }

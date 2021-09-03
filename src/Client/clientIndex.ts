@@ -21,5 +21,6 @@ window.urlManager = new UrlManager();
 window.mainBristol = new BristolBoard(containerDiv.element, async (brist: BristolBoard<any>)=>{
     let rootElement = new UI_ChestXAI(brist);
     urlManager.setListener(rootElement);
+    rootElement.onValueSet('page', 'upload')
     return rootElement;
 });

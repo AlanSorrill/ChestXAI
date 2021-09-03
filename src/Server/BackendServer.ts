@@ -2,6 +2,8 @@ import { Express, Request, Response } from "express";
 import http from 'http'
 import Path from 'path'
 import fs from 'fs';
+import multer from 'multer'
+const multerUpload = multer({ dest: 'uploads/' })
 
 import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord } from './serverImports'
 
@@ -27,6 +29,13 @@ export class BackendServer {
             }
             resp.send(JSON.stringify(possibilities));
         })
+        
+        app.post('/upload.api', multerUpload.single('file'), function (req, res, next) {
+            let content = req.file;
+            console.log(`Recieved upload POST ${req.url}`, content);
+            // req.file is the `avatar` file
+            // req.body will hold the text fields, if there were any
+          })
         return out;
     }
 

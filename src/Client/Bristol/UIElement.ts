@@ -1,5 +1,5 @@
 import { SortedLinkedList, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MouseScrolledInputEvent, UIFrame, fColor, BristolBoard } from "../clientImports";
-import { UIFrameResult } from "./UIFrame";
+import { UIFrameDescription, UIFrameResult } from "./UIFrame";
 
 export class UIElement {
     id: string;
@@ -9,6 +9,8 @@ export class UIElement {
     zOffset: number = 0;
     frame: UIFrame;
     brist: BristolBoard<any>;
+    isMouseTarget: boolean = false;
+
     // panel: UIContentPanel;
 
 
@@ -24,11 +26,16 @@ export class UIElement {
             return this.parent.depth + 1 + this.zOffset;
         }
     }
-    constructor(uid: string, uiFrame: UIFrame, brist: BristolBoard<any>) {
+    constructor(uid: string, uiFrame: UIFrame | UIFrameDescription, brist: BristolBoard<any>) {
         this.id = uid;
         this.brist = brist;
         // this.panel = panel;
-        this.frame = uiFrame;
+        if (uiFrame instanceof UIFrame) {
+            this.frame = uiFrame;
+        } else {
+
+            this.frame = UIFrame.Build(uiFrame);
+        }
     }
 
     findChild(childId: string) {
@@ -94,6 +101,7 @@ export class UIElement {
             }
         })
     }
+
     draw(deltaTime: number) {
         let frame = this.frame.lastResult;
         this.onDrawBackground(frame, deltaTime);
@@ -130,6 +138,16 @@ export class UIElement {
         this.cElements.forEach((elem: UIElement) => {
             elem.onPanelHide();
         })
+    }
+    findElementsUnderCursor(x: number, y: number, found: UIElement[] = []) {
+        if (this.frame.isInside(x, y)) {
+            found.push(this);
+            this.cElements.forEach((elem: UIElement) => {
+                elem.findElementsUnderCursor(x, y, found);
+            })
+            return found;
+        }
+
     }
     mousePressed(evt: MouseBtnInputEvent) { return false; }
     mouseReleased(evt: MouseBtnInputEvent) { return false; }
@@ -174,4 +192,9 @@ export class UIElement {
 
         }
     }
+}
+export enum MouseState {
+    Gone,
+    Over,
+    Pressed
 }

@@ -17,12 +17,14 @@ window.fColor = fColor;
 export * from "./Bristol/UIFrame";
 import { BristolBoard } from "./Bristol/BristolBoard";
 export * from "./Bristol/UIElement";
-import { UI_ChestXAI } from './Bristol/RootElement';
+import { UI_ChestXAI } from './Elements/RootElement';
 import { UrlManager } from './URLManager';
 import { Rest } from './RestClient';
-export * from "./Bristol/RootElement";
+export * from "./Elements/RootElement";
 export * from "./Elements/TestDot";
-export * from "./Elements/UIPage";
+export * from "./Elements/Button";
+export * from "./Elements/ProgressBar";
+
 export * from "./Elements/pages/UIP_Gallary";
 export * from "./Elements/pages/UIP_Upload";
 export * from "./Elements/UI_ImageElement";

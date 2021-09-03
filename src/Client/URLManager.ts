@@ -1,5 +1,5 @@
 
-import { ChestXAIPage, evalOptionalFunc, optFunc, urlParse } from "./clientImports";
+import { evalOptionalFunc, optFunc, urlParse } from "./clientImports";
 
 
 export type UrlDataType = (string | number | boolean | UrlDataType[])
@@ -48,10 +48,10 @@ export class UrlManager {
 
         history.replaceState({}, '', `${this.base}${params}`)
     }
-    get page(): ChestXAIPage {
-        return this.get<ChestXAIPage>('page', ChestXAIPage.upload);
+    get page(): string {
+        return this.get<string>('page', 'upload');
     }
-    setPage(page: ChestXAIPage) {
+    setPage(page: string) {
         this.set('page', page);
     }
     get version(): number {

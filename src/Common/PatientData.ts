@@ -99,15 +99,15 @@ export interface ScanRecord {
     side: ScanSide,
     noFinding: boolean
     enlargedCardiomediastinum: boolean,
-    cardiomegaly: boolean,
+    cardiomegaly: boolean,//------------
     lungOpacity: boolean,
     lungLesion: boolean,
-    edema: boolean,
-    consolidation: boolean,
+    edema: boolean, //---------
+    consolidation: boolean, //------------
     pneumonia: boolean,
-    atelectasis: boolean,
+    atelectasis: boolean,//------------
     pneumothorax: boolean,
-    pleuralEffusion: boolean,
+    pleuralEffusion: boolean,//------------
     pleuralOther: boolean,
     fracture: boolean,
     supportDevices: boolean

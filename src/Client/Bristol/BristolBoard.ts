@@ -1,6 +1,8 @@
 import * as Hammer from 'hammerjs'
-import { UIFrame, Averager, fColor, FColor, FHTML, SortedLinkedList, UIElement } from "../clientImports";
-import { UIFrameResult } from './UIFrame';
+import { LogLevel, UIFrame, UIFrameResult, logger, Averager, fColor, FColor, FHTML, SortedLinkedList, UIElement } from "../clientImports";
+
+let log = logger.local('BristolBoard');
+log.allowBelowLvl(LogLevel.naughty);
 export enum BristolHAlign {
     Left = 'left', Center = 'center', Right = 'right'
 }
@@ -19,6 +21,8 @@ export enum BristolFontStyle {
 }
 export enum BristolFontFamily {
     Arial = 'Arial',
+    Roboto = 'Roboto',
+    Baloo = 'Baloo 2',
     Verdana = 'Verdana',
     TimesNewRoman = 'TimesNewRoman',
     CourierNew = 'Courier New',
@@ -142,11 +146,13 @@ export class BristolBoard<RootElementType extends UIElement> {
     canvasElem: HTMLCanvasElement;
     containerDivElem: HTMLDivElement;
     ctx: CanvasRenderingContext2D;
+    mouseBtnsPressed: [boolean, boolean, boolean] = [false, false, false]
     // jobExecutor: JobExecutor = null;
     keyboardState: Map<string, boolean> = new Map()
     isKeyPressed(key: KeyboardInputKey): boolean {
         return this.keyboardState.get(key) || false;
     }
+    mouseOverElement: UIElement = null;
     debuggerFlags: {
         uiFrameOutlines: boolean
     } = {
@@ -243,19 +249,57 @@ export class BristolBoard<RootElementType extends UIElement> {
             let deltaY = relY - ths.iMouseY;
             ths.iMouseX = relX;
             ths.iMouseY = relY;
-            ths.mouseMoved(new MouseMovedInputEvent(relX, relY, deltaX, deltaY));
+
+
+
+            let overElements = ths.rootElement?.findElementsUnderCursor(relX, relY).sort((a: UIElement, b: UIElement) => (a.depth - b.depth)) ?? [];
+            let event = new MouseMovedInputEvent(relX, relY, deltaX, deltaY);
+            if (this.mouseOverElement != null) {
+                if (!this.mouseOverElement.frame.isInside(relX, relY)) {
+                    this.mouseOverElement.isMouseTarget = false;
+                    this.mouseOverElement.mouseExit(event);
+                    this.mouseOverElement = null;
+                }
+            }
+            for (let i = 0; i < overElements.length; i++) {
+                if (ths.mouseBtnsPressed[0]) {
+                    if(this.mouseOverElement[i].mouseDragged(evt)){
+                        evt.preventDefault();
+                        return;
+                    }
+                }
+                if (overElements[i].mouseMoved(event)) {
+                    if (this.mouseOverElement != null) {
+                        this.mouseOverElement.mouseExit(event);
+                    }
+                    this.mouseOverElement = overElements[i];
+                    this.mouseOverElement.isMouseTarget = true;
+                    this.mouseOverElement.mouseEnter(event);
+                    evt.preventDefault();
+                    break;
+                }
+            }
+
         })
         document.addEventListener('mousedown', (evt: MouseEvent) => {
             var parentOffset = ths.canvas.offset();
-            //or $(this).offset(); if you really just want the current element's offset
+
             var relX = (evt.pageX - parentOffset.left) * ths.resolutionScale;
             var relY = (evt.pageY - parentOffset.top) * ths.resolutionScale;
             if (relX >= 0 && relX <= parentOffset.left + ths.canvas.width * ths.resolutionScale &&
                 relY >= 0 && relY <= parentOffset.top + ths.canvas.height * ths.resolutionScale) {
 
-                if (this.mousePressed(new MouseBtnInputEvent(relX, relY, evt.which, InputEventAction.Down))) {
-                    evt.preventDefault();
+                let overElements = ths.rootElement?.findElementsUnderCursor(relX, relY).sort((a: UIElement, b: UIElement) => (b.depth - a.depth)) ?? [];
+                let event = new MouseBtnInputEvent(relX, relY, evt.which, InputEventAction.Down);
+                ths.mouseBtnsPressed[evt.which] = true;
+                for (let i = 0; i < overElements.length; i++) {
+                    log.info(`Checking mousePressed on ${overElements[i].id}`)
+                    if (overElements[i].mousePressed(event)) {
+                        evt.preventDefault();
+                        break;
+                    }
                 }
+
             }
         })
         document.addEventListener('mouseup', (evt: MouseEvent) => {
@@ -265,9 +309,20 @@ export class BristolBoard<RootElementType extends UIElement> {
             var relY = (evt.pageY - parentOffset.top) * ths.resolutionScale;
             if (relX >= 0 && relX <= parentOffset.left + ths.canvas.width * ths.resolutionScale &&
                 relY >= 0 && relY <= parentOffset.top + ths.canvas.height * ths.resolutionScale) {
-                if (this.mouseReleased(new MouseBtnInputEvent(relX, relY, evt.which, InputEventAction.Up))) {
-                    evt.preventDefault();
+
+
+                let overElements = ths.rootElement?.findElementsUnderCursor(relX, relY).sort((a: UIElement, b: UIElement) => (a.depth - b.depth)) ?? [];
+                let event = new MouseBtnInputEvent(relX, relY, evt.which, InputEventAction.Up);
+                ths.mouseBtnsPressed[evt.which] = false;
+                for (let i = 0; i < overElements.length; i++) {
+                    log.info(`Checking mouseReleased on ${overElements[i].id}`)
+                    if (overElements[i].mouseReleased(event)) {
+                        evt.preventDefault();
+                        break;
+                    }
                 }
+
+
             }
         })
         // this.canvas.on('keydown', (event: JQuery.KeyDownEvent<HTMLCanvasElement, null, HTMLCanvasElement, HTMLCanvasElement>)=>{
@@ -328,16 +383,13 @@ export class BristolBoard<RootElementType extends UIElement> {
     perfAvg: Averager = new Averager(20);
     targetFps: number = 20;
     private drawProm: Promise<void> = null;
-    private async draw() {
-        if (this.drawProm != null) {
-            await this.drawProm;
-            return;
-        }
+    private draw() {
+
         this.currentDrawTime = Date.now();
         this.deltaDrawTime = (this.currentDrawTime - this.lastDrawTime);
         this.perfAvg.add(this.performanceRatio);
-        this.drawProm = this.onDraw(this.deltaDrawTime);
-        await this.drawProm;
+        this.onDraw(this.deltaDrawTime);
+
         this.lastDrawTime = this.currentDrawTime;
         let ths = this;
         // if (this.shouldExecJobs()) {
@@ -594,8 +646,14 @@ export class BristolBoard<RootElementType extends UIElement> {
     textWidth(text: string): number {
         return this.ctx.measureText(text).width;
     }
-    rect(x: number, y: number, w: number, h: number) {
+    rect(x: number, y: number, w: number, h: number, stroke: boolean = true, fill: boolean = false) {
         this.ctx.rect(x, y, w, h)
+        if (stroke) {
+            this.ctx.stroke();
+        }
+        if (fill) {
+            this.ctx.fill();
+        }
     }
     ellipseFrame(frame: UIFrameResult | UIFrame, stroke: boolean = true, fill: boolean = false) {
         if (frame instanceof UIFrame) {
@@ -652,7 +710,7 @@ export class BristolBoard<RootElementType extends UIElement> {
     //     //     ~removeIndex && this.uiElements.splice(removeIndex, 1);
     //     // }
     // }
-    async onDraw(deltaMs: number): Promise<void> {
+    onDraw(deltaMs: number) {
         let ths = this;
         this.noStroke();
         this.fillColor(fColor.grey.darken3);
