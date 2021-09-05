@@ -48,7 +48,7 @@ export class UIP_Upload_V0 extends UIElement {
             x: () => uploadButton.frame.leftX(),
             y: () => uploadButton.frame.bottomY(),
             width: () => uploadButton.frame.measureWidth(),
-            height: 12
+            height: 100
         }, brist);
 
         this.addChild(uploadButton);
@@ -64,6 +64,7 @@ export class UIP_Upload_V0 extends UIElement {
         let ths = this;
         ajax.upload.addEventListener("progress", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             ths.progress = event.loaded / event.total;
+            console.log(ths.progress);
         }, false);
         ajax.addEventListener("load", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             //complete
@@ -76,11 +77,12 @@ export class UIP_Upload_V0 extends UIElement {
         ajax.addEventListener("abort", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             log.error('Upload abort', event)
         }, false);
-        ajax.open("POST", "/upload.api", true);
-        ajax.setRequestHeader("Content-type", file.type)
-         ajax.setRequestHeader("X_FILE_NAME", file.name); 
+        ajax.open("POST", "/upload");
+        // ajax.setRequestHeader("multipart/form-data", file.type)
+        //  ajax.setRequestHeader("X_FILE_NAME", file.name); 
       //  ajax.setRequestHeader("Content-Length", file.size + '');
-        ajax.send(file);
+        ajax.send(formData);
+        
     }
     // mouseEnter(evt: MouseInputEvent){
     //     this.isMouseOver = true;
@@ -92,4 +94,7 @@ export class UIP_Upload_V0 extends UIElement {
     //     return true;
     // }
 
+    myFunction(myParameter){
+
+    }
 }

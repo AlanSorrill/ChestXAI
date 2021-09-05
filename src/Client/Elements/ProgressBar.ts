@@ -20,7 +20,7 @@ export class UIProgressBar extends UIElement {
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
         this.brist.fillColor(evalOptionalFunc(this.foregroundColor, fColor.green.lighten2));
         this.brist.rect(frame.left, frame.top, frame.width * evalOptionalFunc(this.progress, 0), frame.height);
-        
+        this.brist.ctx.fill();
         this.brist.ctx.beginPath();
     }
    

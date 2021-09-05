@@ -7,6 +7,7 @@ declare global {
     }
     interface Array<T> {
         pushAll(arr: T[]): void;
+        get last(): T
     }
 
 
@@ -24,6 +25,11 @@ Array.prototype.pushAll = function <T>(arr: T[]) {
         this.push(arr[i]);
     }
 }
+Object.defineProperty(Array.prototype, "last", {
+    get: function last(){
+        return this.length == 0 ? null : this[this.length - 1]
+    }
+})
 String.prototype.replaceAll = function (a: string, b: string) {
     return this.split(a).join(b);
 };

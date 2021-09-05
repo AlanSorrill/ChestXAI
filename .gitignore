@@ -50,6 +50,9 @@ node_modules/
 # Build Directory
 build/
 
+# Upload Directory
+uploads/
+
 # Optional npm cache directory
 .npm
 

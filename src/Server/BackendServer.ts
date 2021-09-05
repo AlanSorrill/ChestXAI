@@ -3,12 +3,37 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-const multerUpload = multer({ dest: 'uploads/' })
-
 import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord } from './serverImports'
-
 let log = logger.local('BackendServer');
 log.allowBelowLvl(LogLevel.silly);
+
+if(!fs.existsSync('./uploads')){
+    fs.mkdirSync('./uploads')
+    log.info(`Created uploads directory in ${fs.realpathSync('./uploads')}`)
+    
+}
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, './uploads')
+    },
+    filename: function (req, file, callback) {
+        const uniqueSuffix = Date.now() + '' + Math.round(Math.random() * 1E9)
+        let originalExtension = file.originalname.split('.').last.toLowerCase();
+        // switch (originalExtension) {
+        //     case 'png':
+        //     case 'jpg':
+        //     case 'jpeg':
+        //         break;
+        //     default:
+        //     originalExtension = 'error'
+        // }
+        callback(null, `${uniqueSuffix}.${originalExtension}`);
+    }
+})
+const multerUpload = multer({ storage: storage })
+
+
+
 export class BackendServer {
     express: Express;
     httpServer: http.Server;
@@ -20,7 +45,7 @@ export class BackendServer {
         let out = new BackendServer(app, httpServer);
         await out.onInitialized();
         app.get('/similar', (req: Request, resp: Response) => {
-            console.log(req.query);
+            // log.info(req.query);
             let possibilities = [];
             for (const key in req.query) {
                 if (out.indicies.has(key)) {
@@ -29,13 +54,17 @@ export class BackendServer {
             }
             resp.send(JSON.stringify(possibilities));
         })
-        
-        app.post('/upload.api', multerUpload.single('file'), function (req, res, next) {
+
+        app.post('/upload', multerUpload.single('file'), function (req, res, next) {
             let content = req.file;
-            console.log(`Recieved upload POST ${req.url}`, content);
-            // req.file is the `avatar` file
+
+            let uploadFolderList = fs.readdirSync('./uploads');
+
+            log.info(`Recieved upload POST ${req.file.filename}`);
+            // log.info('uploads', uploadFolderList)
+
             // req.body will hold the text fields, if there were any
-          })
+        })
         return out;
     }
 
@@ -46,7 +75,7 @@ export class BackendServer {
 
     async onInitialized() {
         let directoryPath = Path.join(__dirname, '/../../public/patients');//`${__dirname}/../../public/patients`;
-        console.log(`Loading patients from ${directoryPath}`);
+        log.info(`Loading patients from ${directoryPath}`);
         try {
             let ths = this;
             let csvFilePath = Path.join(directoryPath, 'valid.csv');

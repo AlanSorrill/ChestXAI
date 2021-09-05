@@ -24,6 +24,7 @@ export class UIButton extends UIElement {
         let textSize = evalOptionalFunc(this.textSize, 24);
         this.paddingVertical = ()=>(textSize * heightToTextSize);
         this.paddingHorizontal = ()=>(textSize * widthToTextSize);
+       
     }
     autoWidth() {
         let ths = this;
