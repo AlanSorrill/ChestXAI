@@ -1,4 +1,4 @@
-import { BristolBoard, UIElement, UIFrame_CornerWidthHeight } from "../../clientImports";
+import { BristolBoard, UIElement, UIFrame_CornerWidthHeight } from "../../ClientImports";
 
 
 

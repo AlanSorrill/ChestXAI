@@ -1,5 +1,5 @@
 import * as Hammer from 'hammerjs'
-import { LogLevel, UIFrame, UIFrameResult, logger, Averager, fColor, FColor, FHTML, SortedLinkedList, UIElement } from "../clientImports";
+import { LogLevel, UIFrame, UIFrameResult, logger, Averager, fColor, FColor, FHTML, SortedLinkedList, UIElement } from "../ClientImports";
 
 let log = logger.local('BristolBoard');
 log.allowBelowLvl(LogLevel.naughty);

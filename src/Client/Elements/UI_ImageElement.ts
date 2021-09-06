@@ -1,5 +1,5 @@
 import { UIFrameDescription_CornerWidthHeight } from "../Bristol/UIFrame";
-import {FHTML, BristolBoard, UIFrame, UIFrameDescription, UIFrameResult ,UIElement, optFunc } from "../clientImports";
+import {FHTML, BristolBoard, UIFrame, UIFrameDescription, UIFrameResult ,UIElement, optFunc } from "../ClientImports";
 
 
 export class UI_ImageElement extends UIElement {

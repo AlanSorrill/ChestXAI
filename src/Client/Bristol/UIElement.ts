@@ -1,4 +1,4 @@
-import { SortedLinkedList, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MouseScrolledInputEvent, UIFrame, fColor, BristolBoard } from "../clientImports";
+import { SortedLinkedList, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MouseScrolledInputEvent, UIFrame, fColor, BristolBoard } from "../ClientImports";
 import { UIFrameDescription, UIFrameResult } from "./UIFrame";
 
 export class UIElement {

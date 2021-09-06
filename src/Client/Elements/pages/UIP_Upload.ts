@@ -1,4 +1,4 @@
-import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger } from "../../clientImports";
+import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -30,7 +30,7 @@ export class UIP_Upload_V0 extends UIElement {
         uploadButton.onClick = () => {
             inputElem.click();
         }
-        
+
         uploadButton.textSize = 36 * 2;
         uploadButton.fontFamily = BristolFontFamily.Roboto
         uploadButton.autoWidth().autoHeight().autoPadding();
@@ -62,15 +62,19 @@ export class UIP_Upload_V0 extends UIElement {
         formData.append('file', file);
         var ajax = new XMLHttpRequest();
         let ths = this;
-        ajax.upload.addEventListener("progress", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
+        // ajax.upload.addEventListener("progress", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
+        //     ths.progress = event.loaded / event.total;
+        //     console.log(ths.progress);
+        // }, false);
+        ajax.upload.onprogress = function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             ths.progress = event.loaded / event.total;
             console.log(ths.progress);
-        }, false);
-        ajax.addEventListener("load", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
+        }
+        ajax.upload.addEventListener("load", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             //complete
             log.info('Upload complete');
         }, false);
-        ajax.addEventListener("error", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
+        ajax.upload.addEventListener("error", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
 
             log.error('Upload error', event);
         }, false);
@@ -80,9 +84,9 @@ export class UIP_Upload_V0 extends UIElement {
         ajax.open("POST", "/upload");
         // ajax.setRequestHeader("multipart/form-data", file.type)
         //  ajax.setRequestHeader("X_FILE_NAME", file.name); 
-      //  ajax.setRequestHeader("Content-Length", file.size + '');
+        //  ajax.setRequestHeader("Content-Length", file.size + '');
         ajax.send(formData);
-        
+
     }
     // mouseEnter(evt: MouseInputEvent){
     //     this.isMouseOver = true;
@@ -94,7 +98,7 @@ export class UIP_Upload_V0 extends UIElement {
     //     return true;
     // }
 
-    myFunction(myParameter){
+    myFunction(myParameter) {
 
     }
 }

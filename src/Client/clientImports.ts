@@ -1,9 +1,8 @@
-export * from '../Common/commonImports'
+export * from '../Common/CommonImports'
 import { LocalLogger, LogFunction, Logger, LoggerFilterResult, LogLevel, LogLevelMap } from '../Common/Logger';
 let logger = new Logger();
 export { logger, LogLevel, LoggerFilterResult, LocalLogger, LogLevelMap, LogFunction}
-import urlParse from 'url-parse';
-export {urlParse}
+
 export * from "./URLManager";
 export * from "./RestClient";
 export * from "./FHTML/FHTML";
@@ -19,7 +18,7 @@ import { BristolBoard } from "./Bristol/BristolBoard";
 export * from "./Bristol/UIElement";
 import { UI_ChestXAI } from './Elements/RootElement';
 import { UrlManager } from './URLManager';
-import { Rest } from './RestClient';
+import { Socker } from './RestClient';
 export * from "./Elements/RootElement";
 export * from "./Elements/TestDot";
 export * from "./Elements/Button";
@@ -38,9 +37,9 @@ declare global {
     var urlManager: UrlManager
     
     var classes: {
-        Rest: typeof Rest
+        Rest: typeof Socker
     }
 }
 
 //Allow client console to access static classes inside webpack
-window.classes = {Rest: Rest};
+window.classes = {Rest: Socker};

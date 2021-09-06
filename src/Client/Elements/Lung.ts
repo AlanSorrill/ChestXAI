@@ -1,5 +1,5 @@
 import { UICorner } from "../Bristol/UIFrame";
-import { FHTML, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UIFrameDescription, UIFrameResult, UIElement, optFunc, Vector2 } from "../clientImports";
+import { FHTML, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UIFrameDescription, UIFrameResult, UIElement, optFunc, Vector2 } from "../ClientImports";
 import { UI_ImageElement } from "./UI_ImageElement";
 
 

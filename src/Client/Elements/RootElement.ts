@@ -1,6 +1,6 @@
 
 
-import { UIP_Gallary_V0, UICorner, UIP_Upload_V0, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger } from "../clientImports";
+import { UIP_Gallary_V0, UICorner, UIP_Upload_V0, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger } from "../ClientImports";
 
 
 

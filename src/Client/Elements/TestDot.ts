@@ -1,4 +1,4 @@
-import {FColor, BristolBoard, UIFrame, UIFrameDescription, UIFrameResult ,UIElement, optFunc } from "../clientImports";
+import {FColor, BristolBoard, UIFrame, UIFrameDescription, UIFrameResult ,UIElement, optFunc } from "../ClientImports";
 
 
 export class TestDot extends UIElement {

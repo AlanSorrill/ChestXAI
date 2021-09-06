@@ -1,5 +1,5 @@
 
-import { evalOptionalFunc, optFunc, urlParse } from "./clientImports";
+import { evalOptionalFunc, optFunc, urlParse } from "./ClientImports";
 
 
 export type UrlDataType = (string | number | boolean | UrlDataType[])

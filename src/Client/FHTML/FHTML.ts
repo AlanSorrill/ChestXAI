@@ -1,5 +1,5 @@
 
-import { BristolBoard } from "../clientImports";
+import { BristolBoard } from "../ClientImports";
 
 export class FHTML<TYPE extends HTMLElement> {
     offset() {

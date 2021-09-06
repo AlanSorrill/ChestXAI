@@ -1,4 +1,4 @@
-import { LabImageData } from "./commonImports"
+import { LabImageData } from "./CommonImports"
 export type Sex = 'Male' | 'Female'
 export type ScanDirection = 'Lateral' | 'Frontal'
 export enum ScanSide {

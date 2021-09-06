@@ -3,7 +3,7 @@ import {
     evalOptionalFunc, optFunc, UIFrameDescription_CornerWidthHeight,
     BristolFontFamily, BristolHAlign, BristolVAlign, UIElement, UIFrameResult,
     UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom
-} from "../clientImports";
+} from "../ClientImports";
 
 
 export class UIButton extends UIElement {

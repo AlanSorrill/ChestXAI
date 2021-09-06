@@ -1,16 +1,18 @@
 import { Express, Request, Response } from "express";
+import { Socket } from "net";
 import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord } from './serverImports'
+import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse } from './ServerImports'
+import { ServerSession } from "./ServerSession";
 let log = logger.local('BackendServer');
 log.allowBelowLvl(LogLevel.silly);
 
-if(!fs.existsSync('./uploads')){
+if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads')
     log.info(`Created uploads directory in ${fs.realpathSync('./uploads')}`)
-    
+
 }
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -37,19 +39,21 @@ const multerUpload = multer({ storage: storage })
 export class BackendServer {
     express: Express;
     httpServer: http.Server;
+    socketServer: WebSocket.Server;
+    sessions: Map<string, ServerSession> = new Map();
     patients: Map<string, PatientData> = new Map();
     indicies: Map<string, ScanRecord[]> = new Map();
     rawPatientData: unknown[];
 
-    static async Create(app: Express, httpServer: http.Server): Promise<BackendServer> {
-        let out = new BackendServer(app, httpServer);
-        await out.onInitialized();
+    static async Create(app: Express, httpServer: http.Server, socketServer: WebSocket.Server): Promise<BackendServer> {
+        let backend = new BackendServer(app, httpServer, socketServer);
+        await backend.onInitialized();
         app.get('/similar', (req: Request, resp: Response) => {
             // log.info(req.query);
             let possibilities = [];
             for (const key in req.query) {
-                if (out.indicies.has(key)) {
-                    possibilities.pushAll(out.indicies.get(key).map((record: ScanRecord) => PatientData.stripBackReference(record)));
+                if (backend.indicies.has(key)) {
+                    possibilities.pushAll(backend.indicies.get(key).map((record: ScanRecord) => PatientData.stripBackReference(record)));
                 }
             }
             resp.send(JSON.stringify(possibilities));
@@ -61,16 +65,36 @@ export class BackendServer {
             let uploadFolderList = fs.readdirSync('./uploads');
 
             log.info(`Recieved upload POST ${req.file.filename}`);
+            //TODO handle bad uploads
+
+            let sesh = new ServerSession(req.file.filename.split('.').first);
+            backend.sessions.set(sesh.id, sesh);
+            let respPayload: UploadResponse = {
+                success: true,
+                seshId: sesh.id
+            }
+            res.send(JSON.stringify(respPayload))
             // log.info('uploads', uploadFolderList)
 
             // req.body will hold the text fields, if there were any
         })
-        return out;
+
+        httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
+            socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
+                let url: urlParse = urlParse(request.url, true);
+                backend.onSocketUpgrade(url, request, client);
+            })
+        })
+        return backend;
+    }
+    onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
+
     }
 
-    protected constructor(app: Express, httpServer: http.Server) {
+    protected constructor(app: Express, httpServer: http.Server, socketServer: WebSocket.Server) {
         this.express = app;
         this.httpServer = httpServer;
+        this.socketServer = socketServer;
     }
 
     async onInitialized() {

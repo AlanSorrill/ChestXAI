@@ -1,4 +1,4 @@
-import {UIElement, UI_ChestXAI, FHTML, BristolBoard, UIFrame } from "./clientImports";
+import {UIElement, UI_ChestXAI, FHTML, BristolBoard, UIFrame } from "./ClientImports";
 import { UrlManager } from "./URLManager";
 
 

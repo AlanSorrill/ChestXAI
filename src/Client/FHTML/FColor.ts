@@ -1,5 +1,5 @@
 
-import { optFunc } from '../clientImports';
+import { optFunc } from '../ClientImports';
 export class FColorSwath {
     constructor(data: any) {
         this.lighten4 = FColor.fromHex(data['100']);

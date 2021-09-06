@@ -5,11 +5,12 @@ import webpackHotMiddleware from 'webpack-hot-middleware'
 import http from 'http'
 import path from 'path'
 // import favicon from 'serve-favicon'
-import { clientWebpackConfig, logger, LogLevel, webpackBuildListener } from './serverImports'
-import { BackendServer } from './BackendServer';
+import {BackendServer, WebSocket, clientWebpackConfig, logger, LogLevel, webpackBuildListener } from './ServerImports'
+
 let log = logger.local('ServerIndex');
 log.allowBelowLvl(LogLevel.naughty)
 let httpServer: http.Server;
+let socketServer: WebSocket.Server
 const app = express();
 const PORT = 3000;
 
@@ -23,7 +24,10 @@ async function setup() {
     log.info('Initializing...');
 
     httpServer = http.createServer(app);
-
+    socketServer = new WebSocket.Server({ server: httpServer });
+    socketServer.on('error', (server: WebSocket.Server, error: Error)=>{
+        log.error(`WebSocket Server Error: `,error);
+    })
     let rootPath = path.join(__dirname, '/../../');
     let paths = {
         nodeModules: path.join(rootPath, '/node_modules'),
@@ -52,7 +56,7 @@ async function setup() {
         // completeWebpackStatusStep('WebpackDevMiddleware');
         // webpackStatus.complete = true;
         log.info(`Webpack Initialized`);
-        BackendServer.Create(app, httpServer).then((csserver: BackendServer)=>{
+        BackendServer.Create(app, httpServer, socketServer).then((csserver: BackendServer)=>{
             global.backend = csserver;
         });
 
