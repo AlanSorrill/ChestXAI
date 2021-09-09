@@ -23,7 +23,7 @@ import { UI_ChestXAI } from './Elements/RootElement';
 import { UrlManager } from './URLManager';
 import { Socker } from './RestClient';
 export * from './ClientSession'
-export * from './'
+
 export * from "./Elements/RootElement";
 export * from "./Elements/TestDot";
 export * from "./Elements/Button";
