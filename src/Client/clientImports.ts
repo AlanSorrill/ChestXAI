@@ -13,6 +13,9 @@ import { FColor, FColorDirectory, FColorSwath } from './FHTML/FColor'
 let fColor = new FColorDirectory();
 export { FColor, fColor, FColorSwath, FColorDirectory }
 window.fColor = fColor;
+
+
+
 export * from "./Bristol/UIFrame";
 import { BristolBoard } from "./Bristol/BristolBoard";
 export * from "./Bristol/UIElement";
