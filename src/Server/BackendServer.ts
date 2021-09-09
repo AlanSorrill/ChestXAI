@@ -25,6 +25,7 @@ export class BackendServer {
                     possibilities.pushAll(out.indicies.get(key).map((record: ScanRecord) => PatientData.stripBackReference(record)));
                 }
             }
+            resp.setHeader('content-type','application/json');
             resp.send(JSON.stringify(possibilities));
         })
         return out;
