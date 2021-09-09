@@ -20,6 +20,9 @@ export class UrlManager {
         let parse = urlParse(window.location.href, true);
         this.base = parse.pathname;
     }
+    get parsed() {
+        return urlParse(window.location.href);
+    }
     queryValues: Map<string, UrlDataType> = new Map();
     set<T extends UrlDataType>(key: string, value: T) {
         this.queryValues.set(key, value);

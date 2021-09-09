@@ -11,7 +11,7 @@ let clientWebpackConfig: Configuration = {
         //  tensorflowJs: '@tensorflow/tfjs',
         // client: './src/Index/clientIndex.ts'
         // editor: './src/Index/clientEditorIndex.ts',
-        clientIndex: './src/Client/clientIndex.ts'
+        clientIndex: './src/Client/ClientIndex.ts'
         // vendor: 'jquery'
     },
     // This forces webpack not to compile TypeScript for one time, but to stay running, watch for file changes in project directory and re-compile if needed
@@ -69,12 +69,12 @@ let clientWebpackConfig: Configuration = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.ProvidePlugin({
-            '$': "jquery",
-            'jQuery': "jquery",
-            "window.jQuery": "jquery",
-            "p5": "p5"
-        }),
+        // new webpack.ProvidePlugin({
+        //     '$': "jquery",
+        //     'jQuery': "jquery",
+        //     "window.jQuery": "jquery",
+        //     "p5": "p5"
+        // }),
         new webpack.ProgressPlugin({
             //   /**
             //  * Show active modules count and one active module in progress message

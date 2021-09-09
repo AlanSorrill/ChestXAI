@@ -30,3 +30,14 @@ export class Animator<n> {
         return 0;
     }
 }
+
+function Animate(id: string) {
+    console.log("first(): factory evaluated");
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+      console.log("first(): called");
+    };
+  }
+
+export interface AnimKey {
+    varPath: string
+}

@@ -9,6 +9,7 @@ declare global {
         pushAll(arr: T[]): void;
         get first(): T
         get last(): T
+        removeInPlace(shouldKeep: (value: T, index: number) => boolean): number
     }
 
 
@@ -17,7 +18,16 @@ declare global {
 export type optFunc<T> = (T | (() => T)) | { t: string, v: optFunc<T> };
 export type optTransform<I, O> = (O | ((input: I) => O)) | { t: string, v: optTransform<I, O> };
 
-
+Array.prototype.removeInPlace = function <T>(shouldKeep: (value: T, index: number) => boolean) {
+    let count = 0;
+    for (let i = 0; i < this.length; i++) {
+        if (!shouldKeep(this[i], i)) {
+            this.splice(i, 1);
+            count++;
+        }
+    }
+    return count;
+}
 Array.prototype.pushAll = function <T>(arr: T[]) {
     if (arr == null || typeof arr == 'undefined') {
         return;
@@ -27,12 +37,12 @@ Array.prototype.pushAll = function <T>(arr: T[]) {
     }
 }
 Object.defineProperty(Array.prototype, "first", {
-    get: function last(){
+    get: function last() {
         return this.length == 0 ? null : this[0]
     }
 })
 Object.defineProperty(Array.prototype, "last", {
-    get: function last(){
+    get: function last() {
         return this.length == 0 ? null : this[this.length - 1]
     }
 })
@@ -114,6 +124,11 @@ export function cammelCase(text: string, startCapitalized: boolean = false) {
         }
     }
     return out;
+}
+export async function delay(ms: number): Promise<void> {
+    return new Promise<void>((acc, rej) => {
+        setTimeout(() => { acc(); }, ms)
+    });
 }
 export class Averager {
     maxInd: number = 0;

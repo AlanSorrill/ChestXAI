@@ -6,6 +6,7 @@ import fs from 'fs';
 import multer from 'multer'
 import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse } from './ServerImports'
 import { ServerSession } from "./ServerSession";
+import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');
 log.allowBelowLvl(LogLevel.silly);
 
@@ -88,13 +89,29 @@ export class BackendServer {
         return backend;
     }
     onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
+        let seshId = url.query.seshId;
+        if (this.sessions.has(seshId)) {
+            this.sessions.get(seshId).registerSocket(client);
+        } else {
+            client.send({
+                status: 404,
+                message: `No session found for ${seshId}`
+            })
+            client.close();
+        }
+    }
 
+    reflectionTest: TSReflection
+    setupReflectionTest() {
+
+        this.reflectionTest = new TSReflection();
     }
 
     protected constructor(app: Express, httpServer: http.Server, socketServer: WebSocket.Server) {
         this.express = app;
         this.httpServer = httpServer;
         this.socketServer = socketServer;
+        this.setupReflectionTest();
     }
 
     async onInitialized() {
