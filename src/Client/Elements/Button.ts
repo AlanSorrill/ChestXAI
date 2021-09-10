@@ -1,8 +1,8 @@
-import { MouseBtnInputEvent, MouseInputEvent, MouseMovedInputEvent } from "../Bristol/BristolBoard";
+
 import {
     evalOptionalFunc, optFunc, UIFrameDescription_CornerWidthHeight,
     BristolFontFamily, BristolHAlign, BristolVAlign, UIElement, UIFrameResult,
-    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom
+    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom, MouseBtnInputEvent, MouseInputEvent
 } from "../ClientImports";
 
 

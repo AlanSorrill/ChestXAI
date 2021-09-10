@@ -1,10 +1,11 @@
 import { Express, Request, Response } from "express";
 import { Socket } from "net";
+import * as ChildProcess from "child_process";
 import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse } from './ServerImports'
+import { csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse, LogLevel } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');
@@ -57,15 +58,14 @@ export class BackendServer {
                     possibilities.pushAll(backend.indicies.get(key).map((record: ScanRecord) => PatientData.stripBackReference(record)));
                 }
             }
-            resp.setHeader('content-type','application/json');
+            resp.setHeader('content-type', 'application/json');
             resp.send(JSON.stringify(possibilities));
         })
 
         app.post('/upload', multerUpload.single('file'), function (req, res, next) {
-            let content = req.file;
+            // let content = req.file;
 
-            let uploadFolderList = fs.readdirSync('./uploads');
-
+            // req.body will hold the text fields, if there were any
             log.info(`Recieved upload POST ${req.file.filename}`);
             //TODO handle bad uploads
 
@@ -76,9 +76,8 @@ export class BackendServer {
                 seshId: sesh.id
             }
             res.send(JSON.stringify(respPayload))
-            // log.info('uploads', uploadFolderList)
 
-            // req.body will hold the text fields, if there were any
+
         })
 
         httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
@@ -89,30 +88,25 @@ export class BackendServer {
         })
         return backend;
     }
-    onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
-        let seshId = url.query.seshId;
-        if (this.sessions.has(seshId)) {
-            this.sessions.get(seshId).registerSocket(client);
-        } else {
-            client.send({
-                status: 404,
-                message: `No session found for ${seshId}`
-            })
-            client.close();
-        }
-    }
-
-    reflectionTest: TSReflection
-    setupReflectionTest() {
-
-        this.reflectionTest = new TSReflection();
-    }
-
+    
     protected constructor(app: Express, httpServer: http.Server, socketServer: WebSocket.Server) {
         this.express = app;
         this.httpServer = httpServer;
         this.socketServer = socketServer;
         this.setupReflectionTest();
+    }
+
+
+    runInference(scriptName = 'TestScript.py'){
+        let pathToScript = Path.join(__dirname, `../../src/Server/Python/${scriptName}`)
+        log.info(`Starting ${pathToScript}`)
+        let python = ChildProcess.spawn('python', [pathToScript, 'testParameter'])
+        python.stdout.on('data', (data)=>{
+            log.info(`Python:`, data.toString('utf8'));
+        })
+        python.stderr.on('data', (error)=>{
+            log.error('Python:', error.toString('utf8'));
+        })
     }
 
     async onInitialized() {
@@ -172,6 +166,24 @@ export class BackendServer {
 
     }
 
+    onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
+        let seshId = url.query.seshId;
+        if (this.sessions.has(seshId)) {
+            this.sessions.get(seshId).registerSocket(client);
+        } else {
+            client.send({
+                status: 404,
+                message: `No session found for ${seshId}`
+            })
+            client.close();
+        }
+    }
+
+    reflectionTest: TSReflection
+    setupReflectionTest() {
+
+        this.reflectionTest = new TSReflection();
+    }
 
 }
 

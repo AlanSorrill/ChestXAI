@@ -1,6 +1,6 @@
 //this file is imported by Helper.ts at the top, which is in turn imported by commonImports
-import { optFunc } from './CommonImports'
-import { evalOptionalFunc, getOptFuncTitle } from './Helper';
+import { optFunc, evalOptionalFunc, getOptFuncTitle } from './CommonImports'
+
 
 export class Vector2 {
     private xValue: optFunc<number>

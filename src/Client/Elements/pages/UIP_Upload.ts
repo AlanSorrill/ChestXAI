@@ -48,8 +48,9 @@ export class UIP_Upload_V0 extends UIElement {
             x: () => uploadButton.frame.leftX(),
             y: () => uploadButton.frame.bottomY(),
             width: () => uploadButton.frame.measureWidth(),
-            height: 100
+            height: 20
         }, brist);
+        progressBar.foregroundColor = fColor.red.lighten2
 
         this.addChild(uploadButton);
         this.addChild(progressBar)
