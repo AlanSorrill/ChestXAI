@@ -1,6 +1,7 @@
-import { UICorner } from "../Bristol/UIFrame";
-import { FHTML, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UIFrameDescription, UIFrameResult, UIElement, optFunc, Vector2 } from "../ClientImports";
-import { UI_ImageElement } from "./UI_ImageElement";
+
+import { Vector2 } from "../../Common/Vector";
+import { UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult, UIElement, optFunc } from "../ClientImports";
+
 
 
 export class Lung extends UIElement {

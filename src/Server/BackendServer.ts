@@ -1,5 +1,6 @@
 import { Express, Request, Response } from "express";
 import { Socket } from "net";
+import * as ChildProcess from "child_process";
 import http from 'http'
 import Path from 'path'
 import fs from 'fs';
@@ -63,10 +64,9 @@ export class BackendServer {
         })
 
         app.post('/upload', multerUpload.single('file'), function (req, res, next) {
-            let content = req.file;
+            // let content = req.file;
 
-            let uploadFolderList = fs.readdirSync('./uploads');
-
+            // req.body will hold the text fields, if there were any
             log.info(`Recieved upload POST ${req.file.filename}`);
             //TODO handle bad uploads
 
@@ -183,6 +183,19 @@ export class BackendServer {
         this.httpServer = httpServer;
         this.socketServer = socketServer;
         this.setupReflectionTest();
+    }
+
+
+    runInference(scriptName = 'TestScript.py'){
+        let pathToScript = Path.join(__dirname, `../../src/Server/Python/${scriptName}`)
+        log.info(`Starting ${pathToScript}`)
+        let python = ChildProcess.spawn('python', [pathToScript, 'testParameter'])
+        python.stdout.on('data', (data)=>{
+            log.info(`Python:`, data.toString('utf8'));
+        })
+        python.stderr.on('data', (error)=>{
+            log.error('Python:', error.toString('utf8'));
+        })
     }
 
     async onInitialized() {
