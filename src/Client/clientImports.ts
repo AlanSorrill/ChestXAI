@@ -22,6 +22,7 @@ export * from "./Bristol/UIElement";
 import { UI_ChestXAI } from './Elements/RootElement';
 import { UrlManager } from './URLManager';
 import { Socker } from './RestClient';
+import { ClientSession } from './ClientSession';
 export * from './ClientSession'
 
 export * from "./Elements/RootElement";
@@ -40,6 +41,7 @@ declare global {
     var mainBristol: BristolBoard<UI_ChestXAI>
     var fColor: FColorDirectory
     var urlManager: UrlManager
+    var session: ClientSession
     
     var classes: {
         Rest: typeof Socker

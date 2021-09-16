@@ -1,4 +1,4 @@
-import {UIElement, UI_ChestXAI, FHTML, BristolBoard, UIFrame } from "./ClientImports";
+import {UIElement, UI_ChestXAI, FHTML, BristolBoard, UIFrame, ClientSession } from "./ClientImports";
 import { UrlManager } from "./URLManager";
 
 
@@ -18,6 +18,7 @@ containerDiv.setCss([
 
 
 window.urlManager = new UrlManager();
+window.session = new ClientSession(window.urlManager.get('seshId', null));
 window.mainBristol = new BristolBoard(containerDiv.element, async (brist: BristolBoard<any>)=>{
     let rootElement = new UI_ChestXAI(brist);
     urlManager.setListener(rootElement);

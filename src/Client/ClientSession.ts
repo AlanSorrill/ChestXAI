@@ -1,5 +1,5 @@
 import { Progress } from "../Common/SharedDataDefs";
-import { Session, logger, LogLevel } from "./ClientImports";
+import { Session, logger, LogLevel, SeshMsg } from "./ClientImports";
 let log = logger.local('ClientSession');
 log.allowBelowLvl(LogLevel.naughty)
 export class ClientSession extends Session {
@@ -12,7 +12,7 @@ export class ClientSession extends Session {
     constructor(id: string) {
         super(id);
         let ths = this;
-        this.socket = new WebSocket(urlManager.parsed.origin.replace('http', 'ws') + `?sesh=${id}`);
+        this.socket = new WebSocket(urlManager.parsed.origin.replace('http', 'ws') + (id != null ? `?sesh=${id}` : ''));
         this.socket.onopen = (ev: Event) => {
             ths.onSocketOpened();
         }
@@ -30,8 +30,8 @@ export class ClientSession extends Session {
 
         log.error(`Sesh Socket closed for ${this.id}`);
     }
-    send(data: string | ArrayBufferLike | Blob | ArrayBufferView) {
-        this.socket?.send(data)
+    send(data: SeshMsg) {
+        this.socket?.send(JSON.stringify(data))
     }
     onRecieve(data: any): void {
         log.info(`SeshSocket ${this.id} recieved`, data);

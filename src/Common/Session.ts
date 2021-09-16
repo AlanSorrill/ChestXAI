@@ -8,6 +8,13 @@ export abstract class Session {
     }
     abstract onSocketOpened(): void
     abstract onSocketClosed(): void
-    abstract send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void
+    abstract send(data: SeshMsg): void
     abstract get progress(): Progress;
+}
+
+export interface SeshMsg {
+    typeName: string
+}
+export interface SeshConnect extends SeshMsg{
+    requestId: string
 }

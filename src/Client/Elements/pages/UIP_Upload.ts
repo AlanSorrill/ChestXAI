@@ -72,7 +72,7 @@ export class UIP_Upload_V0 extends UIElement {
         }
         ajax.upload.addEventListener("load", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             //complete
-            log.info('Upload complete');
+            log.info('Upload complete', ajax.response);
         }, false);
         ajax.upload.addEventListener("error", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
 
@@ -81,6 +81,17 @@ export class UIP_Upload_V0 extends UIElement {
         ajax.addEventListener("abort", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             log.error('Upload abort', event)
         }, false);
+
+        ajax.addEventListener('readystatechange', function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
+            if (ajax.readyState == XMLHttpRequest.DONE) {
+                let resp: UploadResponse = JSON.parse(ajax.responseText)
+                log.info(`Upload responded `, resp)
+                if(resp.success)
+                urlManager.set('seshId', resp.uploadId)
+            } else {
+log.info('Ready state changed!', event);}
+            
+        })
         ajax.open("POST", "/upload");
         // ajax.setRequestHeader("multipart/form-data", file.type)
         //  ajax.setRequestHeader("X_FILE_NAME", file.name); 

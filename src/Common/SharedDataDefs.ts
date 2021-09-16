@@ -1,6 +1,6 @@
 export interface UploadResponse {
     success: boolean,
-    seshId: string,
+    uploadId: string,
 }
 export interface Progress {
     task: string,

@@ -24,7 +24,7 @@ async function setup() {
     log.info('Initializing...');
 
     httpServer = http.createServer(app);
-    socketServer = new WebSocket.Server({ server: httpServer });
+    socketServer = new WebSocket.Server({ noServer: true });
     socketServer.on('error', (server: WebSocket.Server, error: Error)=>{
         log.error(`WebSocket Server Error: `,error);
     })

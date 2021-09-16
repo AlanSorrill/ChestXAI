@@ -4,7 +4,7 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse, TaskListener, delay } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');
@@ -45,6 +45,7 @@ export class BackendServer {
     patients: Map<string, PatientData> = new Map();
     indicies: Map<string, ScanRecord[]> = new Map();
     rawPatientData: unknown[];
+    taskListeners: Map<string, TaskListener[]> = new Map();
 
     static async Create(app: Express, httpServer: http.Server, socketServer: WebSocket.Server): Promise<BackendServer> {
         let backend = new BackendServer(app, httpServer, socketServer);
@@ -57,7 +58,7 @@ export class BackendServer {
                     possibilities.pushAll(backend.indicies.get(key).map((record: ScanRecord) => PatientData.stripBackReference(record)));
                 }
             }
-            resp.setHeader('content-type','application/json');
+            resp.setHeader('content-type', 'application/json');
             resp.send(JSON.stringify(possibilities));
         })
 
@@ -69,36 +70,105 @@ export class BackendServer {
             log.info(`Recieved upload POST ${req.file.filename}`);
             //TODO handle bad uploads
 
-            let sesh = new ServerSession(req.file.filename.split('.').first);
-            backend.sessions.set(sesh.id, sesh);
+            // let sesh = new ServerSession(;
+            // backend.sessions.set(sesh.id, sesh);
             let respPayload: UploadResponse = {
                 success: true,
-                seshId: sesh.id
+                uploadId: req.file.filename.split('.').first
             }
-            res.send(JSON.stringify(respPayload))
+            res.set('Connection', 'keep-alive');
+            backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
+
+            backend.makeDiagnosis(respPayload.uploadId, {
+                onUpdate: (msg: string, alpha: number) => { 
+                    log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
+                    
+                    res.write(JSON.stringify({
+                        'uploadId': respPayload.uploadId,
+                        'progress': alpha
+                    }))
+                },
+                onComplete: () => {
+                    res.write(JSON.stringify(respPayload))
+                    res.end();
+                 }
+            })
+            
             // log.info('uploads', uploadFolderList)
 
             // req.body will hold the text fields, if there were any
-        })
+        });
+        app.get('/diagnosis')
 
         httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
-            socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
-                let url: urlParse = urlParse(request.url, true);
-                backend.onSocketUpgrade(url, request, client);
-            })
+            try {
+                socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
+                    let url: urlParse = urlParse(request.url, true);
+                    backend.onSocketUpgrade(url, request, client);
+                })
+            } catch (err) {
+
+                log.error(`Failed to upgrade to socket:`, err)
+            }
         })
         return backend;
+    }
+
+    updateTask(taskId: string, message: string, progAlpha: number) {
+        let taskListeners = this.taskListeners.get(taskId);
+        if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
+            return;
+        }
+        for (let i = 0; i < taskListeners.length; i++) {
+            taskListeners[i].onUpdate(message, progAlpha);
+        }
+    }
+    completeTask(taskId: string) {
+        let taskListeners = this.taskListeners.get(taskId);
+        if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
+            return;
+        }
+        for (let i = 0; i < taskListeners.length; i++) {
+            taskListeners[i].onComplete();
+        }
+    }
+    addTaskListener(taskId: string, listener: TaskListener) {
+        if (!this.taskListeners.has(taskId)) {
+            this.taskListeners.set(taskId, []);
+        }
+        this.taskListeners.get(taskId).push(listener)
+    }
+    async makeDiagnosis(uploadId: string, listener: TaskListener) {
+        if (listener != null) {
+            this.addTaskListener(uploadId, listener)
+        }
+        let possibilities = ["cardiomegaly", "edema", "consolidation", "atelectasis", "pleuralEffusion"]
+        let out: string[] = [];
+        for (let i = 0; i < possibilities.length; i++) {
+            if (Math.random() < 0.5) {
+                out.push(possibilities[i]);
+            }
+            await delay(1000 / possibilities.length);
+            this.updateTask(uploadId, 'Diagnosing', i / possibilities.length);
+        }
+        this.completeTask(uploadId);
+        return out;
     }
     onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
         let seshId = url.query.seshId;
         if (this.sessions.has(seshId)) {
             this.sessions.get(seshId).registerSocket(client);
         } else {
-            client.send({
-                status: 404,
-                message: `No session found for ${seshId}`
-            })
-            client.close();
+            log.info('Generating session id')
+            seshId = ServerSession.getFreshId();
+            let freshSesh = new ServerSession(seshId);
+            freshSesh.registerSocket(client);
+            this.sessions.set(seshId, freshSesh);
+            // client.send({
+            //     status: 404,
+            //     message: `No session found for ${seshId}`
+            // })
+            // client.close();
         }
     }
 
