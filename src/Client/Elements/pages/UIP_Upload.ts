@@ -1,4 +1,5 @@
-import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse } from "../../ClientImports";
+import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession } from "../../ClientImports";
+import { UIP_Gallary_V0 } from "./UIP_Gallary";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -20,16 +21,17 @@ export class UIP_Upload_V0 extends UIElement {
             }
         })
 
-        let uploadButton = new UIButton('Upload', {
+        let uploadButton = new UIButton('Upload', () => { 
+            log.info('Showing file chooser')
+            inputElem.click();
+        }, {
             x: () => ths.frame.centerX(),
             y: () => ths.frame.centerY(),
             width: 100,
             height: 100,
             measureCorner: UICorner.center
         }, brist);
-        uploadButton.onClick = () => {
-            inputElem.click();
-        }
+       
 
         uploadButton.textSize = 36 * 2;
         uploadButton.fontFamily = BristolFontFamily.Roboto
@@ -59,6 +61,19 @@ export class UIP_Upload_V0 extends UIElement {
     uploadFile(file: File) {
         console.log('Uploading file');
         console.log(file);
+
+        // ClientSession.fileToStream(file).then((stream: ReadableStream) => {
+        //     log.info('Upload streaming start')
+        //     fetch('./uploadStream', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': file.type,
+        //             'originalName': file.name
+        //         },
+        //          body: stream
+        //     })
+        // })
+
         let formData = new FormData();
         formData.append('file', file);
         var ajax = new XMLHttpRequest();
@@ -86,12 +101,15 @@ export class UIP_Upload_V0 extends UIElement {
         ajax.addEventListener('readystatechange', function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             if (ajax.readyState == XMLHttpRequest.DONE) {
                 let resp: UploadResponse = JSON.parse(ajax.responseText)
-                log.info(`Upload responded `, resp)
-                if(resp.success)
-                urlManager.set('seshId', resp.uploadId)
+                log.info(`Upload responded `, resp);
+                let gallary: UIP_Gallary_V0 = mainBristol.rootElement.setPage('gallary') as any;
+                gallary.setUploadResponse(resp);
+//                 if (resp.success)
+//                     urlManager.set('seshId', resp.uploadId)
             } else {
-log.info('Ready state changed!', event);}
-            
+                log.info('Ready state changed!', event);
+            }
+
         })
         ajax.open("POST", "/upload");
         // ajax.setRequestHeader("multipart/form-data", file.type)
@@ -110,7 +128,8 @@ log.info('Ready state changed!', event);}
     //     return true;
     // }
 
-    myFunction(myParameter) {
-
-    }
+ 
+}
+export class StreamDebugger<I,O> implements Transformer<any, any>{
+    
 }

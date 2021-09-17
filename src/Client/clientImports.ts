@@ -31,8 +31,10 @@ export * from "./Elements/pages/UIP_Gallary";
 export * from "./Elements/pages/UIP_Upload";
 export * from "./Elements/UI_ImageElement";
 
+export * from "./Elements/ResultCard";
 export * from "./Elements/Lung";
 
+export type MainBristol = BristolBoard<UI_ChestXAI>;
 
 declare global {
     var mainBristol: BristolBoard<UI_ChestXAI>

@@ -4,6 +4,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import http from 'http'
 import path from 'path'
+import fs from 'fs'
 // import favicon from 'serve-favicon'
 import {BackendServer, WebSocket, clientWebpackConfig, logger, LogLevel, webpackBuildListener } from './ServerImports'
 
@@ -32,12 +33,21 @@ async function setup() {
     let paths = {
         nodeModules: path.join(rootPath, '/node_modules'),
         root: path.join(rootPath, '/public'),
-        favIco: path.join(rootPath, '/public/favicon.ico')
+        favIco: path.join(rootPath, '/public/favicon.ico'),
+        userContent: path.join(rootPath, '/uploads')
     }
 
     app.use('/node_modules/', express.static(paths.nodeModules));
     app.use('/', express.static(paths.root));
-
+    app.use('/userContent/',express.static(paths.userContent))
+    app.get('/userContent/:fileName', (req: Request, resp: Response)=>{
+        let filePath = path.join(paths.userContent, req.params.fileName);
+        if(fs.existsSync(filePath)){
+            resp.sendFile(filePath);
+        } else {
+            resp.sendStatus(404);
+        }
+    })
     //app.use(favicon(paths.favIco))
 
 

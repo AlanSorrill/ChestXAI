@@ -44,6 +44,7 @@ let log = logger.local('RootElement');
 
 
 // }
+
 export class UI_ChestXAI extends UIElement implements UrlListener {
     currentPage: UIElement = null
     pageTypes: { upload: (typeof UIP_Upload_V0)[]; gallary: (typeof UIP_Gallary_V0)[]; };
@@ -71,7 +72,7 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
             gallary: [UIP_Gallary_V0]
         }
     }
-    protected setPage(name: string, version: number) {
+    setPage(name: string, version: number = 0) {
         this.currentPage?.removeFromParent();
         let construct: typeof UIElement = this.pageTypes[name][version]
         let ths = this;
@@ -82,6 +83,7 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
             height: () => ths.frame.measureHeight()
         }), this.brist);
         this.addChild(this.currentPage);
+        return this.currentPage;
     }
     onValueSet(key: string, value: UrlDataType): void {
 

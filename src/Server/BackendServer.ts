@@ -21,8 +21,7 @@ const storage = multer.diskStorage({
         callback(null, './uploads')
     },
     filename: function (req, file, callback) {
-        const uniqueSuffix = Date.now() + '' + Math.round(Math.random() * 1E9)
-        let originalExtension = file.originalname.split('.').last.toLowerCase();
+
         // switch (originalExtension) {
         //     case 'png':
         //     case 'jpg':
@@ -31,13 +30,18 @@ const storage = multer.diskStorage({
         //     default:
         //     originalExtension = 'error'
         // }
-        callback(null, `${uniqueSuffix}.${originalExtension}`);
+        callback(null, uniqueName(file.originalname));
+
     }
 })
 const multerUpload = multer({ storage: storage })
 
 
-
+export function uniqueName(originalName: string) {
+    const uniqueSuffix = Date.now() + '' + Math.round(Math.random() * 1E9)
+    let originalExtension = originalName.split('.').last.toLowerCase();
+    return `${uniqueSuffix}.${originalExtension}`;
+}
 export class BackendServer {
     express: Express;
     httpServer: http.Server;
@@ -74,32 +78,43 @@ export class BackendServer {
             // backend.sessions.set(sesh.id, sesh);
             let respPayload: UploadResponse = {
                 success: true,
-                uploadId: req.file.filename.split('.').first
+                fileName: req.file.filename,
+                uploadId: req.file.filename.split('.').first,
+                diagnosis: null
             }
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
 
             backend.makeDiagnosis(respPayload.uploadId, {
-                onUpdate: (msg: string, alpha: number) => { 
+                onUpdate: (msg: string, alpha: number) => {
                     log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
-                    
-                    res.write(JSON.stringify({
-                        'uploadId': respPayload.uploadId,
-                        'progress': alpha
-                    }))
+
+                    // res.write(JSON.stringify({
+                    //     'uploadId': respPayload.uploadId,
+                    //     'progress': alpha
+                    // }))
                 },
                 onComplete: () => {
-                    res.write(JSON.stringify(respPayload))
-                    res.end();
-                 }
+                    // res.write(JSON.stringify(respPayload))
+                    // res.end();
+                }
+            }).then((diagnosis: string[])=>{
+                respPayload.diagnosis = diagnosis;
+                res.send(JSON.stringify(respPayload));
             })
-            
+
             // log.info('uploads', uploadFolderList)
 
             // req.body will hold the text fields, if there were any
         });
-        app.get('/diagnosis')
-
+        app.post('/uploadStream', (req: Request, resp: Response) => {
+            let originalName: string = req.headers.originalname as string;
+            let freshName = uniqueName(originalName ?? 'noName');
+            let file = fs.createWriteStream(`./uploads/${freshName}`);
+            req.pipe(file).addListener("close", ()=>{
+                log.info(`FinishedUpload upload for ${originalName} to ${freshName}`)
+            });
+        })
         httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
             try {
                 socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
@@ -186,14 +201,14 @@ export class BackendServer {
     }
 
 
-    runInference(scriptName = 'TestScript.py'){
+    runInference(scriptName = 'TestScript.py') {
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/${scriptName}`)
         log.info(`Starting ${pathToScript}`)
         let python = ChildProcess.spawn('python', [pathToScript, 'testParameter'])
-        python.stdout.on('data', (data)=>{
+        python.stdout.on('data', (data) => {
             log.info(`Python:`, data.toString('utf8'));
         })
-        python.stderr.on('data', (error)=>{
+        python.stderr.on('data', (error) => {
             log.error('Python:', error.toString('utf8'));
         })
     }
