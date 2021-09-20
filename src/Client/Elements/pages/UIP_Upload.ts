@@ -1,5 +1,5 @@
-import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession } from "../../ClientImports";
-import { UIP_Gallary_V0 } from "./UIP_Gallary";
+import { UIFrame, UIFrameDescription_CornerWidthHeight, Lung, UIP_Gallary_V0, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession } from "../../ClientImports";
+
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -7,12 +7,13 @@ log.allowBelowLvl(LogLevel.naughty);
 
 export class UIP_Upload_V0 extends UIElement {
     progress: number = 0;
+    lung: Lung;
 
 
     constructor(id: string, uiFrame: UIFrame_CornerWidthHeight, brist: BristolBoard<any>) {
         super(id, uiFrame, brist);
 
-        let ths = this;
+        let ths: UIP_Upload_V0 = this;
         let inputElem: HTMLInputElement = document.getElementById('uploadInput') as HTMLInputElement;
         inputElem.addEventListener('change', function () {
             if (this.files && this.files[0]) {
@@ -21,7 +22,7 @@ export class UIP_Upload_V0 extends UIElement {
             }
         })
 
-        let uploadButton = new UIButton('Upload', () => { 
+        let uploadButton = new UIButton('Upload', () => {
             log.info('Showing file chooser')
             inputElem.click();
         }, {
@@ -31,7 +32,7 @@ export class UIP_Upload_V0 extends UIElement {
             height: 100,
             measureCorner: UICorner.center
         }, brist);
-       
+
 
         uploadButton.textSize = 36 * 2;
         uploadButton.fontFamily = BristolFontFamily.Roboto
@@ -56,6 +57,15 @@ export class UIP_Upload_V0 extends UIElement {
 
         this.addChild(uploadButton);
         this.addChild(progressBar)
+
+        let lung = new Lung(UIFrame.Build<UIFrameDescription_CornerWidthHeight>({
+            x: () => ths.centerX,
+            y: () => ths.centerY - 550,
+            width: 500, height: 500,
+            measureCorner: UICorner.center
+        }), brist);
+        this.lung = lung;
+        this.addChild(lung);
     }
 
     uploadFile(file: File) {
@@ -104,8 +114,8 @@ export class UIP_Upload_V0 extends UIElement {
                 log.info(`Upload responded `, resp);
                 let gallary: UIP_Gallary_V0 = mainBristol.rootElement.setPage('gallary') as any;
                 gallary.setUploadResponse(resp);
-//                 if (resp.success)
-//                     urlManager.set('seshId', resp.uploadId)
+                //                 if (resp.success)
+                //                     urlManager.set('seshId', resp.uploadId)
             } else {
                 log.info('Ready state changed!', event);
             }
@@ -128,8 +138,8 @@ export class UIP_Upload_V0 extends UIElement {
     //     return true;
     // }
 
- 
+
 }
-export class StreamDebugger<I,O> implements Transformer<any, any>{
-    
+export class StreamDebugger<I, O> implements Transformer<any, any>{
+
 }

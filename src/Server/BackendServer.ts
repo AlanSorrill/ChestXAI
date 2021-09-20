@@ -98,7 +98,7 @@ export class BackendServer {
                     // res.write(JSON.stringify(respPayload))
                     // res.end();
                 }
-            }).then((diagnosis: string[])=>{
+            }).then((diagnosis: [string, number][]) => {
                 respPayload.diagnosis = diagnosis;
                 res.send(JSON.stringify(respPayload));
             })
@@ -111,7 +111,7 @@ export class BackendServer {
             let originalName: string = req.headers.originalname as string;
             let freshName = uniqueName(originalName ?? 'noName');
             let file = fs.createWriteStream(`./uploads/${freshName}`);
-            req.pipe(file).addListener("close", ()=>{
+            req.pipe(file).addListener("close", () => {
                 log.info(`FinishedUpload upload for ${originalName} to ${freshName}`)
             });
         })
@@ -158,10 +158,10 @@ export class BackendServer {
             this.addTaskListener(uploadId, listener)
         }
         let possibilities = ["cardiomegaly", "edema", "consolidation", "atelectasis", "pleuralEffusion"]
-        let out: string[] = [];
+        let out: [string, number][] = [];
         for (let i = 0; i < possibilities.length; i++) {
             if (Math.random() < 0.5) {
-                out.push(possibilities[i]);
+                out.push([possibilities[i], Math.random()]);
             }
             await delay(1000 / possibilities.length);
             this.updateTask(uploadId, 'Diagnosing', i / possibilities.length);

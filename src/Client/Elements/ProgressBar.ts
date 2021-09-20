@@ -6,14 +6,14 @@ import {
 
 
 export class UIProgressBar extends UIElement {
-    static uidCount = 0;
+    
 
     foregroundColor: optFunc<FColor> = fColor.red.base; 
     onClick: () => void;
     mouseState: MouseState = MouseState.Gone;
     progress: optFunc<number>;
     constructor(progress: optFunc<number>, uiFrame: UIFrame_CornerWidthHeight | UIFrameDescription_CornerWidthHeight, brist: BristolBoard<UI_ChestXAI>) {
-        super(`progress${UIProgressBar.uidCount++}`, uiFrame, brist);
+        super(UIElement.createUID('progress'), uiFrame, brist);
         this.progress = progress
     }
     
