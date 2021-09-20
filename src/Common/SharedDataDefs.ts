@@ -5,6 +5,6 @@ export interface UploadResponse {
     diagnosis: string[]
 }
 export interface Progress {
-    task: string,
+    task: string, 
     alpha: number// percentage zero to one
 }

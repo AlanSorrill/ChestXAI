@@ -1,3 +1,5 @@
+import { optFunc } from "./CommonImports";
+
 export class Animator<n> {
     time: number = 0;
     timeScale: number = 0.001;
@@ -37,7 +39,35 @@ function Animate(id: string) {
       console.log("first(): called");
     };
   }
-
+export type InterpEnd = 'A' | 'B';
 export interface AnimKey {
     varPath: string
+}
+export interface InterpMethod<T>{
+    mixer: (a: T, b: T, alpha: number)=>T
+    curve: (alpha: number)=>number
+}
+export class InterpManager{
+    update(delta: number){
+
+    }
+}
+export class Interp<T> {
+    a: optFunc<T>;
+    b: optFunc<T>;
+    method: InterpMethod<T>;
+    constructor(a: optFunc<T>, b: optFunc<T>, target: optFunc<InterpEnd>, durration: optFunc<number>, method: InterpMethod<T>){
+        this.a = a;
+        this.b = b;
+        this.method = method;
+    }
+    getValue(){
+
+    }
+}
+
+
+export function interpFunc<T>(): optFunc<number>{
+
+    return null;
 }

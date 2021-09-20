@@ -1,5 +1,10 @@
 import sys
-inputData = sys.argv[1]
-testOut = inputData.lower() + "_" + inputData.upper()
+fileName = sys.argv[1]
+
+testOut = "{fileName: '8310923871.png', diagnosis: [[pneumonia, 0.85], [thickLung, 0.25], [carona, 0.99]]}"
+##fileName.lower() + "_" + fileName.upper()
+
+
+
 print(testOut)
 sys.stdout.flush()

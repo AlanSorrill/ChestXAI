@@ -92,6 +92,7 @@ export class PatientData {
     }
 
 }
+
 export interface ScanRecord {
     path: string,
     patientRef: PatientData,
