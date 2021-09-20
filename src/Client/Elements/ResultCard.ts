@@ -3,12 +3,12 @@ import { BristolFontFamily, BristolHAlign, BristolVAlign, UIFrameResult, UIFrame
 import { MainBristol, UIElement, UIFrame, UploadResponse } from "../ClientImports";
 
 export class UIResultCard extends UIElement {
-    static uidCounter = 0;
+    
     uploadResponse: UploadResponse;
     image: HTMLImageElement = null;
     padding: number = 16;
     constructor(data: UploadResponse, uiFrame: UIFrame_CornerWidthHeight, brist: MainBristol) {
-        super(`ResultCard${UIResultCard.uidCounter++}`, uiFrame, brist)
+        super(UIElement.createUID('ResultCard'), uiFrame, brist)
         this.uploadResponse = data;
         this.image = new Image();
         this.image.src = `./userContent/${this.uploadResponse.fileName}`
@@ -32,7 +32,7 @@ export class UIResultCard extends UIElement {
             this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Top);
             this.brist.fillColor(fColor.lightText[1])
             for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
-                this.brist.text(this.removeCammelCase(this.uploadResponse.diagnosis[i]), frame.left + this.padding, frame.top + this.padding + i * textHeight)
+                this.brist.text(this.removeCammelCase(this.uploadResponse.diagnosis[i][0]), frame.left + this.padding, frame.top + this.padding + i * textHeight)
             }
         }
     }

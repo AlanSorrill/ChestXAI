@@ -41,11 +41,11 @@ declare global {
     var fColor: FColorDirectory
     var urlManager: UrlManager
     var session: ClientSession
-    
+
     var classes: {
         Rest: typeof Socker
     }
 }
 
 //Allow client console to access static classes inside webpack
-window.classes = {Rest: Socker};
+window.classes = { Rest: Socker };

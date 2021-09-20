@@ -7,7 +7,7 @@ import {
 
 
 export class UI_Button extends UIElement {
-    static uidCount = 0;
+    
     paddingVertical: optFunc<number> = 32;
     paddingHorizontal: optFunc<number> = 64;
     text: optFunc<string>;
@@ -17,7 +17,7 @@ export class UI_Button extends UIElement {
     onClick: ()=>void;
     mouseState: MouseState = MouseState.Gone;
     constructor(text: optFunc<string>, uiFrame: UIFrame_CornerWidthHeight | UIFrameDescription_CornerWidthHeight, brist: BristolBoard<UI_ChestXAI>) {
-        super(`btn${UI_Button.uidCount++}`, uiFrame, brist);
+        super(UIElement.createUID('btn'), uiFrame, brist);
         this.text = text;
     }
     autoPadding(heightToTextSize: number = 0.25, widthToTextSize: number = 0.6){
