@@ -200,13 +200,22 @@ export class BackendServer {
         this.setupReflectionTest();
     }
 
+    runInferance(fileName: string) {
+        this.runPython('InferenceScript.py', (response: string)=>{
 
-    runInference(scriptName = 'TestScript.py') {
+        }, fileName);
+    }
+    runPython(scriptName = 'TestScript.py', onData: (data: string)=>void, ...params: Array<string>) {
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/${scriptName}`)
         log.info(`Starting ${pathToScript}`)
-        let python = ChildProcess.spawn('python', [pathToScript, 'testParameter'])
+        if(typeof params == 'undefined' ){
+            params = [];
+        }
+        params.unshift(pathToScript);
+        let python = ChildProcess.spawn('python', params)
         python.stdout.on('data', (data) => {
             log.info(`Python:`, data.toString('utf8'));
+            onData(data.toString('utf8'));
         })
         python.stderr.on('data', (error) => {
             log.error('Python:', error.toString('utf8'));
