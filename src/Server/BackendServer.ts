@@ -5,7 +5,7 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse, TaskListener, delay } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse, TaskListener, delay, InferenceResponse, SimilarityResult } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');
@@ -84,24 +84,26 @@ export class BackendServer {
             }
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
-
-            backend.makeDiagnosis(respPayload.uploadId, {
-                onUpdate: (msg: string, alpha: number) => {
-                    log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
-
-                    // res.write(JSON.stringify({
-                    //     'uploadId': respPayload.uploadId,
-                    //     'progress': alpha
-                    // }))
-                },
-                onComplete: () => {
-                    // res.write(JSON.stringify(respPayload))
-                    // res.end();
-                }
-            }).then((diagnosis: [string, number][]) => {
-                respPayload.diagnosis = diagnosis;
-                res.send(JSON.stringify(respPayload));
+            backend.runInferance(req.file.filename).then((data: InferenceResponse) => {
+                res.send(JSON.stringify(data));
             })
+            // backend.makeDiagnosis(respPayload.uploadId, {
+            //     onUpdate: (msg: string, alpha: number) => {
+            //         log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
+
+            //         // res.write(JSON.stringify({
+            //         //     'uploadId': respPayload.uploadId,
+            //         //     'progress': alpha
+            //         // }))
+            //     },
+            //     onComplete: () => {
+            //         // res.write(JSON.stringify(respPayload))
+            //         // res.end();
+            //     }
+            // }).then((diagnosis: [string, number][]) => {
+            //     respPayload.diagnosis = diagnosis;
+            //     res.send(JSON.stringify(respPayload));
+            // })
 
             // log.info('uploads', uploadFolderList)
 
@@ -200,15 +202,34 @@ export class BackendServer {
         this.setupReflectionTest();
     }
 
-    runInferance(fileName: string) {
-        this.runPython('InferenceScript.py', (response: string)=>{
-
-        }, fileName);
+    async runInferance(fileName: string): Promise<InferenceResponse> {
+        return new Promise((acc, rej) => {
+            this.runPython('InferenceScript.py', (response: string) => {
+                try {
+                    let data: InferenceResponse = JSON.parse(response);
+                    acc(data);
+                } catch (err) {
+                    rej(err);
+                }
+            }, fileName);
+        })
     }
-    runPython(scriptName = 'TestScript.py', onData: (data: string)=>void, ...params: Array<string>) {
+    async runSimilarity(fileName: string): Promise<SimilarityResult> {
+        return new Promise((acc, rej) => {
+            this.runPython('SimilarityScript.py', (response: string) => {
+                try {
+                    let data: SimilarityResult = JSON.parse(response);
+                    acc(data);
+                } catch (err) {
+                    rej(err);
+                }
+            }, fileName);
+        })
+    }
+    runPython(scriptName = 'TestScript.py', onData: (data: string) => void, ...params: Array<string>) {
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/${scriptName}`)
         log.info(`Starting ${pathToScript}`)
-        if(typeof params == 'undefined' ){
+        if (typeof params == 'undefined') {
             params = [];
         }
         params.unshift(pathToScript);

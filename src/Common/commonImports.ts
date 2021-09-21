@@ -2,6 +2,7 @@ export * from 'bristolboard/lib/CommonImports'
 
 
 export * from "./LabResults";
+export * from "./DiseaseEnum";
 export * from "./PatientData";
 export * from "./Animator";
 export * from "./SharedDataDefs";
