@@ -1,4 +1,4 @@
-import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession } from "../../ClientImports";
+import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung } from "../../ClientImports";
 import { UIP_Gallary_V0 } from "./UIP_Gallary";
 let log = logger.local("UIP_Upload")
 
@@ -7,6 +7,7 @@ log.allowBelowLvl(LogLevel.naughty);
 
 export class UIP_Upload_V0 extends UIElement {
     progress: number = 0;
+    lung: Lung;
 
 
     constructor(id: string, uiFrame: UIFrame_CornerWidthHeight, brist: BristolBoard<any>) {
@@ -56,6 +57,15 @@ export class UIP_Upload_V0 extends UIElement {
 
         this.addChild(uploadButton);
         this.addChild(progressBar)
+
+        let lung = new Lung(UIFrame.Build<UIFrameDescription_CornerWidthHeight>({
+            x: () => ths.centerX,
+            y: () => ths.centerY - 550,
+            width: 500, height: 500,
+            measureCorner: UICorner.center
+        }), brist);
+        this.lung = lung;
+        this.addChild(lung);
     }
 
     uploadFile(file: File) {

@@ -81,9 +81,9 @@ export class Lung extends UIElement {
         this.brist.ctx.moveTo(this.base.x, this.base.y);
         this.drawChainLink(this.chainData, 1, frame, null);
         this.brist.ctx.stroke();
-        this.brist.ctx.moveTo(this.base.x, this.base.y);
-        this.drawChainLink(this.chainData, 1, frame, null);
-        this.brist.ctx.stroke();
+        // this.brist.ctx.moveTo(this.base.x, this.base.y);
+        // this.drawChainLink(this.chainData, 1, frame, null);
+        // this.brist.ctx.stroke();
         this.brist.ctx.beginPath();
     }
     drawChainLink(chain: ChainLink | [ChainLink, ChainLink], side: 0 | 1, frame: UIFrameResult, last: ChainLink = null) {
@@ -97,6 +97,15 @@ export class Lung extends UIElement {
         } else {
             if (Array.isArray(chain.vector)) {
                 chain.vector = new Vector2(chain.vector[0], chain.vector[1]);
+            }
+            if (last == null) {
+                this.brist.ctx.moveTo(this.base.x, this.base.y);
+            } else {
+                if(side == 0){
+                this.brist.ctx.moveTo(frame.left + last.vector.x * frame.width, frame.top + last.vector.y * frame.height);
+                } else {
+                this.brist.ctx.moveTo(frame.left + ((-1 * (last.vector.x - 0.5)) + 0.5) * frame.width, frame.top + last.vector.y * frame.height);
+                }
             }
             if (side == 0) {
                 this.brist.ctx.lineTo(frame.left + chain.vector.x * frame.width, frame.top + chain.vector.y * frame.height);
