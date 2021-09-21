@@ -1,5 +1,4 @@
-import { UIFrameDescription_CenterRadius, UIFrameDescription_CornerWidthHeight } from "bristolboard";
-import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame } from "../../ClientImports";
+import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
 
 
 
@@ -33,5 +32,46 @@ export class UIP_Gallary_V0 extends UIElement {
     private marginAlpha: number = 0.05;
     get margin() {
         return this.frame.measureWidth() * this.marginAlpha;
+    }
+
+
+    onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
+        
+    }
+    onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
+       
+    }
+    mousePressed(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseReleased(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseEnter(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseExit(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseMoved(evt: MouseMovedInputEvent): boolean {
+        return false;
+    }
+    shouldDragLock(event: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseDragged(evt: MouseDraggedInputEvent): boolean {
+        return false;
+    }
+    mousePinched(evt: MousePinchedInputEvent): boolean {
+        return false;
+    }
+    mouseWheel(delta: MouseScrolledInputEvent): boolean {
+        return false;
+    }
+    keyPressed(evt: KeyboardInputEvent): boolean {
+        return false;
+    }
+    keyReleased(evt: KeyboardInputEvent): boolean {
+        return false;
     }
 }

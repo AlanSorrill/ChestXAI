@@ -1,5 +1,5 @@
-import { UIFrameResult } from "bristolboard";
-import { MainBristol, UIElement, UIFrame } from "../ClientImports";
+
+import { KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult,MainBristol, UIElement, UIFrame } from "../ClientImports";
 
 export class NonDeformingImage extends UIElement {
     image: HTMLImageElement;
@@ -19,5 +19,41 @@ export class NonDeformingImage extends UIElement {
         if(this.image != null){
             this.brist.ctx.drawImage(this.image, frame.left, frame.top)
         }
+    }
+    onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
+       
+    }
+    mousePressed(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseReleased(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseEnter(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseExit(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseMoved(evt: MouseMovedInputEvent): boolean {
+        return false;
+    }
+    shouldDragLock(event: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseDragged(evt: MouseDraggedInputEvent): boolean {
+        return false;
+    }
+    mousePinched(evt: MousePinchedInputEvent): boolean {
+        return false;
+    }
+    mouseWheel(delta: MouseScrolledInputEvent): boolean {
+        return false;
+    }
+    keyPressed(evt: KeyboardInputEvent): boolean {
+        return false;
+    }
+    keyReleased(evt: KeyboardInputEvent): boolean {
+        return false;
     }
 }

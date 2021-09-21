@@ -1,5 +1,5 @@
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign, UIFrameResult, UIFrame_CornerWidthHeight } from "bristolboard";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight } from "bristolboard";
 import { MainBristol, UIElement, UIFrame, UploadResponse } from "../ClientImports";
 import { NonDeformingImage } from "./NondeformingImage";
 
@@ -55,4 +55,37 @@ export class UIResultCard extends UIElement {
         return out.join('');
     }
 
+    mousePressed(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseReleased(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseEnter(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseExit(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseMoved(evt: MouseMovedInputEvent): boolean {
+        return false;
+    }
+    shouldDragLock(event: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseDragged(evt: MouseDraggedInputEvent): boolean {
+        return false;
+    }
+    mousePinched(evt: MousePinchedInputEvent): boolean {
+        return false;
+    }
+    mouseWheel(delta: MouseScrolledInputEvent): boolean {
+        return false;
+    }
+    keyPressed(evt: KeyboardInputEvent): boolean {
+        return false;
+    }
+    keyReleased(evt: KeyboardInputEvent): boolean {
+        return false;
+    }
 }

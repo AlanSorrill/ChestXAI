@@ -1,11 +1,13 @@
-import { LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung } from "../../ClientImports";
-import { UIP_Gallary_V0 } from "./UIP_Gallary";
+
+import {UIP_Gallary_V0,  UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
 
 
 export class UIP_Upload_V0 extends UIElement {
+   
+
     progress: number = 0;
     lung: Lung;
 
@@ -66,6 +68,7 @@ export class UIP_Upload_V0 extends UIElement {
         }), brist);
         this.lung = lung;
         this.addChild(lung);
+        this.lung.editable();
     }
 
     uploadFile(file: File) {
@@ -137,7 +140,45 @@ export class UIP_Upload_V0 extends UIElement {
     //     this.isMouseOver = false;
     //     return true;
     // }
-
+    onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
+        
+    }
+    onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
+       
+    }
+    mousePressed(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseReleased(evt: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseEnter(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseExit(evt: MouseInputEvent): boolean {
+        return false;
+    }
+    mouseMoved(evt: MouseMovedInputEvent): boolean {
+        return false;
+    }
+    shouldDragLock(event: MouseBtnInputEvent): boolean {
+        return false;
+    }
+    mouseDragged(evt: MouseDraggedInputEvent): boolean {
+        return false;
+    }
+    mousePinched(evt: MousePinchedInputEvent): boolean {
+        return false;
+    }
+    mouseWheel(delta: MouseScrolledInputEvent): boolean {
+        return false;
+    }
+    keyPressed(evt: KeyboardInputEvent): boolean {
+        return false;
+    }
+    keyReleased(evt: KeyboardInputEvent): boolean {
+        return false;
+    }
  
 }
 export class StreamDebugger<I,O> implements Transformer<any, any>{
