@@ -1,8 +1,11 @@
+import { Disease } from "./CommonImports";
+
 export interface UploadResponse {
     success: boolean,
     uploadId: string,
     fileName: string
-    diagnosis: [string, number][]
+    diagnosis: [number, number][]
+    
 }
 export interface ReferenceImage {
     diagnosis: string[]

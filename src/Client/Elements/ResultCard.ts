@@ -38,7 +38,7 @@ export class UIResultCard extends UIElement {
             this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Top);
             this.brist.fillColor(fColor.lightText[1])
             for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
-                this.brist.text(this.removeCammelCase(this.uploadResponse.diagnosis[i][0]), frame.left + this.padding, frame.top + this.padding + i * textHeight)
+                this.brist.text(this.removeCammelCase(this.uploadResponse.diagnosis[i][0] as any), frame.left + this.padding, frame.top + this.padding + i * textHeight)
             }
         }
     }

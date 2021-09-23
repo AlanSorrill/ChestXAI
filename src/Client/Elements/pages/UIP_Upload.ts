@@ -29,7 +29,7 @@ export class UIP_Upload_V0 extends UIElement {
             inputElem.click();
         }, {
             x: () => ths.frame.centerX(),
-            y: () => ths.frame.centerY(),
+            y: () => ths.frame.centerY() + 120,
             width: 100,
             height: 100,
             measureCorner: UICorner.center
@@ -62,13 +62,13 @@ export class UIP_Upload_V0 extends UIElement {
 
         let lung = new Lung(UIFrame.Build<UIFrameDescription_CornerWidthHeight>({
             x: () => ths.centerX,
-            y: () => ths.centerY - 550,
+            y: () => ths.centerY - 250,
             width: 500, height: 500,
             measureCorner: UICorner.center
         }), brist);
         this.lung = lung;
         this.addChild(lung);
-        this.lung.editable();
+       // this.lung.editable();
     }
 
     uploadFile(file: File) {

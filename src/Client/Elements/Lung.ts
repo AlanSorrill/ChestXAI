@@ -20,15 +20,7 @@ export class Lung extends UIElement {
         this.root = this.base.subtractFunc(new Vector2(0, () => (ths.frame.measureWidth() * 0.2))).setName('root');
         // this.buildVector(this.chainData, this.base);
         let refRatio = 151.99 / 300.26
-        this.lungRef = new UI_ImageElement({
-            x: () => refOffset[0] * ths.width,
-            y: () => refOffset[1] * ths.height,
-            width: () => ths.height * refRatio * refScale,
-            height: ths.height * refScale,
-            measureCorner: UICorner.upLeft,
-            parentCorner: UICorner.upLeft
-        }, brist, `./LungOutline.png`);
-        this.addChild(this.lungRef);
+
     }
     setChainData(data: ChainLink) {
 
@@ -77,13 +69,25 @@ export class Lung extends UIElement {
     }
     chainData: ChainLink = { vector: [0.42, 0.384], next: [{ vector: [0.34800000000000003, 0.32199999999999995], next: [{ vector: [0.3600000000000001, 0.24199999999999994], next: [{ vector: [0.3600000000000002, 0.16599999999999995] }, { vector: [0.44800000000000006, 0.2579999999999999] }] }, { vector: [0.2799999999999999, 0.3019999999999998], next: [{ vector: [0.24399999999999997, 0.23399999999999985] }, { vector: [0.18799999999999972, 0.33799999999999975] }] }] }, { vector: [0.44000000000000006, 0.472], next: [{ vector: [0.3700000000000001, 0.4760000000000001], next: [{ vector: [0.2940000000000001, 0.4440000000000002], next: [{ vector: [0.2180000000000001, 0.4760000000000003], next: [{ vector: [0.16600000000000015, 0.4240000000000004] }, { vector: [0.12999999999999995, 0.5240000000000002] }] }, { vector: [0.27, 0.368] }] }, { vector: [0.32599999999999996, 0.528], next: [{ vector: [0.24199999999999997, 0.5480000000000002] }, { vector: [0.30999999999999983, 0.604] }] }] }, { vector: [0.44000000000000006, 0.5879999999999999], next: [{ vector: [0.3640000000000001, 0.652], next: [{ vector: [0.24400000000000005, 0.6760000000000002], next: [{ vector: [0.18800000000000008, 0.6120000000000002] }, { vector: [0.17199999999999993, 0.7040000000000001], next: [{ vector: [0.10799999999999996, 0.6000000000000001] }, { vector: [0.09199999999999978, 0.724] }] }] }, { vector: [0.30799999999999994, 0.776], next: [{ vector: [0.21199999999999994, 0.7880000000000001], next: [{ vector: [0.0799999999999999, 0.7800000000000002] }, { vector: [0.1599999999999998, 0.8920000000000001] }] }, { vector: [0.2919999999999998, 0.876] }] }] }, { vector: [0.43199999999999994, 0.7759999999999999], next: [{ vector: [0.388, 0.74] }, { vector: [0.3759999999999998, 0.8639999999999999] }] }] }] }] };
     editable(link: ChainLink = null) {
+        let ths = this;
         if (link == null) {
             link = this.chainData;
+            let refScale = 0.75
+            let refOffset = [0.08, 0.15]
+            let refRatio = 151.99 / 300.26
+            this.lungRef = new UI_ImageElement({
+                x: () => refOffset[0] * ths.width,
+                y: () => refOffset[1] * ths.height,
+                width: () => ths.height * refRatio * refScale,
+                height: ths.height * refScale,
+                measureCorner: UICorner.upLeft,
+                parentCorner: UICorner.upLeft
+            }, ths.brist, `./LungOutline.png`);
+            this.addChild(this.lungRef);
         }
         if (Array.isArray(link.vector)) {
             link.vector = new Vector2(link.vector[0], link.vector[1])
         }
-        let ths = this;
         let handle = new LungHandle(link, this, UIFrame_CornerWidthHeight.Build({
             x: () => ths.width * (link.vector as Vector2).x,
             y: () => ths.height * (link.vector as Vector2).y,
@@ -100,11 +104,11 @@ export class Lung extends UIElement {
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
 
 
-        this.brist.fillColor(fColor.blue.accent1);
-        this.brist.ctx.beginPath();
+        // this.brist.fillColor(fColor.blue.accent1);
+        // this.brist.ctx.beginPath();
         this.brist.strokeColor(fColor.lightText[1]);
         this.brist.strokeWeight(10);
-        this.brist.rectFrame(frame, true, false);
+        // this.brist.rectFrame(frame, true, false);
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.root.x, this.root.y);
         this.brist.ctx.lineTo(this.base.x, this.base.y);
@@ -114,7 +118,7 @@ export class Lung extends UIElement {
         this.brist.ctx.stroke();
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.base.x, this.base.y);
-        this.brist.strokeColor(fColor.green.base);
+        // this.brist.strokeColor(fColor.green.base);
         this.drawChainLink(this.chainData, 0, frame, null);
         this.brist.noFill();
         this.brist.ctx.stroke();

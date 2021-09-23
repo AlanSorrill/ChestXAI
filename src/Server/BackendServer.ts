@@ -85,6 +85,7 @@ export class BackendServer {
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
             backend.runInferance(req.file.filename).then((data: InferenceResponse) => {
+                respPayload.diagnosis = data.diagnosis;
                 res.send(JSON.stringify(data));
             })
             // backend.makeDiagnosis(respPayload.uploadId, {
