@@ -20,7 +20,7 @@ export class UIP_Gallary_V0 extends UIElement {
         let card = new UIResultCard(resp, UIFrame.Build({
             x: () => ths.margin,
             y: () => ths.margin,
-            width: () => (ths.frame.measureWidth() - (ths.margin * 2)) / 3,
+            width: () => (0.5 * (ths.frame.measureWidth() - (ths.margin * 2))),
             height: () => (ths.frame.measureHeight() - (ths.margin * 2))
         } as UIFrameDescription_CornerWidthHeight) as any, this.brist);
         

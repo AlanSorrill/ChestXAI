@@ -26,7 +26,7 @@ export * from "./Elements/RootElement";
 export * from "./Elements/TestDot";
 export * from "./Elements/Button";
 export * from "./Elements/ProgressBar";
-
+export * from  "./Elements/MoveableImage";
 export * from "./Elements/pages/UIP_Gallary";
 export * from "./Elements/pages/UIP_Upload";
 export * from "./Elements/UI_ImageElement";

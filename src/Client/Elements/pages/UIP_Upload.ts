@@ -17,6 +17,7 @@ export class UIP_Upload_V0 extends UIElement {
 
         let ths = this;
         let inputElem: HTMLInputElement = document.getElementById('uploadInput') as HTMLInputElement;
+        inputElem.style.display = 'inline'
         inputElem.addEventListener('change', function () {
             if (this.files && this.files[0]) {
                 ths.uploadFile(this.files[0])

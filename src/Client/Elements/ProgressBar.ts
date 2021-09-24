@@ -6,9 +6,10 @@ import {
 
 
 export class UIProgressBar extends UIElement {
-    
 
-    foregroundColor: optFunc<FColor> = fColor.red.base; 
+
+    backgroundColor: optFunc<FColor> = null;
+    foregroundColor: optFunc<FColor> = fColor.red.base;
     onClick: () => void;
     mouseState: MouseState = MouseState.Gone;
     progress: optFunc<number>;
@@ -16,15 +17,23 @@ export class UIProgressBar extends UIElement {
         super(UIElement.createUID('progress'), uiFrame, brist);
         this.progress = progress
     }
-    
+
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
+        if (this.backgroundColor != null) {
+            this.brist.ctx.beginPath();
+            this.brist.fillColor(evalOptionalFunc(this.backgroundColor, fColor.darkMode[5]));
+            this.brist.ctx.rect(frame.left, frame.top, frame.width, frame.height);
+            this.brist.ctx.fill();
+            this.brist.ctx.beginPath();
+        }
+        this.brist.ctx.beginPath();
         this.brist.fillColor(evalOptionalFunc(this.foregroundColor, fColor.green.lighten2));
-        this.brist.rect(frame.left, frame.top, frame.width * evalOptionalFunc(this.progress, 0), frame.height);
+        this.brist.ctx.rect(frame.left, frame.top, frame.width * evalOptionalFunc(this.progress, 0), frame.height);
         this.brist.ctx.fill();
         this.brist.ctx.beginPath();
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
-       
+
     }
     mousePressed(evt: MouseBtnInputEvent): boolean {
         return false;
