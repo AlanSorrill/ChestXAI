@@ -116,6 +116,12 @@ export class DiseaseDisplay extends UIElement {
                 width: () => (ths.width * this.barWidth),
                 height: () => ths.height
             }), brist);
+        this.progress.text = {
+            align: BristolHAlign.Right,
+            getText: (prog: number) => `${(prog * 100).toFixed(1)}%`,
+            backgroundColor: fColor.darkMode[11],
+            foregroundColor: fColor.lightText[1]
+        };
         this.progress.foregroundColor = fColor.green.base;
         this.progress.backgroundColor = fColor.darkMode[2];
         this.addChild(this.progress);

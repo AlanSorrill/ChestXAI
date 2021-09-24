@@ -1,12 +1,12 @@
 
-import {UIP_Gallary_V0,  UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung } from "../../ClientImports";
+import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
 
 
 export class UIP_Upload_V0 extends UIElement {
-   
+
 
     progress: number = 0;
     lung: Lung;
@@ -25,7 +25,7 @@ export class UIP_Upload_V0 extends UIElement {
             }
         })
 
-        let uploadButton = new UIButton('Upload', () => { 
+        let uploadButton = new UIButton('Upload', () => {
             log.info('Showing file chooser')
             inputElem.click();
         }, {
@@ -35,7 +35,7 @@ export class UIP_Upload_V0 extends UIElement {
             height: 100,
             measureCorner: UICorner.center
         }, brist);
-       
+
 
         uploadButton.textSize = 36 * 2;
         uploadButton.fontFamily = BristolFontFamily.Roboto
@@ -69,7 +69,26 @@ export class UIP_Upload_V0 extends UIElement {
         }), brist);
         this.lung = lung;
         this.addChild(lung);
-       // this.lung.editable();
+        // this.lung.editable();
+        let isOn = true;
+        let tstBtn = new UIButton('test', () => {
+            isOn = !isOn;
+        }, new UIFrame_CornerWidthHeight({
+            x: 100,
+            y: 100,
+            width: 300,
+            height: 100
+        }), brist);
+        tstBtn.textSize = 20;
+
+        let tstProg = new UIProgressBar(linearInterp(0, 1, ()=>isOn ? 'A' : 'B', 1000, 0), new UIFrame_CornerWidthHeight({
+            x: 100,
+            y: 200,
+            width: ()=>tstBtn.width,
+            height: 100
+        }), brist);
+        this.addChild(tstProg);
+        this.addChild(tstBtn);
     }
 
     uploadFile(file: File) {
@@ -118,8 +137,8 @@ export class UIP_Upload_V0 extends UIElement {
                 log.info(`Upload responded `, resp);
                 let gallary: UIP_Gallary_V0 = mainBristol.rootElement.setPage('gallary') as any;
                 gallary.setUploadResponse(resp);
-//                 if (resp.success)
-//                     urlManager.set('seshId', resp.uploadId)
+                //                 if (resp.success)
+                //                     urlManager.set('seshId', resp.uploadId)
             } else {
                 log.info('Ready state changed!', event);
             }
@@ -142,10 +161,10 @@ export class UIP_Upload_V0 extends UIElement {
     //     return true;
     // }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
-        
+
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
-       
+
     }
     mousePressed(evt: MouseBtnInputEvent): boolean {
         return false;
@@ -180,8 +199,8 @@ export class UIP_Upload_V0 extends UIElement {
     keyReleased(evt: KeyboardInputEvent): boolean {
         return false;
     }
- 
+
 }
-export class StreamDebugger<I,O> implements Transformer<any, any>{
-    
+export class StreamDebugger<I, O> implements Transformer<any, any>{
+
 }

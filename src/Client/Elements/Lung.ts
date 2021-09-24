@@ -68,9 +68,13 @@ export class Lung extends UIElement {
         return out;
     }
     chainData: ChainLink = { vector: [0.42, 0.384], next: [{ vector: [0.34800000000000003, 0.32199999999999995], next: [{ vector: [0.3600000000000001, 0.24199999999999994], next: [{ vector: [0.3600000000000002, 0.16599999999999995] }, { vector: [0.44800000000000006, 0.2579999999999999] }] }, { vector: [0.2799999999999999, 0.3019999999999998], next: [{ vector: [0.24399999999999997, 0.23399999999999985] }, { vector: [0.18799999999999972, 0.33799999999999975] }] }] }, { vector: [0.44000000000000006, 0.472], next: [{ vector: [0.3700000000000001, 0.4760000000000001], next: [{ vector: [0.2940000000000001, 0.4440000000000002], next: [{ vector: [0.2180000000000001, 0.4760000000000003], next: [{ vector: [0.16600000000000015, 0.4240000000000004] }, { vector: [0.12999999999999995, 0.5240000000000002] }] }, { vector: [0.27, 0.368] }] }, { vector: [0.32599999999999996, 0.528], next: [{ vector: [0.24199999999999997, 0.5480000000000002] }, { vector: [0.30999999999999983, 0.604] }] }] }, { vector: [0.44000000000000006, 0.5879999999999999], next: [{ vector: [0.3640000000000001, 0.652], next: [{ vector: [0.24400000000000005, 0.6760000000000002], next: [{ vector: [0.18800000000000008, 0.6120000000000002] }, { vector: [0.17199999999999993, 0.7040000000000001], next: [{ vector: [0.10799999999999996, 0.6000000000000001] }, { vector: [0.09199999999999978, 0.724] }] }] }, { vector: [0.30799999999999994, 0.776], next: [{ vector: [0.21199999999999994, 0.7880000000000001], next: [{ vector: [0.0799999999999999, 0.7800000000000002] }, { vector: [0.1599999999999998, 0.8920000000000001] }] }, { vector: [0.2919999999999998, 0.876] }] }] }, { vector: [0.43199999999999994, 0.7759999999999999], next: [{ vector: [0.388, 0.74] }, { vector: [0.3759999999999998, 0.8639999999999999] }] }] }] }] };
+    handles: LungHandle[] = []
     editable(link: ChainLink = null) {
         let ths = this;
         if (link == null) {
+            while(this.handles.length > 0){
+                this.handles.pop().removeFromParent();
+            }
             link = this.chainData;
             let refScale = 0.75
             let refOffset = [0.08, 0.15]
@@ -96,6 +100,7 @@ export class Lung extends UIElement {
             measureCorner: UICorner.center
         } as UIFrameDescription_CornerWidthHeight), this.brist)
         this.addChild(handle);
+        this.handles.push(handle);
         if (link.next) {
             this.editable(link.next[0])
             this.editable(link.next[1])
@@ -214,6 +219,7 @@ export class LungHandle extends UIElement {
         super(UIElement.createUID('lungHandle'), frame, brist);
         this.link = link;
         this.lung = parent;
+        this.link.handle = this;
     }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.fillColor(this.isDragLocked ? fColor.red.base : fColor.blue.base);
@@ -238,6 +244,9 @@ export class LungHandle extends UIElement {
             ]
             this.lung.editable(this.link.next[0])
             this.lung.editable(this.link.next[1])
+        } else if(evt.btn == 2){
+            this.link.next = undefined
+            this.lung.editable();
         }
         return false;
     }
@@ -289,5 +298,6 @@ interface ChainLink {
     curveWeight?: number
     // angle: optFunc<number>
     // distance: optFunc<number>
-    next?: [ChainLink, ChainLink]
+    next?: [ChainLink, ChainLink],
+    handle?: LungHandle
 }
