@@ -80,13 +80,18 @@ export class BackendServer {
                 success: true,
                 fileName: req.file.filename,
                 uploadId: req.file.filename.split('.').first,
-                diagnosis: null
+                diagnosis: null,
+                similarity: null
             }
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
             backend.runInferance(req.file.filename).then((data: InferenceResponse) => {
                 respPayload.diagnosis = data.diagnosis;
-                res.send(JSON.stringify(data));
+                backend.runSimilarity(req.file.filename).then((data: SimilarityResult) => {
+                    respPayload.similarity = data.outputFileNames;
+                    res.send(JSON.stringify(respPayload));
+                })
+
             })
             // backend.makeDiagnosis(respPayload.uploadId, {
             //     onUpdate: (msg: string, alpha: number) => {
@@ -225,6 +230,24 @@ export class BackendServer {
                     rej(err);
                 }
             }, fileName);
+        })
+    }
+    testSimilarity(onData: (data: [string, number][]) => void) {
+        let dirPath = Path.join(__dirname, `../../public/patients/`)
+        let subDir: string;
+        let out: [string,number][] = [];
+        fs.promises.readdir(dirPath).then((fileNames: string[]) => {
+            
+            for (let i = 0; i < fileNames.length; i++) {
+                console.log(i)
+                let subDir = Path.join(dirPath,fileNames[i]);
+                if(fs.lstatSync(subDir).isDirectory()){
+                    fs.readdirSync(subDir).forEach((imageName: string)=>{
+                        out.push([imageName, Math.random()])
+                    })
+                }
+            }
+            onData(out);
         })
     }
     runPython(scriptName = 'TestScript.py', onData: (data: string) => void, ...params: Array<string>) {

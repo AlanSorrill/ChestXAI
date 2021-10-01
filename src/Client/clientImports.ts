@@ -25,6 +25,7 @@ export * from './ClientSession'
 export * from "./Elements/RootElement";
 export * from "./Elements/TestDot";
 export * from "./Elements/Button";
+export * from "./Elements/UISimilarity";
 export * from "./Elements/ProgressBar";
 export * from  "./Elements/MoveableImage";
 export * from "./Elements/pages/UIP_Gallary";

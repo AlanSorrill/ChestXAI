@@ -5,7 +5,7 @@ export interface UploadResponse {
     uploadId: string,
     fileName: string
     diagnosis: [number, number][]
-    
+    similarity: [string,number][]
 }
 export interface ReferenceImage {
     diagnosis: string[]

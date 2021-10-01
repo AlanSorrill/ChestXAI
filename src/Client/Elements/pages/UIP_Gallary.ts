@@ -1,14 +1,17 @@
 import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
+import { UISimilarityCard } from "../UISimilarity";
 
 
 
 export class UIP_Gallary_V0 extends UIElement {
+    similarityCards: UISimilarityCard[];
     constructor(id: string, uiFrame: UIFrame_CornerWidthHeight, brist: BristolBoard<any>) {
         super(id, uiFrame, brist);
     }
+
     yourResult: UploadResponse
     similarResults: UploadResponse[]
-    resultCards: UIResultCard[] = []
+    resultCards: (UIResultCard | UISimilarityCard)[] = []
     clearResults() {
         while (this.resultCards.length > 0) {
             this.resultCards.pop().removeFromParent();
@@ -17,29 +20,75 @@ export class UIP_Gallary_V0 extends UIElement {
     setUploadResponse(resp: UploadResponse) {
         this.clearResults();
         let ths = this;
-        let card = new UIResultCard(resp, UIFrame.Build({
+        let diagnosisCard = new UIResultCard(resp, UIFrame.Build({
             x: () => ths.margin,
             y: () => ths.margin,
             width: () => (0.5 * (ths.frame.measureWidth() - (ths.margin * 2))),
             height: () => (ths.frame.measureHeight() - (ths.margin * 2))
         } as UIFrameDescription_CornerWidthHeight) as any, this.brist);
-        
-        this.addChild(card);
-        this.resultCards.push(card)
+
+        this.addChild(diagnosisCard);
+        this.resultCards.push(diagnosisCard)
+
+        let box = {
+            left: () => (ths.margin * 2 + (0.5 * (ths.frame.measureWidth() - (ths.margin * 2)))),
+            right: () => (ths.frame.measureWidth() - ths.margin),
+            top: () => (ths.margin),
+            bottom: () => (ths.frame.measureHeight() - ths.margin),
+            width: () => (box.right() - box.left()),
+            height: () => (box.bottom() - box.top())
+        }
+        let cardWidth = () => (box.width() - ths.padding) / 2
+        let cardHeight = () => (box.height() - this.padding) / 2
+        this.similarityCards = [
+            new UISimilarityCard(UIFrame.Build({
+                x: box.left,
+                y: box.top,
+                width: cardWidth,
+                height: cardHeight
+            }), this.brist),
+            new UISimilarityCard(UIFrame.Build({
+                x: () => (box.left() + ths.padding + cardWidth()),
+                y: box.top,
+                width: cardWidth,
+                height: cardHeight
+            }), this.brist),
+            new UISimilarityCard(UIFrame.Build({
+                x: box.left,
+                y: ()=>(box.top() + ths.padding + cardHeight()),
+                width: cardWidth,
+                height: cardHeight
+            }), this.brist),
+            new UISimilarityCard(UIFrame.Build({
+                x: () => (box.left() + ths.padding + cardWidth()),
+                y: ()=>(box.top() + ths.padding + cardHeight()),
+                width: cardWidth,
+                height: cardHeight
+            }), this.brist)
+        ]
+        for (let i = 0; i < Math.min(ths.similarityCards.length, resp.similarity.length); i++) {
+            ths.similarityCards[i].setData(resp.similarity[i])
+            this.addChild(ths.similarityCards[i]);
+            this.resultCards.push(ths.similarityCards[i])
+        }
     }
 
 
     private marginAlpha: number = 0.05;
+    private paddingAlpha: number = 0.025;
     get margin() {
         return this.frame.measureWidth() * this.marginAlpha;
+    }
+    get padding() {
+        return this.frame.measureWidth() * this.paddingAlpha;
     }
 
 
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
-        
+
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
-       
+
     }
     mousePressed(evt: MouseBtnInputEvent): boolean {
         return false;

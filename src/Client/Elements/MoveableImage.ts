@@ -9,12 +9,17 @@ export class NonDeformingImage extends UIElement {
     offset: [number, number] = [0, 0]
     constructor(urlOrImage: string | HTMLImageElement, uiFrame: UIFrame, brist: MainBristol) {
         super(UIElement.createUID('NonDefImage'), uiFrame, brist);
-        if (typeof urlOrImage == 'string') {
+        if(urlOrImage == null){
+            this.image = new Image();
+        } else if (typeof urlOrImage == 'string') {
             this.image = new Image();
             this.image.src = urlOrImage;
         } else {
             this.image = urlOrImage;
         }
+    }
+    setImage(url: string){
+        this.image.src = url;
     }
     get imgLeft() {
         return this.offset[0]
@@ -34,9 +39,20 @@ export class NonDeformingImage extends UIElement {
     get imgHeight() {
         return this.image.height * this.scale;
     }
-
+    fitHorizontally(){
+        this.scale = this.width / this.image.width
+    }
+    centerHorizontally(){
+        this.offset[0] = this.width / 2 - this.imgWidth / 2
+    }
+    centerVertically(){
+        this.offset[1] = this.height / 2 - this.height / 2
+    }
     onDrawBackground(frame: UIFrameResult, delta: number) {
         if (this.image == null || !this.image.complete) {
+            this.brist.strokeColor(fColor.red.base);
+            this.brist.strokeWeight(2);
+            this.brist.rectFrame(frame, true, false)
             return;
         }
         if (this.imgHeight < frame.height && !this.isDragLocked) {

@@ -1,5 +1,7 @@
 
-import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp } from "../../ClientImports";
+
+import { ArrayRecyclerAdapter, RecyclerAdapter } from "bristolboard";
+import { UIRecycler,UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard, SimilarityResult } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -70,25 +72,37 @@ export class UIP_Upload_V0 extends UIElement {
         this.lung = lung;
         this.addChild(lung);
         // this.lung.editable();
-        let isOn = true;
-        let tstBtn = new UIButton('test', () => {
-            isOn = !isOn;
-        }, new UIFrame_CornerWidthHeight({
-            x: 100,
-            y: 100,
-            width: 300,
-            height: 100
-        }), brist);
-        tstBtn.textSize = 20;
+        // let isOn = true;
+        // let tstBtn = new UIButton('test', () => {
+        //     isOn = !isOn;
+        // }, new UIFrame_CornerWidthHeight({
+        //     x: 100,
+        //     y: 100,
+        //     width: 300,
+        //     height: 100
+        // }), brist);
+        // tstBtn.textSize = 20;
 
-        let tstProg = new UIProgressBar(linearInterp(0, 1, ()=>isOn ? 'A' : 'B', 1000, 0), new UIFrame_CornerWidthHeight({
-            x: 100,
-            y: 200,
-            width: ()=>tstBtn.width,
-            height: 100
-        }), brist);
-        this.addChild(tstProg);
-        this.addChild(tstBtn);
+        // let tstProg = new UIProgressBar(linearInterp(0, 1, ()=>isOn ? 'A' : 'B', 1000, 0), new UIFrame_CornerWidthHeight({
+        //     x: 100,
+        //     y: 200,
+        //     width: ()=>tstBtn.width,
+        //     height: 100
+        // }), brist);
+        // this.addChild(tstProg);
+        // this.addChild(tstBtn);
+        // let data: SimilarityResult[] = [];
+        // let adapter = new ArrayRecyclerAdapter<SimilarityResult, UISimilarityCard>(data, {
+        //     limit: {columns: 2}
+        // })
+        // let testRecycler = new UIRecycler(adapter, UIFrame_CornerWidthHeight.Build({
+        //     x: 200,
+        //     y: 500,
+        //     width: 800,
+        //     height: 800
+        // } ), brist);
+        // this.addChild(testRecycler);
+        
     }
 
     uploadFile(file: File) {
