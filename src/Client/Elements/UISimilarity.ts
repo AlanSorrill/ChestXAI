@@ -17,7 +17,7 @@ export class UISimilarityCard extends UIElement {
             width: ()=>ths.width,
             height: ()=>ths.height - (ths.padding * 2 + ths.textSize)
         }) as any, brist )
-        this.image.fitHorizontally();
+      //  this.image.fitHorizontally();
         this.addChild(this.image)
         
     }

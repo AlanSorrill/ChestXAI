@@ -1,7 +1,8 @@
 
+import { MouseDragListener } from "bristolboard";
 import { KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, MainBristol, UIElement, UIFrame } from "../ClientImports";
 
-export class NonDeformingImage extends UIElement {
+export class NonDeformingImage extends UIElement implements MouseDragListener {
     image: HTMLImageElement = null;
     maxFreeScaleVelocity: number = 0.1;
     maxFreeOffsetVelocity: number = 10;
@@ -9,7 +10,7 @@ export class NonDeformingImage extends UIElement {
     offset: [number, number] = [0, 0]
     constructor(urlOrImage: string | HTMLImageElement, uiFrame: UIFrame, brist: MainBristol) {
         super(UIElement.createUID('NonDefImage'), uiFrame, brist);
-        if(urlOrImage == null){
+        if (urlOrImage == null) {
             this.image = new Image();
         } else if (typeof urlOrImage == 'string') {
             this.image = new Image();
@@ -18,7 +19,10 @@ export class NonDeformingImage extends UIElement {
             this.image = urlOrImage;
         }
     }
-    setImage(url: string){
+    onDragEnd(event: MouseBtnInputEvent): boolean {
+        return true;
+    }
+    setImage(url: string) {
         this.image.src = url;
     }
     get imgLeft() {
@@ -39,13 +43,13 @@ export class NonDeformingImage extends UIElement {
     get imgHeight() {
         return this.image.height * this.scale;
     }
-    fitHorizontally(){
+    fitHorizontally() {
         this.scale = this.width / this.image.width
     }
-    centerHorizontally(){
+    centerHorizontally() {
         this.offset[0] = this.width / 2 - this.imgWidth / 2
     }
-    centerVertically(){
+    centerVertically() {
         this.offset[1] = this.height / 2 - this.height / 2
     }
     onDrawBackground(frame: UIFrameResult, delta: number) {
