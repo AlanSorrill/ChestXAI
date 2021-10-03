@@ -1,3 +1,4 @@
+import { ArrayGridRecyclerAdapter, UIGridRecycler } from "bristolboard";
 import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
 import { UISimilarityCard } from "../UISimilarity";
 
@@ -38,39 +39,53 @@ export class UIP_Gallary_V0 extends UIElement {
             width: () => (box.right() - box.left()),
             height: () => (box.bottom() - box.top())
         }
-        let cardWidth = () => (box.width() - ths.padding) / 2
-        let cardHeight = () => (box.height() - this.padding) / 2
-        this.similarityCards = [
-            new UISimilarityCard(UIFrame.Build({
+        let adapter = new ArrayGridRecyclerAdapter<[string,number], UISimilarityCard>(resp.similarity, {
+            limit: {
+                columns: 3
+            }
+        });
+        let recycler = new UIGridRecycler(adapter, UIFrame.Build(
+            {
                 x: box.left,
                 y: box.top,
-                width: cardWidth,
-                height: cardHeight
-            }), this.brist),
-            new UISimilarityCard(UIFrame.Build({
-                x: () => (box.left() + ths.padding + cardWidth()),
-                y: box.top,
-                width: cardWidth,
-                height: cardHeight
-            }), this.brist),
-            new UISimilarityCard(UIFrame.Build({
-                x: box.left,
-                y: ()=>(box.top() + ths.padding + cardHeight()),
-                width: cardWidth,
-                height: cardHeight
-            }), this.brist),
-            new UISimilarityCard(UIFrame.Build({
-                x: () => (box.left() + ths.padding + cardWidth()),
-                y: ()=>(box.top() + ths.padding + cardHeight()),
-                width: cardWidth,
-                height: cardHeight
-            }), this.brist)
-        ]
-        for (let i = 0; i < Math.min(ths.similarityCards.length, resp.similarity.length); i++) {
-            ths.similarityCards[i].setData(resp.similarity[i])
-            this.addChild(ths.similarityCards[i]);
-            this.resultCards.push(ths.similarityCards[i])
-        }
+                width: box.width,
+                height: box.height
+            }
+        ), this.brist);
+        this.addChild(recycler);
+        // let cardWidth = () => (box.width() - ths.padding) / 2
+        // let cardHeight = () => (box.height() - this.padding) / 2
+        // this.similarityCards = [
+        //     new UISimilarityCard(UIFrame.Build({
+        //         x: box.left,
+        //         y: box.top,
+        //         width: cardWidth,
+        //         height: cardHeight
+        //     }), this.brist),
+        //     new UISimilarityCard(UIFrame.Build({
+        //         x: () => (box.left() + ths.padding + cardWidth()),
+        //         y: box.top,
+        //         width: cardWidth,
+        //         height: cardHeight
+        //     }), this.brist),
+        //     new UISimilarityCard(UIFrame.Build({
+        //         x: box.left,
+        //         y: ()=>(box.top() + ths.padding + cardHeight()),
+        //         width: cardWidth,
+        //         height: cardHeight
+        //     }), this.brist),
+        //     new UISimilarityCard(UIFrame.Build({
+        //         x: () => (box.left() + ths.padding + cardWidth()),
+        //         y: ()=>(box.top() + ths.padding + cardHeight()),
+        //         width: cardWidth,
+        //         height: cardHeight
+        //     }), this.brist)
+        // ]
+        // for (let i = 0; i < Math.min(ths.similarityCards.length, resp.similarity.length); i++) {
+        //     ths.similarityCards[i].setData(resp.similarity[i])
+        //     this.addChild(ths.similarityCards[i]);
+        //     this.resultCards.push(ths.similarityCards[i])
+        // }
     }
 
 
