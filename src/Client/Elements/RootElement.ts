@@ -62,8 +62,8 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
         }), brist);
         let ths = this
         // let lung = new Lung({
-        //     x: () => (ths.frame.lastResult.width / 2),
-        //     y: () => (ths.frame.lastResult.height / 2),
+        //     x: () => (ths.frame.result.width / 2),
+        //     y: () => (ths.frame.result.height / 2),
         //     measureCorner: UICorner.center,
         //     width: 800, height: 800
         // }, this.brist);

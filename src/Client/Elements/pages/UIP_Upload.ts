@@ -1,7 +1,7 @@
 
 
-import { ArrayRecyclerAdapter, RecyclerAdapter } from "bristolboard";
-import { UIRecycler,UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard, SimilarityResult } from "../../ClientImports";
+import { UIStackOptions } from "bristolboard";
+import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard, SimilarityResult, UIStackRecycler } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -95,14 +95,50 @@ export class UIP_Upload_V0 extends UIElement {
         // let adapter = new ArrayRecyclerAdapter<SimilarityResult, UISimilarityCard>(data, {
         //     limit: {columns: 2}
         // })
-        // let testRecycler = new UIRecycler(adapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 200,
-        //     y: 500,
-        //     width: 800,
-        //     height: 800
-        // } ), brist);
-        // this.addChild(testRecycler);
+        let testData: [string,number][] = [['patient64700/study1/view1_frontal.jpg', 0.3], 
+        ['patient64701/study1/view1_frontal.jpg', 0.4],['patient64702/study1/view1_frontal.jpg', 0.4],['patient64703/study1/view1_frontal.jpg', 0.4]]
         
+        let verticalAdapter: UIStackOptions<[string,number], UISimilarityCard> = {
+            childLength: function (index: number): number {
+                return 300
+            },
+            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
+                return new UISimilarityCard(frame, brist);
+            },
+            bindData: function (index: number, data: [string,number], child: UISimilarityCard): void {
+                child.setData(data);
+            },
+            isVertical: true
+        }
+        let horizontalAdapter: UIStackOptions<[string,number], UISimilarityCard> = {
+            childLength: function (index: number): number {
+                return 200
+            },
+            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
+                return new UISimilarityCard(frame, brist);
+            },
+            bindData: function (index: number, data: [string,number], child: UISimilarityCard): void {
+                child.setData(data);
+            },
+            isVertical: false
+        }
+      
+        let verticalTestRecycler = new UIStackRecycler<[string,number], UISimilarityCard>(testData,verticalAdapter, UIFrame_CornerWidthHeight.Build({
+            x: 200,
+            y: 500,
+            width: 200,
+            height: 900
+        } ), brist);
+        this.addChild(verticalTestRecycler);
+        
+
+        let horizontalTestRecycler = new UIStackRecycler<[string,number], UISimilarityCard>(testData,horizontalAdapter, UIFrame_CornerWidthHeight.Build({
+            x: 400,
+            y: 200,
+            width: 900,
+            height: 300
+        } ), brist);
+        this.addChild(horizontalTestRecycler);
     }
 
     uploadFile(file: File) {

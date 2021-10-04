@@ -1,4 +1,5 @@
 
+import { isNumber } from "bristolboard";
 import { evalOptionalFunc, optFunc, urlParse } from "./ClientImports";
 
 
@@ -19,6 +20,19 @@ export class UrlManager {
     constructor() {
         let parse = urlParse(window.location.href, true);
         this.base = parse.pathname;
+        for (let key in parse.query) {
+            let val: string = parse.query[key];
+            if (val.toLocaleLowerCase() == 'true') {
+                this.queryValues.set(key, true)
+            } else if (val.toLocaleLowerCase() == 'false') {
+                this.queryValues.set(key, false)
+            } else if(isNumber(val)){
+                this.queryValues.set(key, Number(val))
+            } else {
+                this.queryValues.set(key, val);
+            }
+            
+        }
     }
     get parsed() {
         return urlParse(window.location.href);

@@ -29,7 +29,7 @@ export class UI_Button extends UIElement {
     autoWidth() {
         let ths = this;
         (this.frame as UIFrame_CornerWidthHeight).description.width = () => {
-            ths.setupFont(ths.frame.lastResult);
+            ths.setupFont(ths.frame.result);
             return ths.brist.ctx.measureText(evalOptionalFunc(this.text)).width + evalOptionalFunc(this.paddingHorizontal) * 2;
         }
         return this;
@@ -37,7 +37,7 @@ export class UI_Button extends UIElement {
     autoHeight() {
         let ths = this;
         (this.frame as UIFrame_CornerWidthHeight).description.height = () => {
-            ths.setupFont(ths.frame.lastResult);
+            ths.setupFont(ths.frame.result);
             let textMetrics = ths.brist.ctx.measureText(evalOptionalFunc(this.text))
             return textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent + evalOptionalFunc(this.paddingVertical) * 2;
         }

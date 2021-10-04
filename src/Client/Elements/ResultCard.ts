@@ -14,7 +14,7 @@ export class UIResultCard extends UIElement {
         this.image = new NonDeformingImage(`./userContent/${this.uploadResponse.fileName}`, UIFrame.Build({
             x: 0,
             y: 0,
-            width: () => (ths.frame.lastResult?.width),
+            width: () => (ths.frame.result?.width),
             height: () => (ths.height - ths.bottomCardHeight)
         }), brist);
         this.addChild(this.image);

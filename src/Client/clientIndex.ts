@@ -18,6 +18,7 @@ containerDiv.setCss([
 
 
 window.urlManager = new UrlManager();
+
 window.session = new ClientSession(window.urlManager.get('seshId', null));
 window.mainBristol = new BristolBoard(containerDiv.element, async (brist: BristolBoard<any>)=>{
     let rootElement = new UI_ChestXAI(brist);
@@ -25,3 +26,4 @@ window.mainBristol = new BristolBoard(containerDiv.element, async (brist: Bristo
     rootElement.onValueSet('page', 'upload')
     return rootElement;
 });
+mainBristol.debuggerFlags.uiFrameOutlines = urlManager.get('debugUIFrames', false);
