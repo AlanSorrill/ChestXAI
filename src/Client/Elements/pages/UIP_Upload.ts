@@ -1,11 +1,41 @@
 
 
-import { UIStackOptions } from "bristolboard";
+import { BristolHAlign, BristolVAlign, UIStackOptions } from "bristolboard";
 import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard, SimilarityResult, UIStackRecycler } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
 
+//TODO remove this
+export class TestElement extends UIElement {
+    data: [number, string] = [-1, ''];
+    onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
+        this.brist.ctx.beginPath();
+        this.brist.fillColor(fColor.purple.base)
+        this.brist.rectFrame(frame, false, true);
+
+        this.brist.strokeColor(fColor.purple.darken4);
+        this.brist.strokeWeight(4);
+        this.brist.rectFrame(frame, true, false)
+        this.brist.noStroke();
+
+
+        this.brist.fillColor(fColor.lightText[1])
+        this.brist.textSize(frame.height / 8);
+        this.brist.fontFamily(BristolFontFamily.Roboto)
+        this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Top);
+        this.brist.text(`${this.data[0]}`, frame.left, frame.top);
+        this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Bottom);
+        this.brist.text(`${this.data[1]}`, frame.right, frame.bottom)
+    }
+    onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
+      
+    }
+    setData(index: number, name: string) {
+        this.data = [index, name]
+    }
+
+}
 
 export class UIP_Upload_V0 extends UIElement {
 
@@ -95,49 +125,95 @@ export class UIP_Upload_V0 extends UIElement {
         // let adapter = new ArrayRecyclerAdapter<SimilarityResult, UISimilarityCard>(data, {
         //     limit: {columns: 2}
         // })
-        let testData: [string,number][] = [['patient64700/study1/view1_frontal.jpg', 0.3], 
-        ['patient64701/study1/view1_frontal.jpg', 0.4],['patient64702/study1/view1_frontal.jpg', 0.4],['patient64703/study1/view1_frontal.jpg', 0.4]]
-        
-        let verticalAdapter: UIStackOptions<[string,number], UISimilarityCard> = {
+        // let testData: [string, number][] = [['patient64700/study1/view1_frontal.jpg', 0.3],
+        // ['patient64701/study1/view1_frontal.jpg', 0.4], ['patient64702/study1/view1_frontal.jpg', 0.4], ['patient64703/study1/view1_frontal.jpg', 0.4]]
+
+
+        // let verticalAdapter: UIStackOptions<[string, number], UISimilarityCard> = {
+        //     childLength: function (index: number): number {
+        //         return 300
+        //     },
+        //     buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
+        //         return new UISimilarityCard(frame, brist);
+        //     },
+        //     bindData: function (index: number, data: [string, number], child: UISimilarityCard): void {
+        //         child.setData(data);
+        //     },
+        //     isVertical: true
+        // }
+        // let horizontalAdapter: UIStackOptions<[string, number], UISimilarityCard> = {
+        //     childLength: function (index: number): number {
+        //         return 200
+        //     },
+        //     buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
+        //         return new UISimilarityCard(frame, brist);
+        //     },
+        //     bindData: function (index: number, data: [string, number], child: UISimilarityCard): void {
+        //         child.setData(data);
+        //     },
+        //     isVertical: false
+        // }
+
+        // let verticalTestRecycler = new UIStackRecycler<[string, number], UISimilarityCard>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
+        //     x: 200,
+        //     y: 500,
+        //     width: 200,
+        //     height: 900
+        // }), brist);
+        // this.addChild(verticalTestRecycler);
+
+
+        // let horizontalTestRecycler = new UIStackRecycler<[string, number], UISimilarityCard>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
+        //     x: 400,
+        //     y: 200,
+        //     width: 900,
+        //     height: 300
+        // }), brist);
+        // this.addChild(horizontalTestRecycler);
+
+
+        let testData = ['valueA', 'valueB', 'valueC', 'valueD', 'valueE', 'valueF', 'valueG'];
+
+        let verticalAdapter: UIStackOptions<string, TestElement> = {
             childLength: function (index: number): number {
                 return 300
             },
-            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
-                return new UISimilarityCard(frame, brist);
+            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
+                return new TestElement(UIElement.createUID('testElement'), frame, brist);
             },
-            bindData: function (index: number, data: [string,number], child: UISimilarityCard): void {
-                child.setData(data);
+            bindData: function (index: number, data: string, child: TestElement): void {
+                child.setData(index, data);
             },
             isVertical: true
         }
-        let horizontalAdapter: UIStackOptions<[string,number], UISimilarityCard> = {
+        let horizontalAdapter: UIStackOptions<string, TestElement> = {
             childLength: function (index: number): number {
                 return 200
             },
-            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
-                return new UISimilarityCard(frame, brist);
+            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
+                return new TestElement(UIElement.createUID('testElement'), frame, brist);
             },
-            bindData: function (index: number, data: [string,number], child: UISimilarityCard): void {
-                child.setData(data);
+            bindData: function (index: number, data: string, child: TestElement): void {
+                child.setData(index, data);
             },
             isVertical: false
         }
-      
-        let verticalTestRecycler = new UIStackRecycler<[string,number], UISimilarityCard>(testData,verticalAdapter, UIFrame_CornerWidthHeight.Build({
+
+        let verticalTestRecycler = new UIStackRecycler<string, TestElement>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
             x: 200,
             y: 500,
             width: 200,
             height: 900
-        } ), brist);
+        }), brist);
         this.addChild(verticalTestRecycler);
-        
 
-        let horizontalTestRecycler = new UIStackRecycler<[string,number], UISimilarityCard>(testData,horizontalAdapter, UIFrame_CornerWidthHeight.Build({
+
+        let horizontalTestRecycler = new UIStackRecycler<string, TestElement>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
             x: 400,
             y: 200,
             width: 900,
             height: 300
-        } ), brist);
+        }), brist);
         this.addChild(horizontalTestRecycler);
     }
 
