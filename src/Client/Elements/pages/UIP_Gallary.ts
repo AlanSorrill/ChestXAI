@@ -1,4 +1,5 @@
-import { ArrayGridRecyclerAdapter, UIGridRecycler } from "bristolboard";
+
+
 import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
 import { UISimilarityCard } from "../UISimilarity";
 
@@ -39,20 +40,20 @@ export class UIP_Gallary_V0 extends UIElement {
             width: () => (box.right() - box.left()),
             height: () => (box.bottom() - box.top())
         }
-        let adapter = new ArrayGridRecyclerAdapter<[string,number], UISimilarityCard>(resp.similarity, {
-            limit: {
-                columns: 3
-            }
-        });
-        let recycler = new UIGridRecycler(adapter, UIFrame.Build(
-            {
-                x: box.left,
-                y: box.top,
-                width: box.width,
-                height: box.height
-            }
-        ), this.brist);
-        this.addChild(recycler);
+        // let adapter = new ArrayGridRecyclerAdapter<[string,number], UISimilarityCard>(resp.similarity, {
+        //     limit: {
+        //         columns: 3
+        //     }
+        // });
+        // let recycler = new UIGridRecycler(adapter, UIFrame.Build(
+        //     {
+        //         x: box.left,
+        //         y: box.top,
+        //         width: box.width,
+        //         height: box.height
+        //     }
+        // ), this.brist);
+        // this.addChild(recycler);
         // let cardWidth = () => (box.width() - ths.padding) / 2
         // let cardHeight = () => (box.height() - this.padding) / 2
         // this.similarityCards = [
