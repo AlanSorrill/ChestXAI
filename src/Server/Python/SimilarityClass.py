@@ -22,7 +22,7 @@ class SimilaritySearch(object):
         if use_frontal:
             self.df = self.df[self.df['Frontal/Lateral'] == 'Frontal']       
             
-        self.images_list =  [image_base_path+path for path in self.df['Path'].tolist()]### 
+        self.images_list =  [path for path in self.df['Path'].tolist()]### 
 
         self.train_vecs = np.load(model_vectors_path + 'train_vecs_pre_none.npz')['vectors'].astype('float32')
         self.train_truth = np.load(model_vectors_path + 'train_truth_pre_none.npy').astype('int')
@@ -55,7 +55,11 @@ class SimilaritySearch(object):
         self.device = torch.device(cuda_or_cpu)
         self.model = DenseNet121(pretrained=False, last_activation='sigmoid', activations='relu', num_classes=5)
         self.model.to(self.device)
-        state_dict = torch.load(model_vectors_path + 'second_stage_none.pth')#map_location={'cuda:0':'cuda:3'}
+        if cuda_or_cpu == 'cuda':
+            state_dict = torch.load(model_vectors_path + 'second_stage_none.pth')#map_location={'cuda:0':'cuda:3'}
+        else:
+            state_dict = torch.load(model_vectors_path + 'second_stage_none.pth',map_location='cpu')#map_location={'cuda:0':'cuda:3'}       
+        
         self.model.load_state_dict(state_dict, strict=True)
         self.model.eval()
         
@@ -85,14 +89,14 @@ class SimilaritySearch(object):
         ###prediction
         out_prediction = []
         for disease, psb in enumerate(y_pred):
-            out_prediction.append([disease, psb])
+            out_prediction.append([disease, round(psb.astype(float),4)])
         ###images and similarities   
         out_images_and_similarities = []
         for i, idx in enumerate(S_index):
             path = self.images_list[idx]
             similarity = 1 /(1 + np.sqrt(Distance[i]))
             label = ''.join(str(l) for l in self.train_truth[idx])
-            out_images_and_similarities.append([path, similarity,label])
+            out_images_and_similarities.append([path, round(similarity.astype(float), 4),label])
         
         return out_prediction, out_images_and_similarities
         
