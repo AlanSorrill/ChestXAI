@@ -1,12 +1,13 @@
 '''before run the script, there are some other things to do first
-1. Download the chexpert train images to 'patients' folder, or the script can't retrieve images
-2. Make sure you have required packaged installed
+1. Put 'train_vecs_pre_none.npz' file into 'models' folder
+2. Download the chexpert train images to 'patients' folder, or the script can't retrieve images
+3. Make sure you have required packaged installed
     To do this, try following commands if you have Anaconda installed
     1) pip install libauc
     2) pip3 install torch torchvision 
     3) GPU+CPU version:'conda install -c pytorch faiss-gpu' 
         or ONLY CPU version: 'conda install -c pytorch faiss-cpu
-3. Check the path variables are correct
+4. Check the path variables are correct
 '''
 
 ####*** There are some important changes and notes*** ####
