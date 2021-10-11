@@ -26,4 +26,4 @@ window.mainBristol = new BristolBoard(containerDiv.element, async (brist: Bristo
     rootElement.onValueSet('page', 'upload')
     return rootElement;
 });
-mainBristol.debuggerFlags.uiFrameOutlines = urlManager.get('debugUIFrames', false);
+mainBristol.debuggerFlags.debugUIFrame = urlManager.get('debugUIFrames', false);
