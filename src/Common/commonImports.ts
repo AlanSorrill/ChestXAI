@@ -8,5 +8,3 @@ export * from "./PatientData";
 export * from "./SharedDataDefs";
 export * from "./Session";
 export * from "./ITask";
-import urlParse from 'url-parse';
-export {urlParse}

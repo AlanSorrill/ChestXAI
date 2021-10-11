@@ -2,12 +2,11 @@
 export * from "../Common/CommonImports";
 export * from 'bristolboard'
 
-export * from "./URLManager";
 export * from "./RestClient";
 
 
 
-import { BristolBoard, FColor, FColorDirectory, FColorSwath } from 'bristolboard'
+import { BristolBoard, FColor, FColorDirectory, FColorSwath, UrlManager } from 'bristolboard'
 let fColor = new FColorDirectory();
 export { FColor, fColor, FColorSwath, FColorDirectory }
 window.fColor = fColor;
@@ -15,7 +14,7 @@ window.fColor = fColor;
 
 
 import { UI_ChestXAI } from './Elements/RootElement';
-import { UrlManager } from './URLManager';
+
 import { Socker } from './RestClient';
 import { ClientSession } from './ClientSession';
 

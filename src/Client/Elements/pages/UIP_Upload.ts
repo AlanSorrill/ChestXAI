@@ -172,64 +172,64 @@ export class UIP_Upload_V0 extends UIElement {
         // this.addChild(horizontalTestRecycler);
 
 
-        let testData = ['valueA', 'valueB', 'valueC', 'valueD', 'valueE', 'valueF', 'valueG', 'valueH', 'valueI', 'valueJ', 'valuek', 'valuem', 'valuen'];
-        let gridUI = UIStackRecycler.GridFixedColumns<string, TestElement>(testData, {
-            buildCell: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
+         let testData = ['valueA', 'valueB', 'valueC', 'valueD', 'valueE', 'valueF', 'valueG', 'valueH', 'valueI', 'valueJ', 'valuek', 'valuem', 'valuen'];
+        // let gridUI = UIStackRecycler.GridFixedColumns<string, TestElement>(testData, {
+        //     buildCell: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
+        //         return new TestElement(UIElement.createUID('testElement'), frame, brist);
+        //     },
+        //     bindData: function (index: number, data: string, child: TestElement): void {
+        //         child.setData(index, data);
+        //     },
+            
+        //     cols: 3
+        // }, UIFrame_CornerWidthHeight.Build({
+        //     x: 200,
+        //     y: 200,
+        //     width: brist.width / 3,
+        //     height: brist.height - 400
+        // }), brist);
+        // this.addChild(gridUI);
+        let verticalAdapter: UIStackOptions<string, TestElement> = {
+            childLength: function (index: number): number {
+                return 300
+            },
+            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
                 return new TestElement(UIElement.createUID('testElement'), frame, brist);
             },
             bindData: function (index: number, data: string, child: TestElement): void {
                 child.setData(index, data);
             },
-            rowHeight: (row: number)=>200,
-            cols: 3
-        }, UIFrame_CornerWidthHeight.Build({
+            isVertical: true
+        }
+        let horizontalAdapter: UIStackOptions<string, TestElement> = {
+            childLength: function (index: number): number {
+                return 200
+            },
+            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
+                return new TestElement(UIElement.createUID('testElement'), frame, brist);
+            },
+            bindData: function (index: number, data: string, child: TestElement): void {
+                child.setData(index, data);
+            },
+            isVertical: false
+        }
+
+        let verticalTestRecycler = new UIStackRecycler<string, TestElement>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
             x: 200,
+            y: 500,
+            width: 200,
+            height: 900
+        }), brist);
+        this.addChild(verticalTestRecycler);
+
+
+        let horizontalTestRecycler = new UIStackRecycler<string, TestElement>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
+            x: 400,
             y: 200,
-            width: 300,
+            width: 900,
             height: 300
         }), brist);
-        this.addChild(gridUI);
-        // let verticalAdapter: UIStackOptions<string, TestElement> = {
-        //     childLength: function (index: number): number {
-        //         return 300
-        //     },
-        //     buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
-        //         return new TestElement(UIElement.createUID('testElement'), frame, brist);
-        //     },
-        //     bindData: function (index: number, data: string, child: TestElement): void {
-        //         child.setData(index, data);
-        //     },
-        //     isVertical: true
-        // }
-        // let horizontalAdapter: UIStackOptions<string, TestElement> = {
-        //     childLength: function (index: number): number {
-        //         return 200
-        //     },
-        //     buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
-        //         return new TestElement(UIElement.createUID('testElement'), frame, brist);
-        //     },
-        //     bindData: function (index: number, data: string, child: TestElement): void {
-        //         child.setData(index, data);
-        //     },
-        //     isVertical: false
-        // }
-
-        // let verticalTestRecycler = new UIStackRecycler<string, TestElement>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 200,
-        //     y: 500,
-        //     width: 200,
-        //     height: 900
-        // }), brist);
-        // this.addChild(verticalTestRecycler);
-
-
-        // let horizontalTestRecycler = new UIStackRecycler<string, TestElement>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 400,
-        //     y: 200,
-        //     width: 900,
-        //     height: 300
-        // }), brist);
-        // this.addChild(horizontalTestRecycler);
+        this.addChild(horizontalTestRecycler);
     }
 
     uploadFile(file: File) {
