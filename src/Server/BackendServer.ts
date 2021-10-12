@@ -5,7 +5,7 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, urlParse, UploadResponse, TaskListener, delay, InferenceResponse, SimilarityResult } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, SimilarityResult, urlParse } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');

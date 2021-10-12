@@ -4,14 +4,14 @@ export * from '../Common/CommonImports'
 // let logger = new Logger();
 // export { logger, LogLevel, LoggerFilterResult, LocalLogger, LogLevelMap, LogFunction}
 import WebSocket from 'ws';
-import { Logger } from 'bristolboard/lib/CommonImports';
+
+import { Logger } from 'bristolboard/lib/Logger';
 let logger = new Logger();
 export { logger }
-export {WebSocket}
+export { WebSocket }
 import { BackendServer } from './BackendServer';
 export * from './BackendServer'
 export * from './webpackBrowserConfig'
-
 declare global {
     var backend: BackendServer
 }
