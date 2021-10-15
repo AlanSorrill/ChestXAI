@@ -60,8 +60,11 @@ if __name__ == '__main__':
 
     # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
     # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
+    outPackage = {
+        'prediction': outPrediction,
+        'similarity': outSimilarity
+    }
 
-
-    print(json.dumps(outPrediction))
-    print(json.dumps(outSimilarity))
+    print(json.dumps(outPackage))
+    
     sys.stdout.flush()

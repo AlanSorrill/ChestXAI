@@ -17,9 +17,9 @@ let log = logger.local('RootElement');
 //     constructor(containerDivElem: HTMLDivElement, buildRootElement: (brist: CardBristol) => Promise<UIElement>) {
 //         super(containerDivElem, buildRootElement as (board: BristolBoard)=> Promise<UIElement>);
 //         let ths = this;
-//         // this.machine = new SlotMachine('theMachine', new UIFrame_Rect_CornerSized(0, 0, this.width), this);
+//         // this.machine = new SlotMachine('theMachine', new UIFrame_CornerWidthHeight(0, 0, this.width), this);
 //         // this.machine.frame.relY = () => (ths.height / 2 - ths.machine.frame.measureHeight() / 2);
-//         // this.message = new SpecialMessage('message', ()=>'Happy Birthday Christina!', new UIFrame_Rect_CornerSized(0,0, ths.width, ths.machine.frame.relY), this)
+//         // this.message = new SpecialMessage('message', ()=>'Happy Birthday Christina!', new UIFrame_CornerWidthHeight(0,0, ths.width, ths.machine.frame.relY), this)
 //         // this.addUiElement(this.message)
 //         // this.addUiElement(this.machine);
 

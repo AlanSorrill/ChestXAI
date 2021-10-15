@@ -14,8 +14,8 @@ export enum Disease {
 // # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
 // # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
 export interface InferenceResponse {
-    inputFileName: string,
-    diagnosis: Array<[Disease, number]>
+   prediction: PredictionResult
+   similarity: SimilarityResult
 }
 export interface PredictionResult {
     fileName: string,
@@ -23,11 +23,6 @@ export interface PredictionResult {
 }
 export interface SimilarityResult {
     inputFileName: string,
-    outputFileNames: Array<[string, number]>
+    outputFileNames: Array<[string, number, Disease]>
 }
 
-
-let result: InferenceResponse = {
-    inputFileName: "193801238.png",
-    diagnosis: [[Disease.cardiomegaly,0.2], [1, 0.5], [8, 0.3]]
-}

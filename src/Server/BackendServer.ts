@@ -14,7 +14,6 @@ log.allowBelowLvl(LogLevel.silly);
 if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads')
     log.info(`Created uploads directory in ${fs.realpathSync('./uploads')}`)
-
 }
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -86,11 +85,9 @@ export class BackendServer {
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
             backend.runInferance(req.file.filename).then((data: InferenceResponse) => {
-                respPayload.diagnosis = data.diagnosis;
-                backend.runSimilarity(req.file.filename).then((data: SimilarityResult) => {
-                    respPayload.similarity = data.outputFileNames;
-                    res.send(JSON.stringify(respPayload));
-                })
+                respPayload.diagnosis = data.prediction.diagnosis;
+                respPayload.similarity = data.similarity.outputFileNames
+                res.send(JSON.stringify(respPayload));
 
             })
             // backend.makeDiagnosis(respPayload.uploadId, {
@@ -235,14 +232,14 @@ export class BackendServer {
     testSimilarity(onData: (data: [string, number][]) => void) {
         let dirPath = Path.join(__dirname, `../../public/patients/`)
         let subDir: string;
-        let out: [string,number][] = [];
+        let out: [string, number][] = [];
         fs.promises.readdir(dirPath).then((fileNames: string[]) => {
-            
+
             for (let i = 0; i < fileNames.length; i++) {
                 console.log(i)
-                let subDir = Path.join(dirPath,fileNames[i]);
-                if(fs.lstatSync(subDir).isDirectory()){
-                    fs.readdirSync(subDir).forEach((imageName: string)=>{
+                let subDir = Path.join(dirPath, fileNames[i]);
+                if (fs.lstatSync(subDir).isDirectory()) {
+                    fs.readdirSync(subDir).forEach((imageName: string) => {
                         out.push([imageName, Math.random()])
                     })
                 }
