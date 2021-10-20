@@ -36,8 +36,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "console": "integratedTerminal",
             "preLaunchTask": "buildTscMac",
-            // "outputCapture": "std",
+             "outputCapture": "std",
+             
             "program": "${workspaceFolder}/src/Server/serverIndex.ts",
             "internalConsoleOptions": "openOnSessionStart",
             "outFiles": [
