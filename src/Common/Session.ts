@@ -1,4 +1,4 @@
-import { Progress } from "./commonImports";
+import { Progress } from "./CommonImports";
 
 export abstract class Session {
     id: string;

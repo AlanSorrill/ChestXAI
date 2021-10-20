@@ -1,6 +1,6 @@
 
 import { BristolFontFamily, BristolHAlign, BristolVAlign } from "bristolboard";
-import { UIFrame, UIFrameResult, MainBristol, SimilarityResult, UIElement, NonDeformingImage } from "../ClientImports";
+import { UIFrame, UIFrameResult, MainBristol,  UIElement, NonDeformingImage } from "../ClientImports";
 
 
 export class UISimilarityCard extends UIElement {

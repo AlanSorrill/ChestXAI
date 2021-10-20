@@ -37,34 +37,57 @@ do next prediction and similarity search directly, without initiating the model 
 # Atelectasis(C3)
 # Pleural Effusion(C4)
 
+import os
 import sys
 import json
 from SimilarityClass import SimilaritySearch
 
 
-image_base_path = '../../../public/patients/' ###To be checked
-train_csv_path = '../../../public/patients/train.csv'  ###To be checked
-model_vectors_path = '../../../models/'  ###To be checked
+image_base_path = './public/patients/' ###To be checked
+train_csv_path = './public/patients/train.csv'  ###To be checked
+model_vectors_path = './models/'  ###To be checked
 
-
+diseaseList = ['Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis',  'Pleural Effusion']
 if __name__ == '__main__':
 
-    fileName = sys.argv[1]
-
-    obj = SimilaritySearch(train_csv_path, image_base_path, model_vectors_path, cuda_or_cpu = 'cpu')
-
-    out_prediction, out_images_and_similarities = obj.run(fileName)
-    outPrediction = {'fileName': fileName, 'diagnosis': out_prediction }
-    # outPrediction = "{fileName: '8310923871.png', diagnosis: [[0, 0.85], [1, 0.25], [2, 0.99]]}"
-    outSimilarity = {'inputFileName': fileName, 'outputFileNames': out_images_and_similarities}
-
-    # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
-    # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
-    outPackage = {
-        'prediction': outPrediction,
-        'similarity': outSimilarity
-    }
-
-    print(json.dumps(outPackage))
-    
+    print(json.dumps({
+        'msgType': 'status',
+        'message': 'loading model from ' + os.path.abspath(train_csv_path)
+    }))
     sys.stdout.flush()
+    print(json.dumps({
+        'msgType': 'diseaseDefs',
+        'names': diseaseList
+    }))
+    sys.stdout.flush()
+    obj = SimilaritySearch(train_csv_path, image_base_path, model_vectors_path, cuda_or_cpu = 'cpu', selected_cols = diseaseList)
+    print(json.dumps({
+            'msgType': 'status',
+            'message': 'Awaiting file'
+        }))
+    sys.stdout.flush()
+    for line in sys.stdin:
+        print(json.dumps({
+            'msgType': 'status',
+            'message': 'got request ' + line
+        }))
+        sys.stdout.flush()
+        request = json.loads(line)
+        out_prediction, out_images_and_similarities = obj.run(request.fileName)
+        # outPrediction = {'inputFileName': request.fileName, 'diagnosis': out_prediction }
+        # # outPrediction = "{fileName: '8310923871.png', diagnosis: [['00000', 0.85], ['00010', 0.25], ['00000', 0.99]]}"
+        # outSimilarity = {'inputFileName': request.fileName, 'outputFileNames': out_images_and_similarities}
+
+        # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
+        # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
+       
+        print(json.dumps({
+             'msgType': 'inferenceResponse',
+            'fileName': request.fileName,
+            'prediction': out_prediction,
+            'similarity': out_images_and_similarities
+        }))
+
+
+        
+        sys.stdout.flush()

@@ -71,3 +71,7 @@ uploads/
 
 # dotenv environment variables file
 .env
+
+#large vector files
+train_vecs_pre_none.npz
+.nfs0000000002a616ac00000015

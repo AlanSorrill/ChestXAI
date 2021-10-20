@@ -32,12 +32,12 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch (mac)",
+            "name": "Launch (mac/linux)",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "preLaunchTask": "buildTscMac",
-            "outputCapture": "std",
+            // "outputCapture": "std",
             "program": "${workspaceFolder}/src/Server/serverIndex.ts",
             "internalConsoleOptions": "openOnSessionStart",
             "outFiles": [

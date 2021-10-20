@@ -5,7 +5,7 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, SimilarityResult, urlParse } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');
@@ -85,8 +85,8 @@ export class BackendServer {
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
             backend.runInferance(req.file.filename).then((data: InferenceResponse) => {
-                respPayload.diagnosis = data.prediction.diagnosis;
-                respPayload.similarity = data.similarity.outputFileNames
+                respPayload.diagnosis = data.prediction
+                respPayload.similarity = data.similarity
                 res.send(JSON.stringify(respPayload));
 
             })
@@ -203,65 +203,79 @@ export class BackendServer {
         this.httpServer = httpServer;
         this.socketServer = socketServer;
         this.setupReflectionTest();
+        //this.startPython();
     }
 
     async runInferance(fileName: string): Promise<InferenceResponse> {
         return new Promise((acc, rej) => {
-            this.runPython('InferenceScript.py', (response: string) => {
-                try {
-                    let data: InferenceResponse = JSON.parse(response);
-                    acc(data);
-                } catch (err) {
-                    rej(err);
-                }
-            }, fileName);
+            this.sendToPython(JSON.stringify({
+                'msgType': 'inferenceRequest',
+                'fileName': fileName
+            }))
         })
     }
-    async runSimilarity(fileName: string): Promise<SimilarityResult> {
-        return new Promise((acc, rej) => {
-            this.runPython('SimilarityScript.py', (response: string) => {
-                try {
-                    let data: SimilarityResult = JSON.parse(response);
-                    acc(data);
-                } catch (err) {
-                    rej(err);
-                }
-            }, fileName);
-        })
-    }
-    testSimilarity(onData: (data: [string, number][]) => void) {
-        let dirPath = Path.join(__dirname, `../../public/patients/`)
-        let subDir: string;
-        let out: [string, number][] = [];
-        fs.promises.readdir(dirPath).then((fileNames: string[]) => {
+    // async runSimilarity(fileName: string): Promise<SimilarityResult> {
+    //     return new Promise((acc, rej) => {
+    //         this.runPython('SimilarityScript.py', (response: string) => {
+    //             try {
+    //                 let data: SimilarityResult = JSON.parse(response);
+    //                 acc(data);
+    //             } catch (err) {
+    //                 rej(err);
+    //             }
+    //         }, fileName);
+    //     })
+    // }
+    // testSimilarity(onData: (data: [string, number][]) => void) {
+    //     let dirPath = Path.join(__dirname, `../../public/patients/`)
+    //     let subDir: string;
+    //     let out: [string, number][] = [];
+    //     fs.promises.readdir(dirPath).then((fileNames: string[]) => {
 
-            for (let i = 0; i < fileNames.length; i++) {
-                console.log(i)
-                let subDir = Path.join(dirPath, fileNames[i]);
-                if (fs.lstatSync(subDir).isDirectory()) {
-                    fs.readdirSync(subDir).forEach((imageName: string) => {
-                        out.push([imageName, Math.random()])
-                    })
-                }
-            }
-            onData(out);
-        })
+    //         for (let i = 0; i < fileNames.length; i++) {
+    //             console.log(i)
+    //             let subDir = Path.join(dirPath, fileNames[i]);
+    //             if (fs.lstatSync(subDir).isDirectory()) {
+    //                 fs.readdirSync(subDir).forEach((imageName: string) => {
+    //                     out.push([imageName, Math.random()])
+    //                 })
+    //             }
+    //         }
+    //         onData(out);
+    //     })
+    // }
+    python: ChildProcess.ChildProcessWithoutNullStreams
+    sendToPython(data: string) {
+        this.python.stdin.write(data);
     }
-    runPython(scriptName = 'TestScript.py', onData: (data: string) => void, ...params: Array<string>) {
-        let pathToScript = Path.join(__dirname, `../../src/Server/Python/${scriptName}`)
+    startPython() {
+        let pathToScript = Path.join(__dirname, `../../src/Server/Python/InferenceScript.py`)
         log.info(`Starting ${pathToScript}`)
-        if (typeof params == 'undefined') {
-            params = [];
-        }
-        params.unshift(pathToScript);
-        let python = ChildProcess.spawn('python', params)
-        python.stdout.on('data', (data) => {
+
+
+        //let python = ChildProcess.spawn('python', params)
+        let command = `conda run -n cheX python ${pathToScript}`;
+        this.python = ChildProcess.spawn(`bash -lc "${command}"`, { shell: true });
+
+        this.python.stdout.on('data', (data) => {
             log.info(`Python:`, data.toString('utf8'));
-            onData(data.toString('utf8'));
+            //console.log(data.toString('utf8'));
         })
-        python.stderr.on('data', (error) => {
+        this.python.stderr.on('data', (error) => {
             log.error('Python:', error.toString('utf8'));
         })
+        // let python = this.runPython(, (response: string) => {
+        //     try {
+        //        // let data = JSON.parse(response);
+        //         console.log(`Python: ${response}`);
+        //       //  acc(data);
+        //     } catch (err) {
+        //         rej(err);
+        //     }
+        // }, fileName);
+        this.python.stdin.setDefaultEncoding('utf-8');
+
+
     }
 
     async onInitialized() {
