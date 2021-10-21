@@ -88,8 +88,11 @@ class SimilaritySearch(object):
         
         ###prediction
         out_prediction = []
+        str_array = np.zeros((len(y_pred),len(y_pred)), dtype = int)
         for disease, psb in enumerate(y_pred):
-            out_prediction.append([disease, round(psb.astype(float),4)])
+            str_array[disease, disease] = 1
+            str_disease = ''.join(str(d) for d in str_array[disease])
+            out_prediction.append([str_disease, round(psb.astype(float),4)])
         ###images and similarities   
         out_images_and_similarities = []
         for i, idx in enumerate(S_index):
