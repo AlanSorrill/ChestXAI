@@ -58,19 +58,19 @@ if __name__ == '__main__':
     print(json.dumps({
         'msgType': 'diseaseDefs',
         'names': diseaseList
-    }))
+    }) + "\n")
     sys.stdout.flush()
     obj = SimilaritySearch(train_csv_path, image_base_path, model_vectors_path, cuda_or_cpu = 'cpu', selected_cols = diseaseList)
     print(json.dumps({
             'msgType': 'status',
             'message': 'Awaiting file'
-        }))
+        }) + "\n")
     sys.stdout.flush()
     for line in sys.stdin:
         print(json.dumps({
             'msgType': 'status',
             'message': 'got request ' + line
-        }))
+        }) + "\n")
         sys.stdout.flush()
         request = json.loads(line)
         out_prediction, out_images_and_similarities = obj.run(request.fileName)
@@ -86,7 +86,7 @@ if __name__ == '__main__':
             'fileName': request.fileName,
             'prediction': out_prediction,
             'similarity': out_images_and_similarities
-        }))
+        }) + "\n")
 
 
         

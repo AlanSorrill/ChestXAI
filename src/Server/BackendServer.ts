@@ -5,7 +5,7 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
-import { LogLevel, csvToJson, logger, PatientData, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 let log = logger.local('BackendServer');
@@ -248,6 +248,9 @@ export class BackendServer {
     sendToPython(data: string) {
         this.python.stdin.write(data);
     }
+    recievePythonMsg() {
+
+    }
     startPython() {
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/InferenceScript.py`)
         log.info(`Starting ${pathToScript}`)
@@ -258,7 +261,23 @@ export class BackendServer {
         this.python = ChildProcess.spawn(`bash -lc "${command}"`, { shell: true });
 
         this.python.stdout.on('data', (data) => {
-            log.info(`Python:`, data.toString('utf8'));
+            let lines = data.toString('utf8').split('\n');
+            log.info(`Python:`, lines);
+
+            for (let i = 0; i < lines.length; i++) {
+                if(lines[i] == ''){
+                    continue;
+                }
+                let message: PythonInterfaceMessage = JSON.parse(lines[i]) as any;
+
+                if (PythonMessage.isStatus(message)) {
+                    console.log(`Python status: ${message}`)
+                } else if (PythonMessage.isDiseaseDefs(message)) {
+                    console.log(`Got disease list: ${message.names.join(', ')}`)
+                } else {
+                    console.log(`Unknown python message ${Object.keys(message)}`)
+                }
+            }
             //console.log(data.toString('utf8'));
         })
         this.python.stderr.on('data', (error) => {

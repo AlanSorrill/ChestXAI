@@ -13,8 +13,30 @@ export enum Disease {
 
 // # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
 // # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
+export type MsgType = 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs';
 export interface PythonInterfaceMessage {
-    msgType: 'inferenceResponse' | 'inferenceRequest' | 'status'
+    msgType: MsgType
+}
+export interface DiseaseDefsMessage {
+    msgType: "diseaseDefs",
+    names: string[]
+}
+export class PythonMessage {
+    private static isType<T extends PythonInterfaceMessage>(typeName: MsgType, obj: PythonInterfaceMessage): obj is T{
+        return obj.msgType == typeName
+    }
+    static isInterfaceRequest(obj: PythonInterfaceMessage): obj is InferenceRequest{
+        return this.isType('inferenceRequest', obj);
+    }
+    static isInterfaceResponse(obj: PythonInterfaceMessage): obj is InferenceResponse{
+        return this.isType('inferenceResponse', obj);
+    }
+    static isStatus(obj: PythonInterfaceMessage): obj is PythonStatusMessage{
+        return this.isType('status', obj);
+    }
+    static isDiseaseDefs(obj: PythonInterfaceMessage): obj is DiseaseDefsMessage{
+        return this.isType('diseaseDefs', obj);
+    }
 }
 export interface InferenceRequest extends PythonInterfaceMessage {
     msgType: 'inferenceRequest',
