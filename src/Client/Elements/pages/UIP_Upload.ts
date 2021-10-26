@@ -214,22 +214,22 @@ export class UIP_Upload_V0 extends UIElement {
             isVertical: false
         }
 
-        let verticalTestRecycler = new UIStackRecycler<string, TestElement>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
-            x: 200,
-            y: 500,
-            width: 200,
-            height: 900
-        }), brist);
-        this.addChild(verticalTestRecycler);
+        // let verticalTestRecycler = new UIStackRecycler<string, TestElement>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
+        //     x: 200,
+        //     y: 500,
+        //     width: 200,
+        //     height: 900
+        // }), brist);
+        // this.addChild(verticalTestRecycler);
 
 
-        let horizontalTestRecycler = new UIStackRecycler<string, TestElement>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
-            x: 400,
-            y: 200,
-            width: 900,
-            height: 300
-        }), brist);
-        this.addChild(horizontalTestRecycler);
+        // let horizontalTestRecycler = new UIStackRecycler<string, TestElement>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
+        //     x: 400,
+        //     y: 200,
+        //     width: 900,
+        //     height: 300
+        // }), brist);
+        // this.addChild(horizontalTestRecycler);
     }
 
     uploadFile(file: File) {

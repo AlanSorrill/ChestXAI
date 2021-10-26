@@ -84,9 +84,20 @@ export class BackendServer {
             }
             res.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
-            backend.runInferance(req.file.filename).then((data: InferenceResponse) => {
-                respPayload.diagnosis = data.prediction
-                respPayload.similarity = data.similarity
+            let fullPath = Path.join(__dirname, `/../../uploads/${req.file.filename}`);
+            log.info(`Running inference on ${fullPath}`);
+            backend.runInferance(fullPath).then((data: InferenceResponse) => {
+                respPayload.diagnosis = [];
+                for (let i = 0; i < data.prediction.length; i++) {
+                    respPayload.diagnosis.push([backend.bitStringToDiseases(data.prediction[i][0])[0], data.prediction[i][1]])
+                }
+                respPayload.diagnosis = respPayload.diagnosis.sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+                respPayload.similarity = [];
+                let val: [string, number, string];
+                for (let i = 0; i < data.similarity.length; i++) {
+                    val = data.similarity[i];
+                    respPayload.similarity.push([val[0], val[1], backend.bitStringToDiseases(val[2])])
+                }
                 res.send(JSON.stringify(respPayload));
 
             })
@@ -203,15 +214,31 @@ export class BackendServer {
         this.httpServer = httpServer;
         this.socketServer = socketServer;
         this.setupReflectionTest();
-        //this.startPython();
+        this.startPython();
     }
 
+    bitStringToDiseases(bitString: string): string[] {
+        if (this.diseaseNames == null) {
+            log.error(`Cannot translate disease names without dictionary`);
+            return null;
+        }
+        let out: string[] = []
+        for (let i = 0; i < Math.min(bitString.length, this.diseaseNames.length); i++) {
+            if (bitString[i] == '1') {
+                out.push(this.diseaseNames[i]);
+            }
+        }
+        return out;
+    }
+    inferenceWaiters: Map<string, (resp: InferenceResponse) => void> = new Map();
     async runInferance(fileName: string): Promise<InferenceResponse> {
         return new Promise((acc, rej) => {
+            this.inferenceWaiters.set(fileName, (resp: InferenceResponse) => { acc(resp); })
             this.sendToPython(JSON.stringify({
                 'msgType': 'inferenceRequest',
                 'fileName': fileName
             }))
+
         })
     }
     // async runSimilarity(fileName: string): Promise<SimilarityResult> {
@@ -246,42 +273,84 @@ export class BackendServer {
     // }
     python: ChildProcess.ChildProcessWithoutNullStreams
     sendToPython(data: string) {
-        this.python.stdin.write(data);
+        this.python.stdin.write(data + "\n", 'utf8');
+
     }
     recievePythonMsg() {
 
     }
+    diseaseNames: string[] = null;
     startPython() {
+        let ths = this;
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/InferenceScript.py`)
         log.info(`Starting ${pathToScript}`)
 
 
         //let python = ChildProcess.spawn('python', params)
-        let command = `conda run -n cheX python ${pathToScript}`;
-        this.python = ChildProcess.spawn(`bash -lc "${command}"`, { shell: true });
+        let command = `conda run -n cheX python -u ${pathToScript}`;
+        // this.python = ChildProcess.spawn(`bash -lc "${command}"`, {
+        //     shell: true,
+        //     stdio: ['pipe', 'pipe', 'pipe'],
+
+        // });
+
+        this.python = ChildProcess.spawn('python', [pathToScript]);
+        // this.python = ChildProcess.spawn('conda', [`run`, `-n`, `cheX`, `python ${pathToScript}`]);
+
+        // this.python = ChildProcess.exec(command, (error: ChildProcess.ExecException, stdout: string, stderr: string)=>{
+        //     console.log('error',error);
+        //     console.log('stdout',stdout);
+        //     console.log('stderror',stderr);
+        // })
 
         this.python.stdout.on('data', (data) => {
             let lines = data.toString('utf8').split('\n');
             log.info(`Python:`, lines);
 
             for (let i = 0; i < lines.length; i++) {
-                if(lines[i] == ''){
+                if (lines[i] == '' || lines[i] == 'flusher') {
                     continue;
                 }
-                let message: PythonInterfaceMessage = JSON.parse(lines[i]) as any;
+                try {
+                    let message: PythonInterfaceMessage = JSON.parse(lines[i]) as any;
 
-                if (PythonMessage.isStatus(message)) {
-                    console.log(`Python status: ${message}`)
-                } else if (PythonMessage.isDiseaseDefs(message)) {
-                    console.log(`Got disease list: ${message.names.join(', ')}`)
-                } else {
-                    console.log(`Unknown python message ${Object.keys(message)}`)
+                    if (PythonMessage.isStatus(message)) {
+                        console.log(`Python status: ${message.message}`)
+                    } else if (PythonMessage.isDiseaseDefs(message)) {
+                        console.log(`Got disease list: ${message.names.join(', ')}`)
+                        ths.diseaseNames = message.names;
+                    } else if (PythonMessage.isInterfaceResponse(message)) {
+                        console.log(`Got inference response for ${message.fileName}`);
+                        if (ths.inferenceWaiters.has(message.fileName)) {
+                            ths.inferenceWaiters.get(message.fileName)(message)
+                        } else {
+                            log.error(`No waiters for ${message.fileName}`)
+                        }
+                    } else {
+                        console.log(`Unknown python message ${Object.keys(message)}`)
+                    }
+                } catch (err) {
+                    log.error(`Error parsing python message: ${err}`)
                 }
             }
             //console.log(data.toString('utf8'));
         })
+
         this.python.stderr.on('data', (error) => {
             log.error('Python:', error.toString('utf8'));
+        })
+        this.python.on('spawn', () => {
+            log.info('Python childprocess spawned');
+        })
+        this.python.stdin.on('drain', () => {
+            log.info('Draining python.stdin')
+        })
+
+        this.python.on('disconnect', () => {
+            log.info('python child process disconnected')
+        })
+        this.python.on('exit', (code, signal) => {
+            log.error(`PYTHON EXITED: ${code} with signal ${signal}`);
         })
         // let python = this.runPython(, (response: string) => {
         //     try {
@@ -292,8 +361,8 @@ export class BackendServer {
         //         rej(err);
         //     }
         // }, fileName);
-        this.python.stdin.setDefaultEncoding('utf-8');
-
+        this.python.stdin.setDefaultEncoding('utf8');
+        // this.python.stdin.write('test\n');
 
     }
 

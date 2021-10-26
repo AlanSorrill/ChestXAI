@@ -1,5 +1,3 @@
-import { Disease } from "./CommonImports";
-
 
 
 export interface Progress {

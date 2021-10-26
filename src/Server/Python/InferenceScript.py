@@ -36,10 +36,21 @@ do next prediction and similarity search directly, without initiating the model 
 # Consolidation(C2)
 # Atelectasis(C3)
 # Pleural Effusion(C4)
+import json
+import sys
+import time
+print(json.dumps({
+        'msgType': 'status',
+        'message': 'Loading Libraries' 
+    }) + "\n", flush=True)
+
+# for i in range(1000):
+#     print('flusher\n', flush=True)
+#     sys.stdout.flush()
+#     time.sleep(2)
+# sys.stdout.flush()
 
 import os
-import sys
-import json
 from SimilarityClass import SimilaritySearch
 
 
@@ -53,7 +64,7 @@ if __name__ == '__main__':
     print(json.dumps({
         'msgType': 'status',
         'message': 'loading model from ' + os.path.abspath(train_csv_path)
-    }))
+    }) + "\n")
     sys.stdout.flush()
     print(json.dumps({
         'msgType': 'diseaseDefs',
@@ -61,10 +72,12 @@ if __name__ == '__main__':
     }) + "\n")
     sys.stdout.flush()
     obj = SimilaritySearch(train_csv_path, image_base_path, model_vectors_path, cuda_or_cpu = 'cpu', selected_cols = diseaseList)
+    
+    
     print(json.dumps({
-            'msgType': 'status',
-            'message': 'Awaiting file'
-        }) + "\n")
+        'msgType': 'status',
+        'message': 'Awaiting file'
+    }) + "\n")
     sys.stdout.flush()
     for line in sys.stdin:
         print(json.dumps({
@@ -73,17 +86,17 @@ if __name__ == '__main__':
         }) + "\n")
         sys.stdout.flush()
         request = json.loads(line)
-        out_prediction, out_images_and_similarities = obj.run(request.fileName)
+        out_prediction, out_images_and_similarities = obj.run(request.get('fileName'))
         # outPrediction = {'inputFileName': request.fileName, 'diagnosis': out_prediction }
         # # outPrediction = "{fileName: '8310923871.png', diagnosis: [['00000', 0.85], ['00010', 0.25], ['00000', 0.99]]}"
         # outSimilarity = {'inputFileName': request.fileName, 'outputFileNames': out_images_and_similarities}
 
         # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
         # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
-       
+    
         print(json.dumps({
-             'msgType': 'inferenceResponse',
-            'fileName': request.fileName,
+            'msgType': 'inferenceResponse',
+            'fileName': request.get('fileName'),
             'prediction': out_prediction,
             'similarity': out_images_and_similarities
         }) + "\n")
@@ -91,3 +104,8 @@ if __name__ == '__main__':
 
         
         sys.stdout.flush()
+    
+    print(json.dumps({
+        'msgType': 'status',
+        'message': 'std tunnel closed'
+    }) + "\n")

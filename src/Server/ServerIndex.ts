@@ -13,7 +13,7 @@ log.allowBelowLvl(LogLevel.naughty)
 let httpServer: http.Server;
 let socketServer: WebSocket.Server
 const app = express();
-const PORT = 3000;
+const PORT = 4000;
 
 const compiler = webpack(clientWebpackConfig, (err?: Error, stats?: Stats) => {
     stats.hasErrors

@@ -1,5 +1,5 @@
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight, Disease, MainBristol, NonDeformingImage, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase } from "../ClientImports";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight,  MainBristol, NonDeformingImage, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase } from "../ClientImports";
 
 
 export class UIResultCard extends UIElement {
@@ -99,12 +99,12 @@ export class UIResultCard extends UIElement {
 }
 
 export class DiseaseDisplay extends UIElement {
-    private _data: [Disease, number];
+    private _data: [string, number];
     progress: UIProgressBar;
     barWidth: number = 0.6;
     padding: number = 32;
     diseaseName: string;
-    constructor(data: [Disease, number], frame: UIFrame, brist: MainBristol) {
+    constructor(data: [string, number], frame: UIFrame, brist: MainBristol) {
         super(UIElement.createUID('DiseaseDisplay'), frame, brist)
         this.data = data;
         let ths = this;
@@ -126,9 +126,9 @@ export class DiseaseDisplay extends UIElement {
         this.progress.backgroundColor = fColor.darkMode[2];
         this.addChild(this.progress);
     }
-    set data(freshData: [Disease, number]) {
+    set data(freshData: [string, number]) {
         this._data = freshData;
-        this.diseaseName = removeCammelCase(Disease[freshData[0]]);
+        this.diseaseName = removeCammelCase(freshData[0]);
     }
     get data() {
         return this._data

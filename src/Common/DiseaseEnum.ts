@@ -1,10 +1,3 @@
-export enum Disease {
-    enlargedCardiomediastinum = 0,
-    cardiomegaly = 1,
-    lungOpacity = 2,
-    lungLesion = 3,
-
-}
 
 // out_prediction, out_images_and_similarities = obj.run(fileName)
 // outPrediction = {'fileName': fileName, 'diagnosis': out_prediction }
@@ -45,8 +38,8 @@ export interface InferenceRequest extends PythonInterfaceMessage {
 export interface InferenceResponse extends PythonInterfaceMessage {
     msgType: 'inferenceResponse'
     fileName: string
-    prediction: Array<[Disease, number]>
-    similarity: Array<[string, number]>
+    prediction: Array<[string, number]>
+    similarity: Array<[string, number, string]>
 }
 export interface PythonStatusMessage extends PythonInterfaceMessage {
     msgType: 'status'
@@ -56,8 +49,10 @@ export interface UploadResponse {
     success: boolean,
     uploadId: string,
     fileName: string
-    diagnosis: [Disease, number][]
-    similarity: [string, number][]
+    //diseaseName, percentage
+    diagnosis: [string, number][]
+    //filePath, matchPercentage, diseaseName[]
+    similarity: [string, number, string[]][]
 }
 // export interface PredictionResult {
 //     fileName: string,
