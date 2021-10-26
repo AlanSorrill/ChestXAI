@@ -1,5 +1,7 @@
 
 
+import { UIStackRecycler } from "bristolboard";
+import { NumericLiteral } from "typescript";
 import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
 import { UISimilarityCard } from "../UISimilarity";
 
@@ -21,6 +23,7 @@ export class UIP_Gallary_V0 extends UIElement {
     }
     setUploadResponse(resp: UploadResponse) {
         this.clearResults();
+        this.yourResult = resp;
         let ths = this;
         let diagnosisCard = new UIResultCard(resp, UIFrame.Build({
             x: () => ths.margin,
@@ -40,6 +43,23 @@ export class UIP_Gallary_V0 extends UIElement {
             width: () => (box.right() - box.left()),
             height: () => (box.bottom() - box.top())
         }
+        let similarityRecycler = UIStackRecycler.GridFixedColumns<[string, number, string[]], UISimilarityCard>(resp.similarity, {
+            buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
+                return new UISimilarityCard(frame, brist);
+            },
+            bindData: (index: number, data: [string, number, string[]], child: UISimilarityCard) => {
+                child.setData(data);
+            },
+            cols: 3,
+            rowHeight: () => ((ths.height - ths.margin * 2) / 3)
+        }, UIFrame.Build({
+            x: () => (ths.width + ths.margin),
+            y: () => ths.margin,
+            width: () => (ths.margin * 2 + (0.5 * (ths.frame.measureWidth() - (ths.margin * 2)))),
+            height: () => (ths.height - ths.margin * 2)
+        }), this.brist);
+
+        this.addChild(similarityRecycler);
         // let adapter = new ArrayGridRecyclerAdapter<[string,number], UISimilarityCard>(resp.similarity, {
         //     limit: {
         //         columns: 3

@@ -1,12 +1,12 @@
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight,  MainBristol, NonDeformingImage, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase } from "../ClientImports";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight, MainBristol, NonDeformingImage, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase } from "../ClientImports";
 
 
 export class UIResultCard extends UIElement {
 
     uploadResponse: UploadResponse;
     image: NonDeformingImage = null;
-    padding: number = 32;
+    displayCount = 3;
     constructor(data: UploadResponse, uiFrame: UIFrame_CornerWidthHeight, brist: MainBristol) {
         super(UIElement.createUID('ResultCard'), uiFrame, brist)
         this.uploadResponse = data;
@@ -21,10 +21,10 @@ export class UIResultCard extends UIElement {
         let buildFrame = (index: number) => {
 
             return new UIFrame_CornerWidthHeight({
-                x: () => ths.padding,
-                y: () => ths.padding + (ths.height - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
-                width: () => ths.width - ths.padding * 2,
-                height: () => ((ths.bottomCardHeight / 3) - ths.padding * 2)
+                x: () => 0,
+                y: () =>  (ths.height - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
+                width: () => ths.width ,
+                height: () => ((ths.bottomCardHeight / ths.displayCount) )
             })
         }
         for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
@@ -40,11 +40,13 @@ export class UIResultCard extends UIElement {
     }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
         this.brist.fillColor(fColor.darkMode[5]);
-        this.brist.roundedRectFrame(frame, 3, true, false)
+        this.brist.ctx.save();
+        this.brist.roundedRectFrame(frame, 4, true, false)
+        this.brist.ctx.clip();
         this.brist.ctx.beginPath();
     }
     onDrawForeground(frame: UIFrameResult, deltaMs: number) {
-
+        this.brist.ctx.restore();
         ;
         // if (this.image != null) {
         //     this.brist.ctx.drawImage(this.image, frame.left, frame.top + topCardHeight, frame.width, frame.height - topCardHeight);
@@ -102,7 +104,9 @@ export class DiseaseDisplay extends UIElement {
     private _data: [string, number];
     progress: UIProgressBar;
     barWidth: number = 0.6;
-    padding: number = 32;
+    get padding(): number {
+        return this.width * (1/40);
+    };
     diseaseName: string;
     constructor(data: [string, number], frame: UIFrame, brist: MainBristol) {
         super(UIElement.createUID('DiseaseDisplay'), frame, brist)
@@ -111,10 +115,10 @@ export class DiseaseDisplay extends UIElement {
         this.progress = new UIProgressBar(
             () => ths.data[1]//(1 + Math.cos(Date.now() / 1000)) / 2
             , new UIFrame_CornerWidthHeight({
-                x: 0,
-                y: 0,
-                width: () => (ths.width * this.barWidth),
-                height: () => ths.height
+                x: ths.padding,
+                y: ()=>(ths.height/2 - (ths.progress.height / 2)),
+                width: () => (ths.width * this.barWidth) - (ths.padding * 2),
+                height: () => ths.height - (ths.padding * 2)
             }), brist);
         this.progress.text = {
             align: BristolHAlign.Right,
@@ -139,9 +143,15 @@ export class DiseaseDisplay extends UIElement {
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Middle)
         this.brist.fontFamily(BristolFontFamily.Roboto)
-        this.brist.textSizeMaxWidth(frame.height * 0.6, this.diseaseName, frame.width * (1 - this.barWidth) - this.padding);
+        this.brist.textSizeMaxWidth(this.progress.height * 0.9, this.diseaseName, frame.width * (1 - this.barWidth) - this.padding * 2);
         this.brist.fillColor(fColor.lightText[1]);
-        this.brist.text(this.diseaseName, frame.right, frame.centerY);
+        this.brist.text(this.diseaseName, frame.right - this.padding, frame.centerY);
+        this.brist.strokeColor(fColor.darkMode[2]);
+        this.brist.strokeWeight(1);
+        this.brist.ctx.beginPath();
+        this.brist.ctx.moveTo(frame.left, frame.bottom);
+        this.brist.ctx.lineTo(frame.right, frame.bottom);
+        this.brist.ctx.stroke();
     }
     shouldDragLock(event: MouseBtnInputEvent): boolean {
         return false

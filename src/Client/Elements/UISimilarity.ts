@@ -5,7 +5,7 @@ import { UIFrame, UIFrameResult, MainBristol,  UIElement, NonDeformingImage } fr
 
 export class UISimilarityCard extends UIElement {
     image: NonDeformingImage;
-    similarityData: [string, number];
+    similarityData: [string, number, string[]];
     textSize: number = 24;
     padding: number = 16;
     constructor(uiFrame: UIFrame, brist: MainBristol) {
@@ -34,7 +34,7 @@ export class UISimilarityCard extends UIElement {
         this.brist.fillColor(fColor.lightText[1])
         this.brist.text(`${this.similarityData[1].toFixed(1)}%`, frame.left + this.padding, frame.bottom - this.padding)
     }
-    setData(similarityData: [string, number]) {
+    setData(similarityData: [string, number, string[]]) {
         this.similarityData = similarityData
         this.image.setImage('patients/' + similarityData[0])
     }
