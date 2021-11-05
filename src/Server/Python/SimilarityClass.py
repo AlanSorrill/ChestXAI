@@ -28,6 +28,7 @@ class SimilaritySearch(object):
         self.train_truth = np.load(model_vectors_path + 'train_truth_pre_none.npy').astype('int')
         
         index = faiss.index_factory(1024, "Flat")
+        # index = faiss.IndexFlatIP(1024)
         if cuda_or_cpu == 'cuda':
             res = faiss.StandardGpuResources()
             self.index = faiss.index_cpu_to_gpu(res, 0, index)
@@ -97,7 +98,9 @@ class SimilaritySearch(object):
         out_images_and_similarities = []
         for i, idx in enumerate(S_index):
             path = self.images_list[idx]
-            similarity = 1 /(1 + np.sqrt(Distance[i]))
+            # similarity = 1 /np.exp(Distance[i]/48)
+            similarity = 1 /np.exp(np.sqrt(Distance[i])/27.28)
+            # similarity = np.clip(np.power(Distance[i]/1024, 1/5), 0, 0.9999)
             label = ''.join(str(l) for l in self.train_truth[idx])
             out_images_and_similarities.append([path, round(similarity.astype(float), 4),label])
         
