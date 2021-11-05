@@ -22,8 +22,11 @@ window.urlManager = new UrlManager();
 window.session = new ClientSession(window.urlManager.get('seshId', null));
 window.mainBristol = new BristolBoard(containerDiv.element, async (brist: BristolBoard<any>)=>{
     let rootElement = new UI_ChestXAI(brist);
+    
     urlManager.setListener(rootElement);
-    rootElement.onValueSet('page', 'upload')
+    rootElement.showUpload();
     return rootElement;
 });
+
 mainBristol.debuggerFlags.debugUIFrame = urlManager.get('debugUIFrames', false);
+

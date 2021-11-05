@@ -1,22 +1,36 @@
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight, MainBristol, NonDeformingImage, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase } from "../ClientImports";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight, MainBristol, UI_Image, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase, logger } from "../ClientImports";
+let log = logger.local('ResultCard');
 
 
 export class UIResultCard extends UIElement {
 
     uploadResponse: UploadResponse;
-    image: NonDeformingImage = null;
+    image: UI_Image = null;
     displayCount = 3;
     constructor(data: UploadResponse, uiFrame: UIFrame_CornerWidthHeight, brist: MainBristol) {
         super(UIElement.createUID('ResultCard'), uiFrame, brist)
         this.uploadResponse = data;
         let ths = this;
-        this.image = new NonDeformingImage(`./userContent/${this.uploadResponse.fileName}`, UIFrame.Build({
+        if(typeof data.imageBlob == 'undefined'){
+            data.imageBlob = null;
+        }
+        this.image = new UI_Image(data.imageBlob != null ? data.imageBlob : `./userContent/${this.uploadResponse.fileName}`, UIFrame.Build({
             x: 0,
             y: 0,
-            width: () => (ths.frame.result?.width),
+            width: () => (ths.width),
             height: () => (ths.height - ths.bottomCardHeight)
         }), brist);
+        this.image.setOnLoaded((img: UI_Image)=>{
+            console.log(img);
+            // img.centerHorizontally();
+            // img.centerVertically();
+            img.addOnAttachToBristolListener(()=>{
+                img.fitHorizontally();
+                log.info(`Resizing ${ths.uploadResponse.fileName}`)
+            })
+            
+        })
         this.addChild(this.image);
         let buildFrame = (index: number) => {
 
@@ -127,7 +141,7 @@ export class DiseaseDisplay extends UIElement {
             foregroundColor: fColor.lightText[1]
         };
         this.progress.foregroundColor = fColor.green.base;
-        this.progress.backgroundColor = fColor.darkMode[2];
+        this.progress.backgroundColor = fColor.darkMode[4];
         this.addChild(this.progress);
     }
     set data(freshData: [string, number]) {

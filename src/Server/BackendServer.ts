@@ -65,26 +65,37 @@ export class BackendServer {
             resp.setHeader('content-type', 'application/json');
             resp.send(JSON.stringify(possibilities));
         })
+        app.get('/patients/:patientId/:studyId/:imageName', (req: Request, resp: Response) => {
+            let patientId = req.params.patientId;
+            let idNumber: number = Number(patientId.replace('patient', ''));
+            ///dual_data/not_backed_up/CheXpert/CheXpert-v1.0/train/patient00001/study1/view1_frontal.jpg
+            let fullPath = `/dual_data/not_backed_up/CheXpert/CheXpert-v1.0/${(idNumber < 64541) ? 'train' : 'valid'}/${patientId}/${req.params.studyId}/${req.params.imageName}`
+            if (fs.existsSync(fullPath)) {
+                log.info(`Sending ${fullPath}`)
+                resp.sendFile(fullPath);
+            } else {
+                resp.sendStatus(404).send('File not found');
+            }
+        })
 
-        app.post('/upload', multerUpload.single('file'), function (req, res, next) {
-            // let content = req.file;
 
-            // req.body will hold the text fields, if there were any
-            log.info(`Recieved upload POST ${req.file.filename}`);
+        let fileNameToFullPath = (fileName: string) => Path.join(__dirname, `/../../uploads/${fileName}`);
+
+        let handleInferenceRequest = (fileName: string, resp: Response)=>{
             //TODO handle bad uploads
 
             // let sesh = new ServerSession(;
             // backend.sessions.set(sesh.id, sesh);
             let respPayload: UploadResponse = {
                 success: true,
-                fileName: req.file.filename,
-                uploadId: req.file.filename.split('.').first,
+                fileName: fileName,
+                uploadId: fileName.split('.').first,
                 diagnosis: null,
                 similarity: null
             }
-            res.set('Connection', 'keep-alive');
+            resp.set('Connection', 'keep-alive');
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
-            let fullPath = Path.join(__dirname, `/../../uploads/${req.file.filename}`);
+            let fullPath = fileNameToFullPath(fileName);
             log.info(`Running inference on ${fullPath}`);
             backend.runInferance(fullPath).then((data: InferenceResponse) => {
                 respPayload.diagnosis = [];
@@ -98,9 +109,28 @@ export class BackendServer {
                     val = data.similarity[i];
                     respPayload.similarity.push([val[0], val[1], backend.bitStringToDiseases(val[2])])
                 }
-                res.send(JSON.stringify(respPayload));
+                resp.send(JSON.stringify(respPayload));
 
             })
+        }
+
+        app.get('/reuse', (req: Request, resp: Response) => {
+            if (typeof req.query.upload != 'string') {
+                resp.statusMessage = 'no upload name given';
+                resp.sendStatus(404);
+            }
+            
+            log.info(`Recieved reuse GET ${req.query.upload}`);
+            return handleInferenceRequest(req.query.upload as string, resp);
+
+        })
+        app.post('/upload', multerUpload.single('file'), function (req: Request, resp: Response, next) {
+            log.info(`Recieved upload POST ${req.file.filename}`);
+            return handleInferenceRequest(req.file.filename, resp);
+            // let content = req.file;
+
+            // req.body will hold the text fields, if there were any
+            
             // backend.makeDiagnosis(respPayload.uploadId, {
             //     onUpdate: (msg: string, alpha: number) => {
             //         log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
@@ -233,7 +263,12 @@ export class BackendServer {
     inferenceWaiters: Map<string, (resp: InferenceResponse) => void> = new Map();
     async runInferance(fileName: string): Promise<InferenceResponse> {
         return new Promise((acc, rej) => {
-            this.inferenceWaiters.set(fileName, (resp: InferenceResponse) => { acc(resp); })
+            let startTime = Date.now();
+            this.inferenceWaiters.set(fileName, (resp: InferenceResponse) => {
+                let endTime = Date.now();
+                log.info(`Inference took ${endTime - startTime}ms ---------------------`)
+                acc(resp);
+            })
             this.sendToPython(JSON.stringify({
                 'msgType': 'inferenceRequest',
                 'fileName': fileName

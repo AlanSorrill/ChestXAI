@@ -1,21 +1,22 @@
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign } from "bristolboard";
-import { UIFrame, UIFrameResult, MainBristol,  UIElement, NonDeformingImage } from "../ClientImports";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, UIElement } from "bristolboard";
+import { UIFrame, UIFrameResult, MainBristol, UI_Image } from "../ClientImports";
 
 
 export class UISimilarityCard extends UIElement {
-    image: NonDeformingImage;
+    image: UI_Image;
     similarityData: [string, number, string[]];
     textSize: number = 24;
     padding: number = 16;
+    margin: number = 16;
     constructor(uiFrame: UIFrame, brist: MainBristol) {
         super(UIElement.createUID('similarityResult'), uiFrame, brist)
         let ths = this;
-        this.image = new NonDeformingImage(null, UIFrame.Build({
-            x: 0,
-            y: 0,
-            width: () => ths.width,
-            height: () => ths.height - (ths.padding * 2 + ths.textSize)
+        this.image = new UI_Image(null, UIFrame.Build({
+            x: ths.margin,
+            y: ths.margin,
+            width: () => ths.width - ths.margin * 2,
+            height: () => ths.height - (ths.padding * 2 + ths.textSize) - ths.margin * 2
         }) as any, brist)
         //  this.image.fitHorizontally();
         this.addChild(this.image)
@@ -24,7 +25,7 @@ export class UISimilarityCard extends UIElement {
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.fillColor(fColor.darkMode[8]);
         this.brist.ctx.beginPath();
-        this.brist.rectFrame(frame, false, true);
+        this.brist.rect(frame.left + this.margin, frame.top + this.margin, this.image.width, this.height - this.margin * 2, false, true);
         this.brist.ctx.beginPath();
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
@@ -32,10 +33,16 @@ export class UISimilarityCard extends UIElement {
         this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Bottom);
         this.brist.fontFamily(BristolFontFamily.Roboto)
         this.brist.fillColor(fColor.lightText[1])
-        this.brist.text(`${this.similarityData[1].toFixed(1)}%`, frame.left + this.padding, frame.bottom - this.padding)
+        this.brist.text(`${(this.similarityData[1] * 100).toFixed(1)}%`, this.margin + frame.left + this.padding, frame.bottom - this.padding - this.margin)
     }
     setData(similarityData: [string, number, string[]]) {
         this.similarityData = similarityData
-        this.image.setImage('patients/' + similarityData[0])
+        let ths = this;
+        this.image.setImage('patients/' + similarityData[0]).then(() => {
+            ths.addOnAttachToBristolListener(() => {
+                console.log('Fitting similarity image')
+                ths.image.fitHorizontally();
+            })
+        })
     }
 }

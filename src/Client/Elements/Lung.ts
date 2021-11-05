@@ -1,4 +1,4 @@
-import { UIFrame_CornerWidthHeight } from "bristolboard";
+import { lerp, UIFrame_CornerWidthHeight } from "bristolboard";
 import { KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, Vector2, UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult, UIElement, optFunc, MainBristol } from "../ClientImports";
 
 
@@ -20,10 +20,28 @@ export class Lung extends UIElement {
         this.root = this.base.subtractFunc(new Vector2(0, () => (ths.frame.measureWidth() * 0.2))).setName('root');
         // this.buildVector(this.chainData, this.base);
         let refRatio = 151.99 / 300.26
+        this.setChainData(this.chainData);
 
     }
     setChainData(data: ChainLink) {
-
+        this.chainData = data;
+        this.setLinkAlpha(this.chainData);
+    }
+    setLinkAlpha(link: ChainLink, last: ChainLink = null) {
+        if (last != null) {
+            let distance = Math.sqrt(Math.pow(link.vector[0] - last.vector[0], 2) + Math.pow(link.vector[1] - last.vector[1], 2));
+            link.distance = distance;
+        } else {
+            link.distance = 0;
+        }
+        if (link.next != null) {
+            let fullDepth = Math.max(this.setLinkAlpha(link.next[0], link),
+                this.setLinkAlpha(link.next[1], link));
+            link.alpha = link.distance / fullDepth;
+            return fullDepth;
+        }
+        link.alpha = 1;
+        return link.distance;
     }
     // buildVector(chain: ChainLink, parent: Vector2 = null) {
     //     let ths = this;
@@ -72,7 +90,7 @@ export class Lung extends UIElement {
     editable(link: ChainLink = null) {
         let ths = this;
         if (link == null) {
-            while(this.handles.length > 0){
+            while (this.handles.length > 0) {
                 this.handles.pop().removeFromParent();
             }
             link = this.chainData;
@@ -124,52 +142,77 @@ export class Lung extends UIElement {
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.base.x, this.base.y);
         // this.brist.strokeColor(fColor.green.base);
-        this.drawChainLink(this.chainData, 0, frame, null);
+        let drawDist = (Math.cos(Date.now() / 1000) + 1) / 2;
+      //  console.log(drawDist);
+        this.drawChainLink(this.chainData, 0, frame, drawDist);
         this.brist.noFill();
         this.brist.ctx.stroke();
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.base.x, this.base.y);
-        this.drawChainLink(this.chainData, 1, frame, null);
+        this.drawChainLink(this.chainData, 1, frame, drawDist);
         this.brist.ctx.stroke();
         // this.brist.ctx.moveTo(this.base.x, this.base.y);
         // this.drawChainLink(this.chainData, 1, frame, null);
         // this.brist.ctx.stroke();
         this.brist.ctx.beginPath();
     }
-    drawChainLink(chain: ChainLink | [ChainLink, ChainLink], side: 0 | 1, frame: UIFrameResult, last: ChainLink = null) {
+    drawChainLink(chain: ChainLink | [ChainLink, ChainLink], side: 0 | 1, frame: UIFrameResult, drawDistance: number = -1, last: ChainLink = null) {
         if (last == null && !Array.isArray(chain)) {
 
         }
         if (Array.isArray(chain)) {
-            this.drawChainLink(chain[0], side, frame, last);
+            this.drawChainLink(chain[0], side, frame, drawDistance, last);
 
-            this.drawChainLink(chain[1], side, frame, last);
+            this.drawChainLink(chain[1], side, frame, drawDistance, last);
         } else {
             if (Array.isArray(chain.vector)) {
                 chain.vector = new Vector2(chain.vector[0], chain.vector[1]);
 
             }
+            let a: [x: number, y: number]
+            let b: [x: number, y: number]
             if (last == null) {
-                this.brist.ctx.moveTo(this.base.x, this.base.y);
+                //this.brist.ctx.moveTo(this.base.x, this.base.y);
+                a = [this.base.x, this.base.y];
             } else {
                 if (Array.isArray(last.vector)) {
                     last.vector = new Vector2(chain.vector[0], chain.vector[1])
                 }
                 if (side == 0) {
-                    this.brist.ctx.moveTo(frame.left + last.vector.x * frame.width, frame.top + last.vector.y * frame.height);
+                    //this.brist.ctx.moveTo(frame.left + last.vector.x * frame.width, frame.top + last.vector.y * frame.height);
+                    a = [frame.left + last.vector.x * frame.width, frame.top + last.vector.y * frame.height];
                 } else {
-                    this.brist.ctx.moveTo(frame.left + ((-1 * (last.vector.x - 0.5)) + 0.5) * frame.width, frame.top + last.vector.y * frame.height);
+                    //this.brist.ctx.moveTo(frame.left + ((-1 * (last.vector.x - 0.5)) + 0.5) * frame.width, frame.top + last.vector.y * frame.height);
+                    a = [frame.left + ((-1 * (last.vector.x - 0.5)) + 0.5) * frame.width, frame.top + last.vector.y * frame.height];
                 }
             }
+            this.brist.ctx.moveTo(a[0], a[1]);
             if (side == 0) {
-                this.brist.ctx.lineTo(frame.left + chain.vector.x * frame.width, frame.top + chain.vector.y * frame.height);
+                // this.brist.ctx.lineTo(frame.left + chain.vector.x * frame.width, frame.top + chain.vector.y * frame.height);
+                b = [frame.left + chain.vector.x * frame.width, frame.top + chain.vector.y * frame.height]
             } else {
-
-                this.brist.ctx.lineTo(frame.left + ((-1 * (chain.vector.x - 0.5)) + 0.5) * frame.width, frame.top + chain.vector.y * frame.height);
+                // this.brist.ctx.lineTo(frame.left + ((-1 * (chain.vector.x - 0.5)) + 0.5) * frame.width, frame.top + chain.vector.y * frame.height);
+                b = [frame.left + ((-1 * (chain.vector.x - 0.5)) + 0.5) * frame.width, frame.top + chain.vector.y * frame.height]
             }
+            if (drawDistance == -1) {
+                this.brist.ctx.lineTo(b[0], b[1]);
+            } else if (last == null) {
+                let distance = Math.sqrt(Math.pow(b[0] - a[0], 2) + Math.pow(b[1] - a[1], 2)) / frame.width
+                let alpha = Math.min(drawDistance / distance, 1);
+                this.brist.ctx.lineTo(lerp(a[0], b[0], alpha), lerp(a[1], b[1], alpha));
+            } else {
+                let length = chain.distance - (last?.distance ?? 0);
+                let relativeDistance = drawDistance - last.distance;
+                let alpha = Math.max(0, Math.min(1, relativeDistance / length));
+                this.brist.ctx.lineTo(lerp(a[0], b[0], alpha), lerp(a[1], b[1], alpha));
+                this.brist.fillColor(fColor.red.base);
+                this.brist.textSize(10)
+                this.brist.ctx.fillText(`${alpha}`, b[0], b[1]);
+            }
+
             //   this.brist.ctx.bezierCurveTo(frame.left + last.tangent[0] * frame.width, frame.top + last.tangent[1] * frame.height, frame.left + chain.tangent[0] * frame.width, frame.top + chain.tangent[1] * frame.height, frame.left + chain.base[0] * frame.width, frame.top + chain.base[1] * frame.height)
-            if (chain.next != null && typeof chain.next != 'undefined') {
-                this.drawChainLink(chain.next, side, frame, chain);
+            if (chain.next != null && typeof chain.next != 'undefined' && drawDistance > chain.distance) {
+                this.drawChainLink(chain.next, side, frame, drawDistance, chain);
             }
         }
 
@@ -242,9 +285,11 @@ export class LungHandle extends UIElement {
                 { vector: offset(-0.1, -0.1) },
                 { vector: offset(0.1, 0.1) }
             ]
+            this.lung.setLinkAlpha(this.link.next[0], this.link);
+            this.lung.setLinkAlpha(this.link.next[1], this.link);
             this.lung.editable(this.link.next[0])
             this.lung.editable(this.link.next[1])
-        } else if(evt.btn == 2){
+        } else if (evt.btn == 2) {
             this.link.next = undefined
             this.lung.editable();
         }
@@ -296,6 +341,8 @@ export class LungHandle extends UIElement {
 interface ChainLink {
     vector: Vector2 | [number, number]
     curveWeight?: number
+    distance?: number
+    alpha?: number
     // angle: optFunc<number>
     // distance: optFunc<number>
     next?: [ChainLink, ChainLink],

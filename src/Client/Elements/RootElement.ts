@@ -1,6 +1,6 @@
 
 
-import { UIP_Gallary_V0, UICorner, UIP_Upload_V0, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, KeyboardInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent } from "../ClientImports";
+import { UIP_Gallary_V0, UICorner, UIP_Upload_V0, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, KeyboardInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UploadResponse } from "../ClientImports";
 
 
 
@@ -47,8 +47,8 @@ let log = logger.local('RootElement');
 
 export class UI_ChestXAI extends UIElement implements UrlListener {
    
-    currentPage: UIElement = null
-    pageTypes: { upload: (typeof UIP_Upload_V0)[]; gallary: (typeof UIP_Gallary_V0)[]; };
+    currentPage: UIP_Upload_V0 | UIP_Gallary_V0 = null
+    
 
 
 
@@ -60,7 +60,7 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
             width: () => brist.width,
             height: () => brist.height
         }), brist);
-        let ths = this
+        this.parent = brist;
         // let lung = new Lung({
         //     x: () => (ths.frame.result.width / 2),
         //     y: () => (ths.frame.result.height / 2),
@@ -68,27 +68,43 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
         //     width: 800, height: 800
         // }, this.brist);
         // this.addChild(lung);
-        this.pageTypes = {
-            upload: [UIP_Upload_V0],
-            gallary: [UIP_Gallary_V0]
-        }
+        // this.pageTypes = {
+        //     upload: [UIP_Upload_V0],
+        //     gallary: [UIP_Gallary_V0]
+        // }
     }
-    setPage(name: string, version: number = 0) {
+    showUpload(): UIP_Upload_V0{
         this.currentPage?.removeFromParent();
-        let construct = this.pageTypes[name][version]
-        let ths = this;
-        this.currentPage = new construct(`page`, UIFrame.Build({
-            x: 0,
-            y: 0,
-            width: () => ths.frame.measureWidth(),
-            height: () => ths.frame.measureHeight()
-        }), this.brist);
-        this.addChild(this.currentPage);
+        this.currentPage = new UIP_Upload_V0(this.brist);
+        this.addChild(this.currentPage)
         return this.currentPage;
     }
-    onValueSet(key: string, value: UrlDataType): void {
+    showGallary(uploadResponse: UploadResponse): UIP_Gallary_V0 {
+        this.currentPage?.removeFromParent();
+        this.currentPage = new UIP_Gallary_V0(this.brist);
+        this.addChild(this.currentPage)
+        this.currentPage.setUploadResponse(uploadResponse);
+        return this.currentPage;
+    }
 
-        this.setPage(urlManager.page, urlManager.version);
+    onUrlParamSet(key: string, value: UrlDataType): void {
+        switch(key){
+            case 'upload':
+            fetch(`${window.location.origin}/reuse?upload=${value}`).then(async (httpResp: Response)=>{
+                let resp: UploadResponse = await httpResp.json();
+                log.info(`Upload responded `, resp);
+                // let blob = await UIP_Upload_V0.fileToBlob(file);
+                // resp.imageBlob = blob;
+               // urlManager.set('upload',resp.fileName,false);
+                let gallary: UIP_Gallary_V0 = mainBristol.rootElement.showGallary(resp);
+                gallary.setUploadResponse(resp);
+            }).catch()
+            break;
+            default:
+                log.error(`Unknown URL parameter: ${key}`)
+                break;
+        }
+        // this.setPage(urlManager.page, urlManager.version);
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
     }

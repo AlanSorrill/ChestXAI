@@ -9,13 +9,19 @@ import { UISimilarityCard } from "../UISimilarity";
 
 export class UIP_Gallary_V0 extends UIElement {
     similarityCards: UISimilarityCard[];
-    constructor(id: string, uiFrame: UIFrame_CornerWidthHeight, brist: BristolBoard<any>) {
-        super(id, uiFrame, brist);
+    constructor( brist: BristolBoard<any>) {
+        super(UIElement.createUID('gallary'), UIFrame.Build({
+            x: 0,
+            y: 0,
+            width: () => brist.width,
+            height: () => brist.height
+        }), brist);
     }
 
     yourResult: UploadResponse
     similarResults: UploadResponse[]
-    resultCards: (UIResultCard | UISimilarityCard)[] = []
+    resultCards: (UIResultCard | UIStackRecycler<[string, number, string[]], UISimilarityCard>)[] = []
+   
     clearResults() {
         while (this.resultCards.length > 0) {
             this.resultCards.pop().removeFromParent();
@@ -53,13 +59,14 @@ export class UIP_Gallary_V0 extends UIElement {
             cols: 3,
             rowHeight: () => ((ths.height - ths.margin * 2) / 3)
         }, UIFrame.Build({
-            x: () => (ths.width + ths.margin),
+            x: () => (ths.width / 2 + ths.margin),
             y: () => ths.margin,
-            width: () => (ths.margin * 2 + (0.5 * (ths.frame.measureWidth() - (ths.margin * 2)))),
+            width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
             height: () => (ths.height - ths.margin * 2)
         }), this.brist);
 
         this.addChild(similarityRecycler);
+        this.resultCards.push(similarityRecycler);
         // let adapter = new ArrayGridRecyclerAdapter<[string,number], UISimilarityCard>(resp.similarity, {
         //     limit: {
         //         columns: 3

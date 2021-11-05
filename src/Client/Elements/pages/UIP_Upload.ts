@@ -44,8 +44,13 @@ export class UIP_Upload_V0 extends UIElement {
     lung: Lung;
 
 
-    constructor(id: string, uiFrame: UIFrame_CornerWidthHeight, brist: BristolBoard<any>) {
-        super(id, uiFrame, brist);
+    constructor(brist: BristolBoard<any>) {
+        super(UIElement.createUID('Upload'), UIFrame.Build({
+            x: 0,
+            y: 0,
+            width: () => brist.width,
+            height: () => brist.height
+        }), brist)
 
         let ths = this;
         let inputElem: HTMLInputElement = document.getElementById('uploadInput') as HTMLInputElement;
@@ -232,6 +237,10 @@ export class UIP_Upload_V0 extends UIElement {
         // this.addChild(horizontalTestRecycler);
     }
 
+    static async fileToBlob(file: File){
+        return URL.createObjectURL(new Blob([new Uint8Array(await file.arrayBuffer())], {type: file.type }));
+    }
+
     uploadFile(file: File) {
         console.log('Uploading file');
         console.log(file);
@@ -247,7 +256,7 @@ export class UIP_Upload_V0 extends UIElement {
         //          body: stream
         //     })
         // })
-
+        console.log('Uploading file ', file)
         let formData = new FormData();
         formData.append('file', file);
         var ajax = new XMLHttpRequest();
@@ -272,11 +281,14 @@ export class UIP_Upload_V0 extends UIElement {
             log.error('Upload abort', event)
         }, false);
 
-        ajax.addEventListener('readystatechange', function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
+        ajax.addEventListener('readystatechange', async function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             if (ajax.readyState == XMLHttpRequest.DONE) {
                 let resp: UploadResponse = JSON.parse(ajax.responseText)
                 log.info(`Upload responded `, resp);
-                let gallary: UIP_Gallary_V0 = mainBristol.rootElement.setPage('gallary') as any;
+                let blob = await UIP_Upload_V0.fileToBlob(file);
+                resp.imageBlob = blob;
+                urlManager.set('upload',resp.fileName,false);
+                let gallary: UIP_Gallary_V0 = mainBristol.rootElement.showGallary(resp);
                 gallary.setUploadResponse(resp);
                 //                 if (resp.success)
                 //                     urlManager.set('seshId', resp.uploadId)
