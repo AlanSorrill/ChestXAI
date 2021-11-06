@@ -1,6 +1,6 @@
 
 
-import { UIStackRecycler } from "bristolboard";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, UIStackRecycler } from "bristolboard";
 import { NumericLiteral } from "typescript";
 import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
 import { UISimilarityCard } from "../UISimilarity";
@@ -131,7 +131,13 @@ export class UIP_Gallary_V0 extends UIElement {
 
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
-
+        this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Bottom);
+        this.brist.textSize(this.margin * 0.4);
+        this.brist.fontFamily(BristolFontFamily.Roboto);
+        this.brist.fillColor(fColor.lightText[1])
+        this.brist.text(`Your Result`, this.margin, this.margin );
+        this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Bottom);
+        this.brist.text(`Similar Results`, this.width - this.margin - this.padding, this.margin)
     }
     mousePressed(evt: MouseBtnInputEvent): boolean {
         return false;

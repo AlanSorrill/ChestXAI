@@ -5,9 +5,11 @@ import http from 'http'
 import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
+import sharp from 'sharp'
 import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
+import path from "path";
 let log = logger.local('BackendServer');
 log.allowBelowLvl(LogLevel.silly);
 
@@ -65,12 +67,31 @@ export class BackendServer {
             resp.setHeader('content-type', 'application/json');
             resp.send(JSON.stringify(possibilities));
         })
-        app.get('/patients/:patientId/:studyId/:imageName', (req: Request, resp: Response) => {
+        app.get('/patients/:patientId/:studyId/:imageName', async (req: Request, resp: Response) => {
             let patientId = req.params.patientId;
             let idNumber: number = Number(patientId.replace('patient', ''));
+
             ///dual_data/not_backed_up/CheXpert/CheXpert-v1.0/train/patient00001/study1/view1_frontal.jpg
             let fullPath = `/dual_data/not_backed_up/CheXpert/CheXpert-v1.0/${(idNumber < 64541) ? 'train' : 'valid'}/${patientId}/${req.params.studyId}/${req.params.imageName}`
             if (fs.existsSync(fullPath)) {
+                if (typeof req.query.res != 'undefined') {
+                    let scale = Number(req.query.res)/100;
+                    log.info(`Requested image ${patientId} at ${scale}`);
+                    let scaledPath = path.join(__dirname, `/../../uploads/scaledImages/${req.query.res}_${patientId}_${req.params.studyId}_${req.params.imageName}`)
+                    if(fs.existsSync(scaledPath)){
+                        resp.sendFile(scaledPath);
+                        return;
+                    } else {
+                        let originalImage = sharp(fullPath);
+                        let metadata = await originalImage.metadata();
+                        
+                        await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).toFile(scaledPath);
+                        resp.sendFile(scaledPath);
+                        return;
+                    }
+                }
+
+
                 log.info(`Sending ${fullPath}`)
                 resp.sendFile(fullPath);
             } else {

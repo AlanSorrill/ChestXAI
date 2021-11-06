@@ -38,7 +38,7 @@ export class UISimilarityCard extends UIElement {
     setData(similarityData: [string, number, string[]]) {
         this.similarityData = similarityData
         let ths = this;
-        this.image.setImage('patients/' + similarityData[0]).then(() => {
+        this.image.setImage(`patients/${similarityData[0]}?res=20`).then(() => {
             ths.addOnAttachToBristolListener(() => {
                 console.log('Fitting similarity image')
                 ths.image.fitHorizontally();
