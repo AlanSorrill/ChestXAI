@@ -17,10 +17,11 @@ import { UI_ChestXAI } from './Elements/RootElement';
 
 import { Socker } from './RestClient';
 import { ClientSession } from './ClientSession';
+import {  ImageEditor } from "./ImageEditing";
 
 
 export * from './ClientSession'
-
+export * from './ImageEditing'
 export * from "./Elements/RootElement";
 export * from "./Elements/TestDot";
 export * from "./Elements/Button";
@@ -44,8 +45,10 @@ declare global {
 
     var classes: {
         Rest: typeof Socker
+        ImageEditor: typeof ImageEditor
+        
     }
 }
 
 //Allow client console to access static classes inside webpack
-window.classes = { Rest: Socker };
+window.classes = { Rest: Socker , ImageEditor: ImageEditor};

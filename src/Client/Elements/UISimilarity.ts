@@ -1,11 +1,11 @@
 
 import { BristolFontFamily, BristolHAlign, BristolVAlign, UIElement } from "bristolboard";
-import { UIFrame, UIFrameResult, MainBristol, UI_Image } from "../ClientImports";
+import { UIFrame, UIFrameResult, MainBristol, UI_Image, DiseaseDefinition } from "../ClientImports";
 
 
 export class UISimilarityCard extends UIElement {
     image: UI_Image;
-    similarityData: [string, number, string[]];
+    similarityData: [string, number, DiseaseDefinition[]];
     textSize: number = 24;
     padding: number = 16;
     margin: number = 16;
@@ -31,11 +31,11 @@ export class UISimilarityCard extends UIElement {
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.textSize(this.textSize);
         this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Bottom);
-        this.brist.fontFamily(BristolFontFamily.Roboto)
+        this.brist.fontFamily(BristolFontFamily.Raleway)
         this.brist.fillColor(fColor.lightText[1])
         this.brist.text(`${(this.similarityData[1] * 100).toFixed(1)}%`, this.margin + frame.left + this.padding, frame.bottom - this.padding - this.margin)
     }
-    setData(similarityData: [string, number, string[]]) {
+    setData(similarityData: [string, number, DiseaseDefinition[]]) {
         this.similarityData = similarityData
         let ths = this;
         this.image.setImage(`patients/${similarityData[0]}?res=20`).then(() => {

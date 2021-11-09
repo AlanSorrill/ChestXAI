@@ -55,6 +55,7 @@ export class UIProgressBar extends UIElement {
         return this.height * (0.2);
     }
     setupText(frame: UIFrameResult) {
+        this.brist.fontFamily(BristolFontFamily.Monospace);
         this.brist.textAlign(this.text.align, BristolVAlign.Middle);
         this.brist.textSize(frame.height - this.padding * 2);
     }

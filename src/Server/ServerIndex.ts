@@ -4,7 +4,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import http from 'http'
 import path from 'path'
-import fs from 'fs'
+import fs from 'fs' 
 // import favicon from 'serve-favicon'
 import {BackendServer, WebSocket, clientWebpackConfig, logger, LogLevel, webpackBuildListener } from './ServerImports'
 
@@ -17,6 +17,7 @@ const PORT = 4000;
 
 const compiler = webpack(clientWebpackConfig, (err?: Error, stats?: Stats) => {
     stats.hasErrors
+    console.log(`Webpack Build Error`,err)
 }) as webpack.Compiler;
 webpackBuildListener((percentage: number, msg: string, ...args) => {
     console.log(`${(percentage * 100).toFixed(1)}%`, msg, args.join(' '))
@@ -73,6 +74,7 @@ async function setup() {
 
         
     })
+    
     app.use(webpackMiddle)
     app.use(webpackHotMiddleware(compiler))
     httpServer.listen(PORT, () => {

@@ -7,7 +7,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
     maxFreeScaleVelocity: number = 0.001;
     maxFreeOffsetVelocity: number = 10;
     scale: number = 1;
-    offset: [number, number] = [0, 0]
+    offset: [x: number, y: number] = [0, 0]
 
     constructor(urlOrImage: string | HTMLImageElement, uiFrame: UIFrame, brist: MainBristol) {
         super(UIElement.createUID('NonDefImage'), uiFrame, brist);
@@ -15,13 +15,13 @@ export class UI_Image extends UIElement implements MouseDragListener {
     }
     private isLoaded = false;
     private loadedListener: ((ths: UI_Image) => void)[] = [];
-    private notifyOnLoadedListeners(){
-        for(let i = 0;i< this.loadedListener.length;i++){
+    private notifyOnLoadedListeners() {
+        for (let i = 0; i < this.loadedListener.length; i++) {
             this.loadedListener[i](this);
         }
     }
     setOnLoaded(loadedListener: (ths: UI_Image) => void) {
-        this.loadedListener.push( loadedListener);
+        this.loadedListener.push(loadedListener);
         if (this.isLoaded) {
             console.log(`Already completed listener for ${this.image.src}`)
             loadedListener(this);
@@ -31,7 +31,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
         return true;
     }
     async setImage(urlOrImage: string | HTMLImageElement): Promise<UI_Image> {
-      
+
         let ths = this;
         this.isLoaded = false;
         if (urlOrImage == null) {
@@ -77,12 +77,12 @@ export class UI_Image extends UIElement implements MouseDragListener {
         return this.image.height * this.scale;
     }
     fitHorizontally(retries: number = 1000) {
-       
-            this.scale = this.width / this.image.width;
 
-      
+        this.scale = this.width / this.image.width;
+
+
         console.log(`Resizing to ${this.scale}`)
-        if (isNaN(this.scale)) {
+        if (isNaN(this.scale) || this.image.width == 0) {
             let ths = this;
             let count = 0;
             setTimeout(() => {
@@ -166,14 +166,42 @@ export class UI_Image extends UIElement implements MouseDragListener {
         return true;
     }
     mouseDragged(evt: MouseDraggedInputEvent): boolean {
+        if (this.offset[0] + evt.deltaX > 0) {
+            let leftoverX = (this.offset[0] + evt.deltaX);
+            evt.deltaX = leftoverX;
+            this.offset[0] = 0;
+            console.log(`<0 LeftoverX ${leftoverX}`)
+            return true;
+        } else if (this.offset[0] + evt.deltaX + this.imgWidth < this.width) {
+            let leftoverX = this.width - (this.offset[0] + evt.deltaX + this.imgWidth);
+            evt.deltaX = leftoverX;
+            this.offset[0] += evt.deltaX - leftoverX;
+            console.log(`>${this.width} LeftoverX ${leftoverX}`)
+            return true;
+        }
+        if (this.offset[1] + evt.deltaY > 0) {
+            let leftoverY = (this.offset[1] + evt.deltaY);
+            evt.deltaY = leftoverY;
+            this.offset[1] = 0;
+            console.log(`<0 LeftoverY ${leftoverY}`)
+            return true;
+        } else if (this.offset[1] + evt.deltaY + this.imgHeight < this.height) {
+            let leftoverY = this.height - (this.offset[1] + evt.deltaY + this.imgHeight);
+            evt.deltaY = leftoverY;
+            this.offset[1] += evt.deltaY - leftoverY;
+            console.log(`>${this.height} LeftoverY ${leftoverY}`)
+            return true;
+        }
         this.offset[0] += evt.deltaX;
         this.offset[1] += evt.deltaY;
-        return false;
+        return true;
     }
     mousePinched(evt: MousePinchedInputEvent): boolean {
         return false;
     }
     mouseWheel(delta: MouseScrolledInputEvent): boolean {
+        console.log(`Image Mouse wheel${delta.amount}`)
+        this.scale += delta.amount / 10.0;
         return false;
     }
     keyPressed(evt: KeyboardInputEvent): boolean {

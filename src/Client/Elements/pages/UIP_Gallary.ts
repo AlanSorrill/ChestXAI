@@ -1,15 +1,19 @@
 
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign, UIStackRecycler } from "bristolboard";
-import { NumericLiteral } from "typescript";
-import { BristolBoard, UIResultCard, UIElement, UIFrame_CornerWidthHeight, UploadResponse, UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameDescription_CornerWidthHeight, UIFrameResult } from "../../ClientImports";
-import { UISimilarityCard } from "../UISimilarity";
+import {
+    BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp, UIStackRecycler,
+    BristolBoard, UIResultCard, UIElement, UISimilarityCard, UploadResponse,
+    UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent,
+    MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent,
+    UIFrameDescription_CornerWidthHeight, UIFrameResult, Interp, DiseaseDefinition
+} from "../../ClientImports";
+
 
 
 
 export class UIP_Gallary_V0 extends UIElement {
     similarityCards: UISimilarityCard[];
-    constructor( brist: BristolBoard<any>) {
+    constructor(brist: BristolBoard<any>) {
         super(UIElement.createUID('gallary'), UIFrame.Build({
             x: 0,
             y: 0,
@@ -18,28 +22,37 @@ export class UIP_Gallary_V0 extends UIElement {
         }), brist);
     }
 
+    prototypeData: any = null;
     yourResult: UploadResponse
-    similarResults: UploadResponse[]
-    resultCards: (UIResultCard | UIStackRecycler<[string, number, string[]], UISimilarityCard>)[] = []
-   
+    yourResultCard: UIResultCard;
+
+    similarityRecycler: UIStackRecycler<[string, number, DiseaseDefinition[]], UISimilarityCard>
+
+    get hasPrototype() {
+        return this.prototypeData != null;
+    }
+
+
     clearResults() {
-        while (this.resultCards.length > 0) {
-            this.resultCards.pop().removeFromParent();
-        }
+        this.yourResultCard?.removeFromParent();
+        this.yourResultCard = null;
+        this.similarityRecycler?.removeFromParent();
+        this.similarityRecycler = null;
     }
     setUploadResponse(resp: UploadResponse) {
         this.clearResults();
         this.yourResult = resp;
         let ths = this;
-        let diagnosisCard = new UIResultCard(resp, UIFrame.Build({
+        this.yourResultCard = new UIResultCard(resp, UIFrame.Build({
             x: () => ths.margin,
             y: () => ths.margin,
             width: () => (0.5 * (ths.frame.measureWidth() - (ths.margin * 2))),
             height: () => (ths.frame.measureHeight() - (ths.margin * 2))
         } as UIFrameDescription_CornerWidthHeight) as any, this.brist);
 
-        this.addChild(diagnosisCard);
-        this.resultCards.push(diagnosisCard)
+        this.addChild(this.yourResultCard);
+
+
 
         let box = {
             left: () => (ths.margin * 2 + (0.5 * (ths.frame.measureWidth() - (ths.margin * 2)))),
@@ -49,24 +62,38 @@ export class UIP_Gallary_V0 extends UIElement {
             width: () => (box.right() - box.left()),
             height: () => (box.bottom() - box.top())
         }
-        let similarityRecycler = UIStackRecycler.GridFixedColumns<[string, number, string[]], UISimilarityCard>(resp.similarity, {
+
+
+        let similarityAnimation = linearInterp(
+            () => (ths.width / 2 + ths.margin),
+            () => ths.width,
+            () => (ths.hasPrototype ? 'A' : 'B'), {
+            durration: 400,
+            startAlpha: 1,
+            onAnimStart(interp: Interp<number>) {
+                ths.brist.requestHighFps(() => interp.isTransitioning)
+            }
+        });
+
+        this.similarityRecycler = UIStackRecycler.GridFixedColumns<[string, number, DiseaseDefinition[]], UISimilarityCard>(resp.similarity, {
             buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
                 return new UISimilarityCard(frame, brist);
             },
-            bindData: (index: number, data: [string, number, string[]], child: UISimilarityCard) => {
+            bindData: (index: number, data: [string, number, DiseaseDefinition[]], child: UISimilarityCard) => {
+                console.log(`Binding ${index}: ${JSON.stringify(data)}`)
                 child.setData(data);
             },
             cols: 3,
             rowHeight: () => ((ths.height - ths.margin * 2) / 3)
         }, UIFrame.Build({
-            x: () => (ths.width / 2 + ths.margin),
+            x: similarityAnimation,
             y: () => ths.margin,
             width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
             height: () => (ths.height - ths.margin * 2)
         }), this.brist);
 
-        this.addChild(similarityRecycler);
-        this.resultCards.push(similarityRecycler);
+        this.addChild(this.similarityRecycler);
+
         // let adapter = new ArrayGridRecyclerAdapter<[string,number], UISimilarityCard>(resp.similarity, {
         //     limit: {
         //         columns: 3
@@ -117,7 +144,7 @@ export class UIP_Gallary_V0 extends UIElement {
     }
 
 
-    private marginAlpha: number = 0.05;
+    private marginAlpha: number = 0.03;
     private paddingAlpha: number = 0.025;
     get margin() {
         return this.frame.measureWidth() * this.marginAlpha;
@@ -133,11 +160,11 @@ export class UIP_Gallary_V0 extends UIElement {
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Bottom);
         this.brist.textSize(this.margin * 0.4);
-        this.brist.fontFamily(BristolFontFamily.Roboto);
+        this.brist.fontFamily(BristolFontFamily.Raleway);
         this.brist.fillColor(fColor.lightText[1])
-        this.brist.text(`Your Result`, this.margin, this.margin );
+        this.brist.text(`Your Result`, this.margin, this.margin);
         this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Bottom);
-        this.brist.text(`Similar Results`, this.width - this.margin - this.padding, this.margin)
+        this.brist.text(`Similar Results`, this.width - this.margin, this.margin)
     }
     mousePressed(evt: MouseBtnInputEvent): boolean {
         return false;

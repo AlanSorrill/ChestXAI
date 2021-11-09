@@ -1,4 +1,4 @@
-import { lerp, UIFrame_CornerWidthHeight } from "bristolboard";
+import { lerp, MouseDragListener, UIFrame_CornerWidthHeight } from "bristolboard";
 import { KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, Vector2, UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult, UIElement, optFunc, MainBristol } from "../ClientImports";
 
 
@@ -10,18 +10,21 @@ export class Lung extends UIElement {
     lungRef: UI_ImageElement;
     base: Vector2 = null;
     root: Vector2 = null;
+    baseOffset = [0.5, 0.3]
     constructor(frame: UIFrameDescription_CornerWidthHeight | UIFrame, brist: BristolBoard<any>) {
         super(`Lung${Lung.instCount++}`, UIFrame.Build(frame), brist)
         this.frame.measureHeight = this.frame.measureWidth;
         let refScale = 0.75
         let ths = this;
         let refOffset = [0.08, 0.15]
-        this.base = new Vector2({ t: 'leftX', v: () => ths.frame.leftX() }, { t: 'topY', v: () => ths.frame.topY() }).addFunc(new Vector2(0.5, 0.3).scaleFunc({ t: 'frameWidth', v: () => ths.frame.measureWidth() }));
+
+        this.base = new Vector2({ t: 'leftX', v: () => ths.frame.leftX() }, { t: 'topY', v: () => ths.frame.topY() }).addFunc(new Vector2(this.baseOffset[0], this.baseOffset[1]).scaleFunc({ t: 'frameWidth', v: () => ths.frame.measureWidth() }));
         this.root = this.base.subtractFunc(new Vector2(0, () => (ths.frame.measureWidth() * 0.2))).setName('root');
         // this.buildVector(this.chainData, this.base);
         let refRatio = 151.99 / 300.26
         this.setChainData(this.chainData);
-
+        //this.editable();
+        this.show();
     }
     setChainData(data: ChainLink) {
         this.chainData = data;
@@ -29,11 +32,13 @@ export class Lung extends UIElement {
     }
     setLinkAlpha(link: ChainLink, last: ChainLink = null) {
         if (last != null) {
-            let distance = Math.sqrt(Math.pow(link.vector[0] - last.vector[0], 2) + Math.pow(link.vector[1] - last.vector[1], 2));
+            let distance = Math.sqrt(Math.pow(link.vector[0] - last.vector[0], 2) + Math.pow(link.vector[1] - last.vector[1], 2)) + last.distance;
             link.distance = distance;
         } else {
-            link.distance = 0;
+            link.distance = new Vector2(this.baseOffset[0], this.baseOffset[1]).subtract(link.vector).length
+
         }
+
         if (link.next != null) {
             let fullDepth = Math.max(this.setLinkAlpha(link.next[0], link),
                 this.setLinkAlpha(link.next[1], link));
@@ -124,32 +129,46 @@ export class Lung extends UIElement {
             this.editable(link.next[1])
         }
     }
+    showStartTime: number = -1
+    show() {
+        this.showStartTime = Date.now();
+    }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
 
 
         // this.brist.fillColor(fColor.blue.accent1);
         // this.brist.ctx.beginPath();
-        this.brist.strokeColor(fColor.lightText[1]);
-        this.brist.strokeWeight(10);
         // this.brist.rectFrame(frame, true, false);
+        if (this.showStartTime != -1) {
+            this.brist.strokeColor(fColor.lightText[0]);
+            this.brist.strokeWeight(10);
+            this.brist.ctx.lineCap = 'round'
+            let drawDist = Math.min((Date.now() - this.showStartTime) / 1000, 1);
+            this.drawLung(drawDist, frame);
+
+            this.brist.strokeColor(fColor.lightText[1]);
+            this.drawLung((Math.cos(Date.now() / 1000) + 1) / 2, frame);
+
+            
+        }
+    }
+    private drawLung(alpha: number, frame: UIFrameResult){
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.root.x, this.root.y);
         this.brist.ctx.lineTo(this.base.x, this.base.y);
-        this.brist.strokeColor(fColor.lightText[1]);
 
 
         this.brist.ctx.stroke();
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.base.x, this.base.y);
         // this.brist.strokeColor(fColor.green.base);
-        let drawDist = (Math.cos(Date.now() / 1000) + 1) / 2;
-      //  console.log(drawDist);
-        this.drawChainLink(this.chainData, 0, frame, drawDist);
+        //  console.log(drawDist);
+        this.drawChainLink(this.chainData, 0, frame, alpha);
         this.brist.noFill();
         this.brist.ctx.stroke();
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.base.x, this.base.y);
-        this.drawChainLink(this.chainData, 1, frame, drawDist);
+        this.drawChainLink(this.chainData, 1, frame, alpha);
         this.brist.ctx.stroke();
         // this.brist.ctx.moveTo(this.base.x, this.base.y);
         // this.drawChainLink(this.chainData, 1, frame, null);
@@ -205,9 +224,9 @@ export class Lung extends UIElement {
                 let relativeDistance = drawDistance - last.distance;
                 let alpha = Math.max(0, Math.min(1, relativeDistance / length));
                 this.brist.ctx.lineTo(lerp(a[0], b[0], alpha), lerp(a[1], b[1], alpha));
-                this.brist.fillColor(fColor.red.base);
-                this.brist.textSize(10)
-                this.brist.ctx.fillText(`${alpha}`, b[0], b[1]);
+                // this.brist.fillColor(fColor.red.base);
+                // this.brist.textSize(10)
+                // this.brist.ctx.fillText(`${alpha}`, b[0], b[1]);
             }
 
             //   this.brist.ctx.bezierCurveTo(frame.left + last.tangent[0] * frame.width, frame.top + last.tangent[1] * frame.height, frame.left + chain.tangent[0] * frame.width, frame.top + chain.tangent[1] * frame.height, frame.left + chain.base[0] * frame.width, frame.top + chain.base[1] * frame.height)
@@ -255,7 +274,7 @@ export class Lung extends UIElement {
         return false;
     }
 }
-export class LungHandle extends UIElement {
+export class LungHandle extends UIElement implements MouseDragListener {
     link: ChainLink;
     lung: Lung;
     constructor(link: ChainLink, parent: Lung, frame: UIFrame, brist: MainBristol) {
@@ -263,6 +282,9 @@ export class LungHandle extends UIElement {
         this.link = link;
         this.lung = parent;
         this.link.handle = this;
+    }
+    onDragEnd(event: MouseBtnInputEvent | MouseDraggedInputEvent): boolean {
+        return true;
     }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.fillColor(this.isDragLocked ? fColor.red.base : fColor.blue.base);
@@ -323,7 +345,7 @@ export class LungHandle extends UIElement {
             ]
         }
 
-        return false;
+        return true;
     }
     mousePinched(evt: MousePinchedInputEvent): boolean {
         return false;

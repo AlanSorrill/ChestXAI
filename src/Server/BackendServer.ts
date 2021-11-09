@@ -1,4 +1,5 @@
 import { Express, Request, Response } from "express";
+
 import { Socket } from "net";
 import * as ChildProcess from "child_process";
 import http from 'http'
@@ -6,7 +7,7 @@ import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
 import sharp from 'sharp'
-import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 import path from "path";
@@ -75,16 +76,16 @@ export class BackendServer {
             let fullPath = `/dual_data/not_backed_up/CheXpert/CheXpert-v1.0/${(idNumber < 64541) ? 'train' : 'valid'}/${patientId}/${req.params.studyId}/${req.params.imageName}`
             if (fs.existsSync(fullPath)) {
                 if (typeof req.query.res != 'undefined') {
-                    let scale = Number(req.query.res)/100;
+                    let scale = Number(req.query.res) / 100;
                     log.info(`Requested image ${patientId} at ${scale}`);
                     let scaledPath = path.join(__dirname, `/../../uploads/scaledImages/${req.query.res}_${patientId}_${req.params.studyId}_${req.params.imageName}`)
-                    if(fs.existsSync(scaledPath)){
+                    if (fs.existsSync(scaledPath)) {
                         resp.sendFile(scaledPath);
                         return;
                     } else {
                         let originalImage = sharp(fullPath);
                         let metadata = await originalImage.metadata();
-                        
+
                         await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).toFile(scaledPath);
                         resp.sendFile(scaledPath);
                         return;
@@ -102,7 +103,7 @@ export class BackendServer {
 
         let fileNameToFullPath = (fileName: string) => Path.join(__dirname, `/../../uploads/${fileName}`);
 
-        let handleInferenceRequest = (fileName: string, resp: Response)=>{
+        let handleInferenceRequest = (fileName: string, resp: Response) => {
             //TODO handle bad uploads
 
             // let sesh = new ServerSession(;
@@ -118,17 +119,18 @@ export class BackendServer {
             backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
             let fullPath = fileNameToFullPath(fileName);
             log.info(`Running inference on ${fullPath}`);
+            
             backend.runInferance(fullPath).then((data: InferenceResponse) => {
                 respPayload.diagnosis = [];
                 for (let i = 0; i < data.prediction.length; i++) {
-                    respPayload.diagnosis.push([backend.bitStringToDiseases(data.prediction[i][0])[0], data.prediction[i][1]])
+                    respPayload.diagnosis.push([DiseaseManager.getDiseaseByBitStringId(data.prediction[i][0]), data.prediction[i][1]])
                 }
-                respPayload.diagnosis = respPayload.diagnosis.sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+                respPayload.diagnosis = respPayload.diagnosis.sort((a: [DiseaseDefinition, number], b: [DiseaseDefinition, number]) => b[1] - a[1])
                 respPayload.similarity = [];
                 let val: [string, number, string];
                 for (let i = 0; i < data.similarity.length; i++) {
                     val = data.similarity[i];
-                    respPayload.similarity.push([val[0], val[1], backend.bitStringToDiseases(val[2])])
+                    respPayload.similarity.push([val[0], val[1], DiseaseManager.bitStringToDiseases(val[2])])
                 }
                 resp.send(JSON.stringify(respPayload));
 
@@ -140,10 +142,13 @@ export class BackendServer {
                 resp.statusMessage = 'no upload name given';
                 resp.sendStatus(404);
             }
-            
+
             log.info(`Recieved reuse GET ${req.query.upload}`);
             return handleInferenceRequest(req.query.upload as string, resp);
 
+        })
+        app.get('/diseaseDefs', (req: Request, resp: Response) => {
+            resp.send(DiseaseManager.toJson())
         })
         app.post('/upload', multerUpload.single('file'), function (req: Request, resp: Response, next) {
             log.info(`Recieved upload POST ${req.file.filename}`);
@@ -151,7 +156,7 @@ export class BackendServer {
             // let content = req.file;
 
             // req.body will hold the text fields, if there were any
-            
+
             // backend.makeDiagnosis(respPayload.uploadId, {
             //     onUpdate: (msg: string, alpha: number) => {
             //         log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
@@ -195,7 +200,7 @@ export class BackendServer {
         })
         return backend;
     }
-
+    
     updateTask(taskId: string, message: string, progAlpha: number) {
         let taskListeners = this.taskListeners.get(taskId);
         if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
@@ -268,19 +273,7 @@ export class BackendServer {
         this.startPython();
     }
 
-    bitStringToDiseases(bitString: string): string[] {
-        if (this.diseaseNames == null) {
-            log.error(`Cannot translate disease names without dictionary`);
-            return null;
-        }
-        let out: string[] = []
-        for (let i = 0; i < Math.min(bitString.length, this.diseaseNames.length); i++) {
-            if (bitString[i] == '1') {
-                out.push(this.diseaseNames[i]);
-            }
-        }
-        return out;
-    }
+
     inferenceWaiters: Map<string, (resp: InferenceResponse) => void> = new Map();
     async runInferance(fileName: string): Promise<InferenceResponse> {
         return new Promise((acc, rej) => {
@@ -335,7 +328,7 @@ export class BackendServer {
     recievePythonMsg() {
 
     }
-    diseaseNames: string[] = null;
+    //diseaseNames: string[] = null;
     startPython() {
         let ths = this;
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/InferenceScript.py`)
@@ -374,7 +367,8 @@ export class BackendServer {
                         console.log(`Python status: ${message.message}`)
                     } else if (PythonMessage.isDiseaseDefs(message)) {
                         console.log(`Got disease list: ${message.names.join(', ')}`)
-                        ths.diseaseNames = message.names;
+                        DiseaseManager.initDiseases(message.names);
+
                     } else if (PythonMessage.isInterfaceResponse(message)) {
                         console.log(`Got inference response for ${message.fileName}`);
                         if (ths.inferenceWaiters.has(message.fileName)) {

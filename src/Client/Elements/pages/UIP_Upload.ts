@@ -22,7 +22,7 @@ export class TestElement extends UIElement {
 
         this.brist.fillColor(fColor.lightText[1])
         this.brist.textSize(frame.height / 8);
-        this.brist.fontFamily(BristolFontFamily.Roboto)
+        this.brist.fontFamily(BristolFontFamily.Raleway)
         this.brist.textAlign(BristolHAlign.Left, BristolVAlign.Top);
         this.brist.text(`${this.data[0]}`, frame.left, frame.top);
         this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Bottom);
@@ -56,6 +56,7 @@ export class UIP_Upload_V0 extends UIElement {
         let inputElem: HTMLInputElement = document.getElementById('uploadInput') as HTMLInputElement;
         inputElem.style.display = 'inline'
         inputElem.addEventListener('change', function () {
+            ths.lung.show();
             if (this.files && this.files[0]) {
                 ths.uploadFile(this.files[0])
                 // Rest.post('./upload', {'Content-Type': ''})
@@ -75,7 +76,7 @@ export class UIP_Upload_V0 extends UIElement {
 
 
         uploadButton.textSize = 36 * 2;
-        uploadButton.fontFamily = BristolFontFamily.Roboto
+        uploadButton.fontFamily = BristolFontFamily.Raleway
         uploadButton.autoWidth().autoHeight().autoPadding();
         uploadButton.backgroundColor = (mouse: MouseState) => {
             switch (mouse) {

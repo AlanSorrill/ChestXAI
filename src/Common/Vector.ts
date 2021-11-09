@@ -6,6 +6,9 @@ export class Vector2 {
     private xValue: optFunc<number>
     private yValue: optFunc<number>
     protected nameValue: optFunc<string>
+    get length(): number{
+        return Math.sqrt(this.x * this.x + this.y * this.y)
+    }
     constructor(x: optFunc<number>, y: optFunc<number>, name: optFunc<string> = null) {
         this.x = x;
         this.y = y;
@@ -43,7 +46,7 @@ export class Vector2 {
     addFunc(b: Vector2) {
         return Vector2.addFunc(this, b);
     }
-    subtract(b: Vector2) {
+    subtract(b: Vector2 | [number,number]) {
         return Vector2.subtract(this, b);
     }
     subtractFunc(b: Vector2) {
@@ -61,7 +64,10 @@ export class Vector2 {
     static addFunc(a: Vector2, b: Vector2) {
         return new Vector2(() => (a.x + b.x), () => (a.y + b.y), () => (`(${a.toString()} + ${b.toString()})`));
     }
-    static subtract(a: Vector2, b: Vector2) {
+    static subtract(a: Vector2, b: Vector2 | [number,number]) {
+        if(Array.isArray(b)){
+            return new Vector2(a.x - b[0], a.y - b[1], () => (`(${a.toString()} - ${b.join(', ')})`));
+        }
         return new Vector2(a.x - b.x, a.y - b.y, () => (`(${a.toString()} - ${b.toString()})`));
     }
     static subtractFunc(a: Vector2, b: Vector2) {
