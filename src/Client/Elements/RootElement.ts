@@ -57,8 +57,8 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
             x: 0,
             y: 0,
             coordType: CoordType.Absolute,
-            width: () => brist.width,
-            height: () => brist.height
+            width: () => brist.getWidth(),
+            height: () => brist.getHeight()
         }), brist);
         this.parent = brist;
         // let lung = new Lung({

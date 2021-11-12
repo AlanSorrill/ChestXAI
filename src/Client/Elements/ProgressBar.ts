@@ -52,7 +52,7 @@ export class UIProgressBar extends UIElement {
         this.brist.ctx.beginPath();
     }
     get padding() {
-        return this.height * (0.2);
+        return this.getHeight() * (0.2);
     }
     setupText(frame: UIFrameResult) {
         this.brist.fontFamily(BristolFontFamily.Monospace);

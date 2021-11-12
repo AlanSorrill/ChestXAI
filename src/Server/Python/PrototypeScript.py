@@ -25,7 +25,13 @@ if __name__ == '__main__':
         print(json.dumps({
             'msgType': 'prototypeResponse',
             'inputDisease': request.get('disease'),
-            'prototype': out_prototypes
+            'prototype': out_prototypes,
+            'boundingBox': { #origin in upper left corner, Y increases down, X increases right,
+                'left': 0.25,#fraction of width
+                'right': 0.75, #fraction of width
+                'top': 0.1, #fraction of height 
+                'bottom': 0.8 #fraction of height
+            }
         }) + "\n")
 
         

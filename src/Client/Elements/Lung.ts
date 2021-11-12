@@ -1,5 +1,9 @@
-import { lerp, MouseDragListener, UIFrame_CornerWidthHeight } from "bristolboard";
-import { KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, Vector2, UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult, UIElement, optFunc, MainBristol } from "../ClientImports";
+import {
+    FColor, lerp, MouseDragListener, UIFrame_CornerWidthHeight, KeyboardInputEvent, MouseBtnInputEvent,
+    MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent,
+    Vector2, UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult,
+    UIElement, optFunc, MainBristol
+} from "../ClientImports";
 
 
 
@@ -11,8 +15,10 @@ export class Lung extends UIElement {
     base: Vector2 = null;
     root: Vector2 = null;
     baseOffset = [0.5, 0.3]
-    constructor(frame: UIFrameDescription_CornerWidthHeight | UIFrame, brist: BristolBoard<any>) {
+    colorsAndAlphas: [color: FColor, alpha: () => number][];
+    constructor(colorsAndAlphas: [color: FColor,alpha: ()=>number][], frame: UIFrameDescription_CornerWidthHeight | UIFrame, brist: BristolBoard<any>) {
         super(`Lung${Lung.instCount++}`, UIFrame.Build(frame), brist)
+        this.colorsAndAlphas = colorsAndAlphas;
         this.frame.measureHeight = this.frame.measureWidth;
         let refScale = 0.75
         let ths = this;
@@ -48,6 +54,7 @@ export class Lung extends UIElement {
         link.alpha = 1;
         return link.distance;
     }
+
     // buildVector(chain: ChainLink, parent: Vector2 = null) {
     //     let ths = this;
     //     let baseVector = Vector2.scaleFunc(Vector2.polar(chain.angle, chain.distance), () => ths.width);
@@ -103,10 +110,10 @@ export class Lung extends UIElement {
             let refOffset = [0.08, 0.15]
             let refRatio = 151.99 / 300.26
             this.lungRef = new UI_ImageElement({
-                x: () => refOffset[0] * ths.width,
-                y: () => refOffset[1] * ths.height,
-                width: () => ths.height * refRatio * refScale,
-                height: ths.height * refScale,
+                x: () => refOffset[0] * ths.getWidth(),
+                y: () => refOffset[1] * ths.getHeight(),
+                width: () => ths.getHeight()* refRatio * refScale,
+                height: ths.getHeight()* refScale,
                 measureCorner: UICorner.upLeft,
                 parentCorner: UICorner.upLeft
             }, ths.brist, `./LungOutline.png`);
@@ -116,8 +123,8 @@ export class Lung extends UIElement {
             link.vector = new Vector2(link.vector[0], link.vector[1])
         }
         let handle = new LungHandle(link, this, UIFrame_CornerWidthHeight.Build({
-            x: () => ths.width * (link.vector as Vector2).x,
-            y: () => ths.height * (link.vector as Vector2).y,
+            x: () => ths.getWidth() * (link.vector as Vector2).x,
+            y: () => ths.getHeight() * (link.vector as Vector2).y,
             width: 20,
             height: 20,
             measureCorner: UICorner.center
@@ -130,29 +137,36 @@ export class Lung extends UIElement {
         }
     }
     showStartTime: number = -1
+    lineThickness: number = 10;
+    lineCap: CanvasLineCap = 'round'
     show() {
         this.showStartTime = Date.now();
     }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
 
+        this.brist.strokeWeight(this.lineThickness);
+        this.brist.ctx.lineCap = this.lineCap;
+        for(let i = 0;i<this.colorsAndAlphas.length;i++){
+            this.brist.strokeColor(this.colorsAndAlphas[i][0]);
+            this.drawLung(this.colorsAndAlphas[i][1](), frame);
+        }
 
         // this.brist.fillColor(fColor.blue.accent1);
         // this.brist.ctx.beginPath();
         // this.brist.rectFrame(frame, true, false);
-        if (this.showStartTime != -1) {
-            this.brist.strokeColor(fColor.lightText[0]);
-            this.brist.strokeWeight(10);
-            this.brist.ctx.lineCap = 'round'
-            let drawDist = Math.min((Date.now() - this.showStartTime) / 1000, 1);
-            this.drawLung(drawDist, frame);
+        // if (this.showStartTime != -1) {
+        //     this.brist.strokeColor(fColor.lightText[0]);
+        //     this.brist.ctx.lineCap = 'round'
+        //     let drawDist = Math.min((Date.now() - this.showStartTime) / 1000, 1);
+        //     this.drawLung(drawDist, frame);
 
-            this.brist.strokeColor(fColor.lightText[1]);
-            this.drawLung((Math.cos(Date.now() / 1000) + 1) / 2, frame);
+        //     this.brist.strokeColor(fColor.lightText[1]);
+        //     this.drawLung((Math.cos(Date.now() / 1000) + 1) / 2, frame);
 
-            
-        }
+
+        // }
     }
-    private drawLung(alpha: number, frame: UIFrameResult){
+    private drawLung(alpha: number, frame: UIFrameResult) {
         this.brist.ctx.beginPath();
         this.brist.ctx.moveTo(this.root.x, this.root.y);
         this.brist.ctx.lineTo(this.base.x, this.base.y);
@@ -334,7 +348,7 @@ export class LungHandle extends UIElement implements MouseDragListener {
     }
     mouseDragged(evt: MouseDraggedInputEvent): boolean {
         console.log(JSON.stringify(evt));
-        let delta = [evt.deltaX / this.parent.width, evt.deltaY / this.parent.height];
+        let delta = [evt.deltaX / this.parent.getWidth(), evt.deltaY / this.parent.getHeight()];
         if (Array.isArray(this.link.vector)) {
             this.link.vector[0] += delta[0];
             this.link.vector[1] += delta[1];

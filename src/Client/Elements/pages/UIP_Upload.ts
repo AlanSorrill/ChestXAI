@@ -1,7 +1,7 @@
 
 
-import { BristolHAlign, BristolVAlign, UIStackOptions } from "bristolboard";
-import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard,  UIStackRecycler } from "../../ClientImports";
+import { BristolHAlign, BristolVAlign, smoothFloat, UIStackOptions } from "bristolboard";
+import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard, UIStackRecycler } from "../../ClientImports";
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -48,8 +48,8 @@ export class UIP_Upload_V0 extends UIElement {
         super(UIElement.createUID('Upload'), UIFrame.Build({
             x: 0,
             y: 0,
-            width: () => brist.width,
-            height: () => brist.height
+            width: () => brist.getWidth(),
+            height: () => brist.getHeight()
         }), brist)
 
         let ths = this;
@@ -58,8 +58,7 @@ export class UIP_Upload_V0 extends UIElement {
         inputElem.addEventListener('change', function () {
             ths.lung.show();
             if (this.files && this.files[0]) {
-                ths.uploadFile(this.files[0])
-                // Rest.post('./upload', {'Content-Type': ''})
+                ths.uploadFile(this.files[0]);
             }
         })
 
@@ -88,184 +87,39 @@ export class UIP_Upload_V0 extends UIElement {
                     return fColor.red.lighten2
             }
         };
-        let progressBar = new UIProgressBar(() => ths.progress, {
-            x: () => uploadButton.frame.leftX(),
-            y: () => uploadButton.frame.bottomY(),
-            width: () => uploadButton.frame.measureWidth(),
-            height: 20
-        }, brist);
-        progressBar.foregroundColor = fColor.red.lighten2
-
+        
         this.addChild(uploadButton);
-        this.addChild(progressBar)
 
-        let lung = new Lung(UIFrame.Build<UIFrameDescription_CornerWidthHeight>({
-            x: () => ths.centerX,
-            y: () => ths.centerY - 250,
+        let startTime = Date.now();
+        let lung = new Lung([
+            [fColor.lightText[0], () => Math.min(1, (Date.now() - startTime) / 2000)],
+            [fColor.green.lighten2, smoothFloat(() => ths.progress, 0.005)]
+        ], UIFrame.Build<UIFrameDescription_CornerWidthHeight>({
+            x: () => ths.getCenterX(),
+            y: () => ths.getCenterY() - 250,
             width: 500, height: 500,
             measureCorner: UICorner.center
         }), brist);
         this.lung = lung;
         this.addChild(lung);
         // this.lung.editable();
-        // let isOn = true;
-        // let tstBtn = new UIButton('test', () => {
-        //     isOn = !isOn;
-        // }, new UIFrame_CornerWidthHeight({
-        //     x: 100,
-        //     y: 100,
-        //     width: 300,
-        //     height: 100
-        // }), brist);
-        // tstBtn.textSize = 20;
-
-        // let tstProg = new UIProgressBar(linearInterp(0, 1, ()=>isOn ? 'A' : 'B', 1000, 0), new UIFrame_CornerWidthHeight({
-        //     x: 100,
-        //     y: 200,
-        //     width: ()=>tstBtn.width,
-        //     height: 100
-        // }), brist);
-        // this.addChild(tstProg);
-        // this.addChild(tstBtn);
-        // let data: SimilarityResult[] = [];
-        // let adapter = new ArrayRecyclerAdapter<SimilarityResult, UISimilarityCard>(data, {
-        //     limit: {columns: 2}
-        // })
-        // let testData: [string, number][] = [['patient64700/study1/view1_frontal.jpg', 0.3],
-        // ['patient64701/study1/view1_frontal.jpg', 0.4], ['patient64702/study1/view1_frontal.jpg', 0.4], ['patient64703/study1/view1_frontal.jpg', 0.4]]
 
 
-        // let verticalAdapter: UIStackOptions<[string, number], UISimilarityCard> = {
-        //     childLength: function (index: number): number {
-        //         return 300
-        //     },
-        //     buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
-        //         return new UISimilarityCard(frame, brist);
-        //     },
-        //     bindData: function (index: number, data: [string, number], child: UISimilarityCard): void {
-        //         child.setData(data);
-        //     },
-        //     isVertical: true
-        // }
-        // let horizontalAdapter: UIStackOptions<[string, number], UISimilarityCard> = {
-        //     childLength: function (index: number): number {
-        //         return 200
-        //     },
-        //     buildChild: function (frame: UIFrame, brist: BristolBoard<any>): UISimilarityCard {
-        //         return new UISimilarityCard(frame, brist);
-        //     },
-        //     bindData: function (index: number, data: [string, number], child: UISimilarityCard): void {
-        //         child.setData(data);
-        //     },
-        //     isVertical: false
-        // }
-
-        // let verticalTestRecycler = new UIStackRecycler<[string, number], UISimilarityCard>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 200,
-        //     y: 500,
-        //     width: 200,
-        //     height: 900
-        // }), brist);
-        // this.addChild(verticalTestRecycler);
-
-
-        // let horizontalTestRecycler = new UIStackRecycler<[string, number], UISimilarityCard>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 400,
-        //     y: 200,
-        //     width: 900,
-        //     height: 300
-        // }), brist);
-        // this.addChild(horizontalTestRecycler);
-
-
-         let testData = ['valueA', 'valueB', 'valueC', 'valueD', 'valueE', 'valueF', 'valueG', 'valueH', 'valueI', 'valueJ', 'valuek', 'valuem', 'valuen'];
-        // let gridUI = UIStackRecycler.GridFixedColumns<string, TestElement>(testData, {
-        //     buildCell: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
-        //         return new TestElement(UIElement.createUID('testElement'), frame, brist);
-        //     },
-        //     bindData: function (index: number, data: string, child: TestElement): void {
-        //         child.setData(index, data);
-        //     },
-            
-        //     cols: 3
-        // }, UIFrame_CornerWidthHeight.Build({
-        //     x: 200,
-        //     y: 200,
-        //     width: brist.width / 3,
-        //     height: brist.height - 400
-        // }), brist);
-        // this.addChild(gridUI);
-        let verticalAdapter: UIStackOptions<string, TestElement> = {
-            childLength: function (index: number): number {
-                return 300
-            },
-            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
-                return new TestElement(UIElement.createUID('testElement'), frame, brist);
-            },
-            bindData: function (index: number, data: string, child: TestElement): void {
-                child.setData(index, data);
-            },
-            isVertical: true
-        }
-        let horizontalAdapter: UIStackOptions<string, TestElement> = {
-            childLength: function (index: number): number {
-                return 200
-            },
-            buildChild: function (frame: UIFrame, brist: BristolBoard<any>): TestElement {
-                return new TestElement(UIElement.createUID('testElement'), frame, brist);
-            },
-            bindData: function (index: number, data: string, child: TestElement): void {
-                child.setData(index, data);
-            },
-            isVertical: false
-        }
-
-        // let verticalTestRecycler = new UIStackRecycler<string, TestElement>(testData, verticalAdapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 200,
-        //     y: 500,
-        //     width: 200,
-        //     height: 900
-        // }), brist);
-        // this.addChild(verticalTestRecycler);
-
-
-        // let horizontalTestRecycler = new UIStackRecycler<string, TestElement>(testData, horizontalAdapter, UIFrame_CornerWidthHeight.Build({
-        //     x: 400,
-        //     y: 200,
-        //     width: 900,
-        //     height: 300
-        // }), brist);
-        // this.addChild(horizontalTestRecycler);
     }
 
-    static async fileToBlob(file: File){
-        return URL.createObjectURL(new Blob([new Uint8Array(await file.arrayBuffer())], {type: file.type }));
-    }
+
 
     uploadFile(file: File) {
         console.log('Uploading file');
         console.log(file);
 
-        // ClientSession.fileToStream(file).then((stream: ReadableStream) => {
-        //     log.info('Upload streaming start')
-        //     fetch('./uploadStream', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': file.type,
-        //             'originalName': file.name
-        //         },
-        //          body: stream
-        //     })
-        // })
+
         console.log('Uploading file ', file)
         let formData = new FormData();
         formData.append('file', file);
         var ajax = new XMLHttpRequest();
         let ths = this;
-        // ajax.upload.addEventListener("progress", function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
-        //     ths.progress = event.loaded / event.total;
-        //     console.log(ths.progress);
-        // }, false);
+
         ajax.upload.onprogress = function (event: ProgressEvent<XMLHttpRequestEventTarget>) {
             ths.progress = event.loaded / event.total;
             console.log(ths.progress);
@@ -286,75 +140,29 @@ export class UIP_Upload_V0 extends UIElement {
             if (ajax.readyState == XMLHttpRequest.DONE) {
                 let resp: UploadResponse = JSON.parse(ajax.responseText)
                 log.info(`Upload responded `, resp);
-                let blob = await UIP_Upload_V0.fileToBlob(file);
+                let blob = URL.createObjectURL(new Blob([new Uint8Array(await file.arrayBuffer())], { type: file.type }))
                 resp.imageBlob = blob;
-                urlManager.set('upload',resp.fileName,false);
+                urlManager.set('upload', resp.fileName, false);
                 let gallary: UIP_Gallary_V0 = mainBristol.rootElement.showGallary(resp);
                 gallary.setUploadResponse(resp);
-                //                 if (resp.success)
-                //                     urlManager.set('seshId', resp.uploadId)
+
             } else {
                 log.info('Ready state changed!', event);
             }
 
         })
         ajax.open("POST", "/upload");
-        // ajax.setRequestHeader("multipart/form-data", file.type)
-        //  ajax.setRequestHeader("X_FILE_NAME", file.name); 
-        //  ajax.setRequestHeader("Content-Length", file.size + '');
+
         ajax.send(formData);
 
     }
-    // mouseEnter(evt: MouseInputEvent){
-    //     this.isMouseOver = true;
-    //     return true;
-    // }
 
-    // mouseExit(evt: MouseInputEvent){
-    //     this.isMouseOver = false;
-    //     return true;
-    // }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
 
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
 
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseEnter(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseExit(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return false;
-    }
-    shouldDragLock(event: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseDragged(evt: MouseDraggedInputEvent): boolean {
-        return false;
-    }
-    mousePinched(evt: MousePinchedInputEvent): boolean {
-        return false;
-    }
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
-        return false;
-    }
-    keyPressed(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
-    keyReleased(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
 
-}
-export class StreamDebugger<I, O> implements Transformer<any, any>{
 
 }

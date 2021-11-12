@@ -107,7 +107,7 @@ export class ImageEditor {
         //         let val = (noise + 1) / 2 * 255
         //         return [0, val, 0, 255];
         //     }, [500, 500])
-        let blob = await this.editImage(mainBristol.rootElement.childElements[0].childElements[1].image.image.src,
+        let blob = await this.editImage(mainBristol.rootElement.childElements[0].yourResultCard.image.image.src,
             (x: number, y: number, oldPixel: RGBA) => {
                 let noise = simplex.noise2D(x * scale, y * scale);
                 let val = (noise + 1) / 2 * 255

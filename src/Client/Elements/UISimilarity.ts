@@ -15,8 +15,8 @@ export class UISimilarityCard extends UIElement {
         this.image = new UI_Image(null, UIFrame.Build({
             x: ths.margin,
             y: ths.margin,
-            width: () => ths.width - ths.margin * 2,
-            height: () => ths.height - (ths.padding * 2 + ths.textSize) - ths.margin * 2
+            width: () => ths.getWidth() - ths.margin * 2,
+            height: () => ths.getHeight() - (ths.padding * 2 + ths.textSize) - ths.margin * 2
         }) as any, brist)
         //  this.image.fitHorizontally();
         this.addChild(this.image)
@@ -25,7 +25,7 @@ export class UISimilarityCard extends UIElement {
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.fillColor(fColor.darkMode[8]);
         this.brist.ctx.beginPath();
-        this.brist.rect(frame.left + this.margin, frame.top + this.margin, this.image.width, this.height - this.margin * 2, false, true);
+        this.brist.rect(frame.left + this.margin, frame.top + this.margin, this.image.getWidth(), this.getHeight() - this.margin * 2, false, true);
         this.brist.ctx.beginPath();
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {

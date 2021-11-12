@@ -18,15 +18,15 @@ export class UIResultCard extends UIElement {
             data.imageBlob = null;
         }
         let imageHeight = linearInterp(
-            () => (ths.height - ths.bottomCardHeight),
-            () => (ths.height - ths.bottomCardHeight / 3),
+            () => (ths.getHeight() - ths.bottomCardHeight),
+            () => (ths.getHeight() - ths.bottomCardHeight / 3),
             () => ths.hasPrototype ? 'A' : 'B',
             {}
         );
         this.image = new UI_Image(data.imageBlob != null ? data.imageBlob : `./userContent/${this.uploadResponse.fileName}`, UIFrame.Build({
             x: 0,
             y: 0,
-            width: () => (ths.width),
+            width: () => (ths.getWidth()),
             height: imageHeight
         }), brist);
         let tst = true;
@@ -48,8 +48,8 @@ export class UIResultCard extends UIElement {
         let buildFrame = (index: number) => {
 
             let yAnim = linearInterp(
-                () => (ths.height - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
-                () => (ths.height - (ths.bottomCardHeight / 3)),
+                () => (ths.getHeight() - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
+                () => (ths.getHeight() - (ths.bottomCardHeight / 3)),
                 () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData == this.uploadResponse.diagnosis[index][0] ? 'A' : 'B'), {
                 onAnimStart() {
                     console.log('Starting transition')
@@ -58,7 +58,7 @@ export class UIResultCard extends UIElement {
             )
             let widthAnim = linearInterp(
                 () => 0,
-                () => ths.width,
+                () => ths.getWidth(),
                 () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData != this.uploadResponse.diagnosis[index][0] ? 'B' : 'A'), {
                 onAnimStart(interp: Interp<number>) {
                     ths.brist.requestHighFps(() => interp.isTransitioning)
@@ -77,7 +77,11 @@ export class UIResultCard extends UIElement {
         }
         for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
             let display = new DiseaseDisplay(this.uploadResponse.diagnosis[i], (selectedDisease: [disease: DiseaseDefinition, prediction: number]) => {
-                ths.parent.prototypeData = selectedDisease[0]
+                if (ths.parent.prototypeData?.bitStringID == selectedDisease[0].bitStringID) {
+                    ths.parent.setPrototypeData(null);
+                } else {
+                    ths.parent.setPrototypeData(selectedDisease[0])
+                }
             }, buildFrame(i), brist);
             this.addChild(display);
             // let txt = removeCammelCase(Disease[this.uploadResponse.diagnosis[i][0]])
@@ -90,7 +94,7 @@ export class UIResultCard extends UIElement {
         return (this.parent?.prototypeData != null);
     }
     get bottomCardHeight() {
-        return this.height * 0.3;
+        return this.getHeight() * 0.3;
     }
     onDrawBackground(frame: UIFrameResult, deltaMs: number) {
         this.brist.fillColor(fColor.darkMode[5]);
@@ -128,7 +132,7 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     barWidth: number = 0.6;
     onClick: (value: [DiseaseDefinition, number]) => void;
     get padding(): number {
-        return this.height * (3 / 12);
+        return this.getHeight() * (3 / 12);
     };
 
     constructor(data: [DiseaseDefinition, number], onClick: (value: [DiseaseDefinition, number]) => void, frame: UIFrame, brist: MainBristol) {
@@ -139,9 +143,9 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
             () => ths.data[1]//(1 + Math.cos(Date.now() / 1000)) / 2
             , new UIFrame_CornerWidthHeight({
                 x: () => ths.padding,
-                y: () => (ths.height / 2 - (ths.progress.height / 2)),
-                width: () => (ths.width * this.barWidth) - (ths.padding * 2),
-                height: () => ths.height - (ths.padding * 2)
+                y: () => (ths.getHeight() / 2 - (ths.progress.getHeight() / 2)),
+                width: () => (ths.getWidth() * this.barWidth) - (ths.padding * 2),
+                height: () => ths.getHeight() - (ths.padding * 2)
             }), brist);
         this.progress.text = {
             align: BristolHAlign.Right,
@@ -185,7 +189,7 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Middle)
         this.brist.fontFamily(BristolFontFamily.Raleway)
-        this.brist.textSize(this.progress.height * 0.9);//, this.diseaseName, frame.width * (1 - this.barWidth) - this.padding * 2);
+        this.brist.textSize(this.progress.getHeight() * 0.9);//, this.diseaseName, frame.width * (1 - this.barWidth) - this.padding * 2);
         this.brist.fillColor(fColor.lightText[1]);
         this.brist.text(this.data[0].displayName, frame.right - this.padding, frame.centerY);
         this.brist.strokeColor(fColor.darkMode[2]);

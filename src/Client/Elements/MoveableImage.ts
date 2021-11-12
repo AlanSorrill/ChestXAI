@@ -78,7 +78,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
     }
     fitHorizontally(retries: number = 1000) {
 
-        this.scale = this.width / this.image.width;
+        this.scale = this.getWidth() / this.image.width;
 
 
         console.log(`Resizing to ${this.scale}`)
@@ -95,10 +95,10 @@ export class UI_Image extends UIElement implements MouseDragListener {
         }
     }
     centerHorizontally() {
-        this.offset[0] = this.width / 2 - this.imgWidth / 2
+        this.offset[0] = this.getWidth() / 2 - this.imgWidth / 2
     }
     centerVertically() {
-        this.offset[1] = this.height / 2 - this.height / 2
+        this.offset[1] = this.getHeight() / 2 - this.getHeight() / 2
     }
     onDrawBackground(frame: UIFrameResult, delta: number) {
         if (this.image == null || !this.image.complete) {
@@ -109,13 +109,13 @@ export class UI_Image extends UIElement implements MouseDragListener {
         }
         if (this.imgHeight < frame.height && !this.isDragLocked && delta < 50) {
             this.scale += this.maxFreeScaleVelocity * delta;
-        } else if (this.imgRight < this.width && !this.isDragLocked && delta < 50) {
+        } else if (this.imgRight < this.getWidth() && !this.isDragLocked && delta < 50) {
             this.offset[0] += this.maxFreeOffsetVelocity * delta;
         }
 
         if (this.imgWidth < frame.width && !this.isDragLocked && delta < 50) {
             this.scale += this.maxFreeScaleVelocity * delta;
-        } else if (this.imgBottom < this.height && !this.isDragLocked && delta < 50) {
+        } else if (this.imgBottom < this.getHeight() && !this.isDragLocked && delta < 50) {
             this.offset[1] += this.maxFreeOffsetVelocity * delta;
         }
 
@@ -172,11 +172,11 @@ export class UI_Image extends UIElement implements MouseDragListener {
             this.offset[0] = 0;
             console.log(`<0 LeftoverX ${leftoverX}`)
             return true;
-        } else if (this.offset[0] + evt.deltaX + this.imgWidth < this.width) {
-            let leftoverX = this.width - (this.offset[0] + evt.deltaX + this.imgWidth);
+        } else if (this.offset[0] + evt.deltaX + this.imgWidth < this.getWidth()) {
+            let leftoverX = this.getWidth() - (this.offset[0] + evt.deltaX + this.imgWidth);
             evt.deltaX = leftoverX;
             this.offset[0] += evt.deltaX - leftoverX;
-            console.log(`>${this.width} LeftoverX ${leftoverX}`)
+            console.log(`>${this.getWidth()} LeftoverX ${leftoverX}`)
             return true;
         }
         if (this.offset[1] + evt.deltaY > 0) {
@@ -185,11 +185,11 @@ export class UI_Image extends UIElement implements MouseDragListener {
             this.offset[1] = 0;
             console.log(`<0 LeftoverY ${leftoverY}`)
             return true;
-        } else if (this.offset[1] + evt.deltaY + this.imgHeight < this.height) {
-            let leftoverY = this.height - (this.offset[1] + evt.deltaY + this.imgHeight);
+        } else if (this.offset[1] + evt.deltaY + this.imgHeight < this.getHeight()) {
+            let leftoverY = this.getHeight() - (this.offset[1] + evt.deltaY + this.imgHeight);
             evt.deltaY = leftoverY;
             this.offset[1] += evt.deltaY - leftoverY;
-            console.log(`>${this.height} LeftoverY ${leftoverY}`)
+            console.log(`>${this.getHeight()} LeftoverY ${leftoverY}`)
             return true;
         }
         this.offset[0] += evt.deltaX;

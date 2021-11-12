@@ -74,68 +74,17 @@ export class BackendServer {
 
             ///dual_data/not_backed_up/CheXpert/CheXpert-v1.0/train/patient00001/study1/view1_frontal.jpg
             let fullPath = `/dual_data/not_backed_up/CheXpert/CheXpert-v1.0/${(idNumber < 64541) ? 'train' : 'valid'}/${patientId}/${req.params.studyId}/${req.params.imageName}`
-            if (fs.existsSync(fullPath)) {
-                if (typeof req.query.res != 'undefined') {
-                    let scale = Number(req.query.res) / 100;
-                    log.info(`Requested image ${patientId} at ${scale}`);
-                    let scaledPath = path.join(__dirname, `/../../uploads/scaledImages/${req.query.res}_${patientId}_${req.params.studyId}_${req.params.imageName}`)
-                    if (fs.existsSync(scaledPath)) {
-                        resp.sendFile(scaledPath);
-                        return;
-                    } else {
-                        let originalImage = sharp(fullPath);
-                        let metadata = await originalImage.metadata();
-
-                        await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).toFile(scaledPath);
-                        resp.sendFile(scaledPath);
-                        return;
-                    }
-                }
-
-
-                log.info(`Sending ${fullPath}`)
-                resp.sendFile(fullPath);
-            } else {
-                resp.sendStatus(404).send('File not found');
-            }
+            return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+        })
+        app.get('/prototype/:bitString/:imageName', async (req: Request, resp: Response)=>{
+            let bitString: string = req.params.bitString;
+            let imageName: string = req.params.imageName;
+            let fullPath = Path.join(__dirname, `/../../public/prototypes/${bitString}/${imageName}`)
+            return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
         })
 
 
-        let fileNameToFullPath = (fileName: string) => Path.join(__dirname, `/../../uploads/${fileName}`);
 
-        let handleInferenceRequest = (fileName: string, resp: Response) => {
-            //TODO handle bad uploads
-
-            // let sesh = new ServerSession(;
-            // backend.sessions.set(sesh.id, sesh);
-            let respPayload: UploadResponse = {
-                success: true,
-                fileName: fileName,
-                uploadId: fileName.split('.').first,
-                diagnosis: null,
-                similarity: null
-            }
-            resp.set('Connection', 'keep-alive');
-            backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
-            let fullPath = fileNameToFullPath(fileName);
-            log.info(`Running inference on ${fullPath}`);
-            
-            backend.runInferance(fullPath).then((data: InferenceResponse) => {
-                respPayload.diagnosis = [];
-                for (let i = 0; i < data.prediction.length; i++) {
-                    respPayload.diagnosis.push([DiseaseManager.getDiseaseByBitStringId(data.prediction[i][0]), data.prediction[i][1]])
-                }
-                respPayload.diagnosis = respPayload.diagnosis.sort((a: [DiseaseDefinition, number], b: [DiseaseDefinition, number]) => b[1] - a[1])
-                respPayload.similarity = [];
-                let val: [string, number, string];
-                for (let i = 0; i < data.similarity.length; i++) {
-                    val = data.similarity[i];
-                    respPayload.similarity.push([val[0], val[1], DiseaseManager.bitStringToDiseases(val[2])])
-                }
-                resp.send(JSON.stringify(respPayload));
-
-            })
-        }
 
         app.get('/reuse', (req: Request, resp: Response) => {
             if (typeof req.query.upload != 'string') {
@@ -144,7 +93,7 @@ export class BackendServer {
             }
 
             log.info(`Recieved reuse GET ${req.query.upload}`);
-            return handleInferenceRequest(req.query.upload as string, resp);
+            return backend.handleInferenceRequest(req.query.upload as string, resp);
 
         })
         app.get('/diseaseDefs', (req: Request, resp: Response) => {
@@ -152,41 +101,10 @@ export class BackendServer {
         })
         app.post('/upload', multerUpload.single('file'), function (req: Request, resp: Response, next) {
             log.info(`Recieved upload POST ${req.file.filename}`);
-            return handleInferenceRequest(req.file.filename, resp);
-            // let content = req.file;
+            return backend.handleInferenceRequest(req.file.filename, resp);
 
-            // req.body will hold the text fields, if there were any
-
-            // backend.makeDiagnosis(respPayload.uploadId, {
-            //     onUpdate: (msg: string, alpha: number) => {
-            //         log.info(`[${(alpha * 100).toFixed(1)}%] ${msg}`)
-
-            //         // res.write(JSON.stringify({
-            //         //     'uploadId': respPayload.uploadId,
-            //         //     'progress': alpha
-            //         // }))
-            //     },
-            //     onComplete: () => {
-            //         // res.write(JSON.stringify(respPayload))
-            //         // res.end();
-            //     }
-            // }).then((diagnosis: [string, number][]) => {
-            //     respPayload.diagnosis = diagnosis;
-            //     res.send(JSON.stringify(respPayload));
-            // })
-
-            // log.info('uploads', uploadFolderList)
-
-            // req.body will hold the text fields, if there were any
         });
-        app.post('/uploadStream', (req: Request, resp: Response) => {
-            let originalName: string = req.headers.originalname as string;
-            let freshName = uniqueName(originalName ?? 'noName');
-            let file = fs.createWriteStream(`./uploads/${freshName}`);
-            req.pipe(file).addListener("close", () => {
-                log.info(`FinishedUpload upload for ${originalName} to ${freshName}`)
-            });
-        })
+
         httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
             try {
                 socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
@@ -200,7 +118,68 @@ export class BackendServer {
         })
         return backend;
     }
-    
+    async serveScaledImage(fullPath: string, scaleAlpha: number, resp: Response){
+        let uidName = fullPath.replaceAll('/','-').replaceAll('.','_');
+        let lastDot = uidName.lastIndexOf('_');
+        uidName = uidName.substr(0, lastDot) + '.' + uidName.substr(lastDot + fullPath.length)
+     
+        if (fs.existsSync(fullPath)) {
+            if(scaleAlpha != 1){
+                let scale = Number(scaleAlpha) / 100;
+                log.info(`Requested image at ${scale}: ${fullPath}`);
+                let scaledPath = path.join(__dirname, `/../../uploads/scaledImages/${scaleAlpha}_${uidName}`)
+                if (fs.existsSync(scaledPath)) {
+                    resp.sendFile(scaledPath);
+                    return;
+                } else {
+                    let originalImage = sharp(fullPath);
+                    let metadata = await originalImage.metadata();
+
+                    await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).toFile(scaledPath);
+                    resp.sendFile(scaledPath);
+                    return;
+                }
+            }
+
+            log.info(`Sending ${fullPath}`)
+            resp.sendFile(fullPath);
+        } else {
+            resp.sendStatus(404).send('File not found');
+        }
+    }
+    handleInferenceRequest(fileName: string, resp: Response) {
+        //TODO handle bad uploads
+
+        // let sesh = new ServerSession(;
+        // backend.sessions.set(sesh.id, sesh);
+        let respPayload: UploadResponse = {
+            success: true,
+            fileName: fileName,
+            uploadId: fileName.split('.').first,
+            diagnosis: null,
+            similarity: null
+        }
+        resp.set('Connection', 'keep-alive');
+        backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
+        let fullPath = Path.join(__dirname, `/../../uploads/${fileName}`)
+        log.info(`Running inference on ${fullPath}`);
+
+        backend.runInferance(fullPath).then((data: InferenceResponse) => {
+            respPayload.diagnosis = [];
+            for (let i = 0; i < data.prediction.length; i++) {
+                respPayload.diagnosis.push([DiseaseManager.getDiseaseByBitStringId(data.prediction[i][0]), data.prediction[i][1]])
+            }
+            respPayload.diagnosis = respPayload.diagnosis.sort((a: [DiseaseDefinition, number], b: [DiseaseDefinition, number]) => b[1] - a[1])
+            respPayload.similarity = [];
+            let val: [string, number, string];
+            for (let i = 0; i < data.similarity.length; i++) {
+                val = data.similarity[i];
+                respPayload.similarity.push([val[0], val[1], DiseaseManager.bitStringToDiseases(val[2])])
+            }
+            resp.send(JSON.stringify(respPayload));
+
+        })
+    }
     updateTask(taskId: string, message: string, progAlpha: number) {
         let taskListeners = this.taskListeners.get(taskId);
         if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {

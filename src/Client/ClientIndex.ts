@@ -13,11 +13,6 @@ containerDiv.setCss([
     ['top', '0px']
 ]);
 
-
-
-
-
-
 window.urlManager = new UrlManager();
 
 window.session = new ClientSession(window.urlManager.get('seshId', null));
@@ -30,8 +25,8 @@ window.mainBristol = new BristolBoard(containerDiv.element, async (brist: Bristo
     } catch (err) {
         log.error(`Failed to get disease definitions because`, err)
     }
-    urlManager.setListener(rootElement);
     rootElement.showUpload();
+    urlManager.setListener(rootElement);
     return rootElement;
 });
 
