@@ -13,7 +13,7 @@ export interface Progress {
 
 // # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
 // # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
-export type MsgType = 'prototypeResponse' | 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs' | 'heatmapRequest';
+export type MsgType = 'heatmapResponse' | 'prototypeResponse' | 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs' | 'heatmapRequest';
 export interface DiseaseDefinition {
     bitStringID: string
     displayName: string
@@ -131,22 +131,40 @@ export interface InferenceResponse extends PythonInterfaceMessage {
 }
 
 
+
+
+
+
+
 export interface HeatmapRequest extends PythonInterfaceMessage {
     msgType: 'heatmapRequest'
     fileName: string
     disease: string
 }
 
+
+export interface HeatmapResponse extends PythonInterfaceMessage {
+    msgType: 'heatmapResponse'
+    fileName: string
+    disease: string,
+    heatmap: Array<number>;
+    size: number
+}
+
+
+
+
+
+
+
+
+
+
+
 export interface PrototypeResponse extends PythonInterfaceMessage {
     msgType: 'prototypeResponse',
     inputDisease: string, // bit string eg 00010
-    prototype: string, // full file path of large image
-    boundingBox: {
-        left: number,
-        right: number,
-        top: number,
-        bottom: number
-    }
+    prototype: Array<string>, // full file path of large image
 }
 
 
@@ -161,7 +179,7 @@ export interface UploadResponse {
     fileName: string,
     imageBlob?: string
     //diseaseName, percentage
-    diagnosis: [disease: DiseaseDefinition, confidence: number][]
+    diagnosis: Array<[disease: DiseaseDefinition, confidence: number]>
     //filePath, matchPercentage, diseaseName[]
     similarity: [otherImageUrl: string, matchConfidence: number, diseases: DiseaseDefinition[]][]
 }
