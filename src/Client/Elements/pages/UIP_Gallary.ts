@@ -1,30 +1,115 @@
 
 
+import { UIFrame_CornerWidthHeight } from "bristolboard";
 import {
     BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp, UIStackRecycler,
     BristolBoard, UIResultCard, UIElement, UISimilarityCard, UploadResponse,
     UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent,
     MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent,
-    UIFrameDescription_CornerWidthHeight, UIFrameResult, Interp, DiseaseDefinition
+    UIFrameDescription_CornerWidthHeight, UIFrameResult, Interp, DiseaseDefinition, UI_Image
 } from "../../ClientImports";
 
 
 
 
 export class UIP_Gallary_V0 extends UIElement {
+    // let cardHeight = () => (box.height() - this.padding) / 2
+    // this.similarityCards = [
+    //     new UISimilarityCard(UIFrame.Build({
+    //         x: box.left,
+    //         y: box.top,
+    //         width: cardWidth,
+    //         height: cardHeight
+    //     }), this.brist),
+    //     new UISimilarityCard(UIFrame.Build({
+    //         x: () => (box.left() + ths.padding + cardWidth()),
+    //         y: box.top,
+    //         width: cardWidth,
+    //         height: cardHeight
+    //     }), this.brist),
+    //     new UISimilarityCard(UIFrame.Build({
+    //         x: box.left,
+    //         y: ()=>(box.top() + ths.padding + cardHeight()),
+    //         width: cardWidth,
+    //         height: cardHeight
+    //     }), this.brist),
+    //     new UISimilarityCard(UIFrame.Build({
+    //         x: () => (box.left() + ths.padding + cardWidth()),
+    //         y: ()=>(box.top() + ths.padding + cardHeight()),
+    //         width: cardWidth,
+    //         height: cardHeight
+    //     }), this.brist)
+    // ]
+    // for (let i = 0; i < Math.min(ths.similarityCards.length, resp.similarity.length); i++) {
+    //     ths.similarityCards[i].setData(resp.similarity[i])
+    //     this.addChild(ths.similarityCards[i]);
+    //     this.resultCards.push(ths.similarityCards[i])
+    // }
+    setPrototypeData(def: DiseaseDefinition) {
+        this.prototypeDataDef = def;
+        if(def == null){
+            return
+        }
+        let ths = this;
+        let urls = [];
+        for (let i = 0; i < 4; i++) {
+            urls.push(`/prototypes/${def.bitStringID}/prototype_${i}.png`)
+        }
+
+
+
+
+        let prototypeAnimation = linearInterp(
+            () => ths.getHeight(),
+            () => ths.margin,
+            () => (ths.hasPrototype ? 'A' : 'B'), {
+            durration: 400,
+            startAlpha: 1,
+            onAnimStart(interp: Interp<number>) {
+                ths.brist.requestHighFps(() => interp.isTransitioning)
+            }
+        });
+        if(this.prototypeRecycler != null){
+            this.prototypeRecycler.removeFromParent();
+        }
+        this.prototypeRecycler = UIStackRecycler.GridFixedColumns<string, UI_Image>(urls, {
+            buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
+                return new UI_Image(null,frame, brist);
+            },
+            bindData: (index: number, data: string, child: UI_Image) => {
+                console.log(`Binding ${index}: ${JSON.stringify(data)}`)
+                child.setImage(data).then(()=>{
+                    child.fitHorizontally();
+                });
+            },
+            cols: 2,
+            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 2)
+        }, UIFrame.Build({
+            x: () => (ths.getWidth() / 2 + ths.margin / 2),
+            y: prototypeAnimation,
+            width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
+            height: () => (ths.getHeight() - ths.margin * 2)
+        }), this.brist);
+        this.addChild(this.prototypeRecycler)
+    }
     similarityCards: UISimilarityCard[];
+    prototypeRecycler: UIStackRecycler<string,any>
     constructor(brist: BristolBoard<any>) {
         super(UIElement.createUID('gallary'), UIFrame.Build({
             x: 0,
             y: 0,
-            width: () => brist.width,
-            height: () => brist.height
+            width: () => brist.getWidth(),
+            height: () => brist.getHeight()
         }), brist);
     }
 
-    prototypeData: any = null;
+    private prototypeDataDef: DiseaseDefinition = null;
     yourResult: UploadResponse
     yourResultCard: UIResultCard;
+
+    get prototypeData(): DiseaseDefinition {
+        return this.prototypeDataDef;
+    }
 
     similarityRecycler: UIStackRecycler<[string, number, DiseaseDefinition[]], UISimilarityCard>
 
@@ -53,20 +138,9 @@ export class UIP_Gallary_V0 extends UIElement {
         this.addChild(this.yourResultCard);
 
 
-
-        let box = {
-            left: () => (ths.margin * 2 + (0.5 * (ths.frame.measureWidth() - (ths.margin * 2)))),
-            right: () => (ths.frame.measureWidth() - ths.margin),
-            top: () => (ths.margin),
-            bottom: () => (ths.frame.measureHeight() - ths.margin),
-            width: () => (box.right() - box.left()),
-            height: () => (box.bottom() - box.top())
-        }
-
-
         let similarityAnimation = linearInterp(
-            () => (ths.width / 2 + ths.margin),
-            () => ths.width,
+            () => (ths.getWidth() / 2 + ths.margin),
+            () => ths.getWidth(),
             () => (ths.hasPrototype ? 'A' : 'B'), {
             durration: 400,
             startAlpha: 1,
@@ -84,12 +158,12 @@ export class UIP_Gallary_V0 extends UIElement {
                 child.setData(data);
             },
             cols: 3,
-            rowHeight: () => ((ths.height - ths.margin * 2) / 3)
+            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 3)
         }, UIFrame.Build({
             x: similarityAnimation,
             y: () => ths.margin,
             width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
-            height: () => (ths.height - ths.margin * 2)
+            height: () => (ths.getHeight() - ths.margin * 2)
         }), this.brist);
 
         this.addChild(this.similarityRecycler);
@@ -144,6 +218,7 @@ export class UIP_Gallary_V0 extends UIElement {
     }
 
 
+
     private marginAlpha: number = 0.03;
     private paddingAlpha: number = 0.025;
     get margin() {
@@ -164,39 +239,7 @@ export class UIP_Gallary_V0 extends UIElement {
         this.brist.fillColor(fColor.lightText[1])
         this.brist.text(`Your Result`, this.margin, this.margin);
         this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Bottom);
-        this.brist.text(`Similar Results`, this.width - this.margin, this.margin)
+        this.brist.text(this.hasPrototype ? `Prototypical ${this.prototypeData.displayName}` : `Similar Results`, this.getWidth() - this.margin, this.margin)
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseEnter(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseExit(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return false;
-    }
-    shouldDragLock(event: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseDragged(evt: MouseDraggedInputEvent): boolean {
-        return false;
-    }
-    mousePinched(evt: MousePinchedInputEvent): boolean {
-        return false;
-    }
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
-        return false;
-    }
-    keyPressed(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
-    keyReleased(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
+
 }
