@@ -3,6 +3,9 @@ import { optFunc, evalOptionalFunc, getOptFuncTitle } from './CommonImports'
 
 
 export class Vector2 {
+    static distance(root: Vector2, base: Vector2): number {
+        return root.subtract(base).length;
+    }
     private xValue: optFunc<number>
     private yValue: optFunc<number>
     protected nameValue: optFunc<string>

@@ -13,7 +13,10 @@ export class UI_Image extends UIElement implements MouseDragListener {
         super(UIElement.createUID('NonDefImage'), uiFrame, brist);
         this.setImage(urlOrImage);
     }
-    private isLoaded = false;
+    get isLoaded(){
+        return this._isLoaded;
+    }
+    private _isLoaded = false;
     private loadedListener: ((ths: UI_Image) => void)[] = [];
     private notifyOnLoadedListeners() {
         for (let i = 0; i < this.loadedListener.length; i++) {
@@ -22,7 +25,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
     }
     setOnLoaded(loadedListener: (ths: UI_Image) => void) {
         this.loadedListener.push(loadedListener);
-        if (this.isLoaded) {
+        if (this._isLoaded) {
             console.log(`Already completed listener for ${this.image.src}`)
             loadedListener(this);
         }
@@ -33,7 +36,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
     async setImage(urlOrImage: string | HTMLImageElement): Promise<UI_Image> {
 
         let ths = this;
-        this.isLoaded = false;
+        this._isLoaded = false;
         if (urlOrImage == null) {
             this.image = new Image();
         } else if (typeof urlOrImage == 'string') {
@@ -47,12 +50,12 @@ export class UI_Image extends UIElement implements MouseDragListener {
                 console.log(err);
                 this.image = null;
             }
-            this.isLoaded = true;
+            this._isLoaded = true;
 
         } else {
             this.image = urlOrImage;
             ths.notifyOnLoadedListeners()
-            this.isLoaded = true;
+            this._isLoaded = true;
         }
         return new Promise((acc, rej) => {
             ths.setOnLoaded(acc);
@@ -81,15 +84,18 @@ export class UI_Image extends UIElement implements MouseDragListener {
         this.scale = this.getWidth() / this.image.width;
 
 
-        console.log(`Resizing to ${this.scale}`)
+      //  console.log(`Resizing to ${this.scale}`)
         if (isNaN(this.scale) || this.image.width == 0) {
             let ths = this;
             let count = 0;
+            if(isNaN(this.scale)){
+                this.scale = 1;
+            }
             setTimeout(() => {
                 if (count++ > retries) {
                     return;
                 }
-                console.log('retrying horizontal fit');
+             //   console.log('retrying horizontal fit');
                 ths.fitHorizontally();
             }, 1)
         }

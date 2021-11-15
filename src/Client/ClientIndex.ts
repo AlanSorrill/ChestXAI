@@ -3,6 +3,7 @@ import { UIElement, UI_ChestXAI, FHTML, BristolBoard, UIFrame, ClientSession, Ur
 
 let log = logger.local('ClientIndex').allowBelowLvl(LogLevel.naughty)
 
+
 let body: FHTML<HTMLBodyElement> = new FHTML<HTMLBodyElement>("body");
 let containerDiv: FHTML<HTMLDivElement> = body.createChildDiv('container')
 containerDiv.setCss([

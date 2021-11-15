@@ -17,7 +17,7 @@ import { UI_ChestXAI } from './Elements/RootElement';
 
 import { Socker } from './RestClient';
 import { ClientSession } from './ClientSession';
-import {  ImageEditor } from "./ImageEditing";
+import { ImageEditor } from "./ImageEditing";
 
 
 export * from './ClientSession'
@@ -27,7 +27,7 @@ export * from "./Elements/TestDot";
 export * from "./Elements/Button";
 export * from "./Elements/UISimilarity";
 export * from "./Elements/ProgressBar";
-export * from  "./Elements/MoveableImage";
+export * from "./Elements/MoveableImage";
 export * from "./Elements/pages/UIP_Gallary";
 export * from "./Elements/pages/UIP_Upload";
 export * from "./Elements/UI_ImageElement";
@@ -42,13 +42,16 @@ declare global {
     var fColor: FColorDirectory
     var urlManager: UrlManager
     var session: ClientSession
-
+    var showDebug: (visible?: boolean) => void
     var classes: {
         Rest: typeof Socker
         ImageEditor: typeof ImageEditor
-        
+
     }
 }
-
+window.showDebug = (visible: boolean = true)=>{
+    window.mainBristol.debuggerFlags.debugUIFrame = visible;
+    urlManager.set('debugUIFrames', visible, false)
+}
 //Allow client console to access static classes inside webpack
-window.classes = { Rest: Socker , ImageEditor: ImageEditor};
+window.classes = { Rest: Socker, ImageEditor: ImageEditor };

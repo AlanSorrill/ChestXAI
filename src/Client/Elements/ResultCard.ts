@@ -1,5 +1,5 @@
 
-import { BristolCursor, Interp, linearInterp, MouseBtnListener, MouseMovementListener, MouseState } from "bristolboard";
+import { BristolBoard, BristolCursor, Interp, linearInterp, MouseBtnListener, MouseMovementListener, MouseState, UIStackRecycler } from "bristolboard";
 import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight, MainBristol, UI_Image, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase, logger, UIP_Gallary_V0, DiseaseDefinition } from "../ClientImports";
 let log = logger.local('ResultCard');
 
@@ -29,6 +29,8 @@ export class UIResultCard extends UIElement {
             width: () => (ths.getWidth()),
             height: imageHeight
         }), brist);
+        this.image.zOffset = 2;
+
         let tst = true;
         this.image.setOnLoaded((img: UI_Image) => {
             console.log(img);
@@ -45,6 +47,35 @@ export class UIResultCard extends UIElement {
 
         })
         this.addChild(this.image);
+
+
+        let recycler = UIStackRecycler.create<[DiseaseDefinition, number], any>({
+            count: () => ths.uploadResponse?.diagnosis.length | 0,
+            get: (i: number) => ths.uploadResponse.diagnosis[i]
+        }, {
+            buildChild: (frame: UIFrame, brist: BristolBoard<any>) => {
+                let disp = new DiseaseDisplay(null, (selectedDisease: [disease: DiseaseDefinition, prediction: number]) => {
+                    if (ths.parent.prototypeData?.bitStringID == selectedDisease[0].bitStringID) {
+                        ths.parent.setPrototypeData(null);
+                    } else {
+                        ths.parent.setPrototypeData(selectedDisease[0])
+                        recycler.addScroll(-1);
+                    }
+                }, frame, brist);
+                return disp;
+            }, bindData: (index: number, data: [DiseaseDefinition, number], child: DiseaseDisplay) => {
+                child.setData(index, data);
+                
+            },
+            childLength: (index: number) => ((ths.parent.prototypeData == null || ths.uploadResponse?.diagnosis[index][0].bitStringID == ths.parent.prototypeData?.bitStringID) ? ths.bottomCardHeight / 3 : 0),
+            isVertical: true,
+
+        }, new UIFrame_CornerWidthHeight({
+            x: 0,
+            y: () => (ths.getHeight() - ths.bottomCardHeight),
+            width: () => ths.getWidth(),
+            height: () => ths.bottomCardHeight
+        }), brist);
         let buildFrame = (index: number) => {
 
             let yAnim = linearInterp(
@@ -75,19 +106,22 @@ export class UIResultCard extends UIElement {
 
             return out;
         }
-        for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
-            let display = new DiseaseDisplay(this.uploadResponse.diagnosis[i], (selectedDisease: [disease: DiseaseDefinition, prediction: number]) => {
-                if (ths.parent.prototypeData?.bitStringID == selectedDisease[0].bitStringID) {
-                    ths.parent.setPrototypeData(null);
-                } else {
-                    ths.parent.setPrototypeData(selectedDisease[0])
-                }
-            }, buildFrame(i), brist);
-            this.addChild(display);
-            // let txt = removeCammelCase(Disease[this.uploadResponse.diagnosis[i][0]])
-            // this.brist.textSizeMaxWidth(this.topCardHeight - textHeight - this.padding, txt, frame.width - (this.padding * 4));
-            // this.brist.text(txt, frame.left + this.padding, (frame.height - this.topCardHeight) + frame.top + this.padding + i * textHeight)
-        }
+        this.addChild(recycler);
+        // for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
+        //     let display = new DiseaseDisplay(this.uploadResponse.diagnosis[i], (selectedDisease: [disease: DiseaseDefinition, prediction: number]) => {
+        //         if (ths.parent.prototypeData?.bitStringID == selectedDisease[0].bitStringID) {
+        //             ths.parent.setPrototypeData(null);
+        //         } else {
+        //             ths.parent.setPrototypeData(selectedDisease[0])
+        //         }
+        //     }, buildFrame(i), brist);
+        //     console.log(`Adding disease ${this.uploadResponse.diagnosis[i][0].displayName}`)
+        //     this.addChild(display);
+        //     console.log(this.childElements.toArray())
+        //     // let txt = removeCammelCase(Disease[this.uploadResponse.diagnosis[i][0]])
+        //     // this.brist.textSizeMaxWidth(this.topCardHeight - textHeight - this.padding, txt, frame.width - (this.padding * 4));
+        //     // this.brist.text(txt, frame.left + this.padding, (frame.height - this.topCardHeight) + frame.top + this.padding + i * textHeight)
+        // }
     }
 
     get hasPrototype() {
@@ -130,6 +164,7 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     private data: [DiseaseDefinition, number];
     progress: UIProgressBar;
     barWidth: number = 0.6;
+    indexInParent: number = -1;
     onClick: (value: [DiseaseDefinition, number]) => void;
     get padding(): number {
         return this.getHeight() * (3 / 12);
@@ -169,6 +204,11 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     mouseMoved(evt: MouseMovedInputEvent): boolean {
         return true;
     }
+    setData(indexInParent: number, data: [DiseaseDefinition, number]) {
+        this.data = data;
+        this.indexInParent = indexInParent;
+    }
+
     mouseState: MouseState = MouseState.Gone;
     mouseEnter(evt: MouseInputEvent) {
         this.mouseState = MouseState.Over;
@@ -182,7 +222,7 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.ctx.save();
-        this.brist.fillColor(fColor.darkMode[this.mouseState == MouseState.Over ? 7 : 5])
+        this.brist.fillColor(fColor.red.accent1);//)fColor.darkMode[this.mouseState == MouseState.Over ? 7 : 5])
         this.brist.rectFrame(frame, false, true)
         this.brist.ctx.clip();
     }
