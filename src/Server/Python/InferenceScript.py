@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
             print(json.dumps({
                 'msgType': 'prototypeResponse',
-                'inputDisease': request.get('disease'),
+                'disease': request.get('disease'),
                 'prototype': out_prototypes,
                 'heatmap': out_heatmaps
     
@@ -123,15 +123,15 @@ if __name__ == '__main__':
             out_heatmap = heatmap_obj.run(request.get('disease'), request.get('fileName'))
         # out_heatmap = [320*320], values range from 0 to 255
 
-        print(json.dumps({
-            'msgType': 'heatmapResponse',
-            'fileName': request.get('fileName'),
-            'disease':  request.get('disease'),
-            'heatmap': out_heatmap,##
-            'size': 320
+            print(json.dumps({
+                'msgType': 'heatmapResponse',
+                'fileName': request.get('fileName'),
+                'disease':  request.get('disease'),
+                'heatmap': out_heatmap,##
+                'size': 320
  
-        }) + "\n")
-        sys.stdout.flush()
+            }) + "\n")
+            sys.stdout.flush()
     
     print(json.dumps({
         'msgType': 'status',
