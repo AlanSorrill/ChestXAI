@@ -44,19 +44,18 @@ print(json.dumps({
         'message': 'Loading Libraries' 
     }) + "\n", flush=True)
 
-# for i in range(1000):
-#     print('flusher\n', flush=True)
-#     sys.stdout.flush()
-#     time.sleep(2)
-# sys.stdout.flush()
+
 
 import os
 from SimilarityClass import SimilaritySearch
+from PrototypeClass import PrototypeSearch
+from HeatmapClass import HeatmapSearch
 
 
 image_base_path = './public/patients/' ###To be checked
 train_csv_path = './public/patients/train.csv'  ###To be checked
 model_vectors_path = './models/'  ###To be checked
+prototype_path = './public/prototypes/'
 
 diseaseList = ['Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis',  'Pleural Effusion']
 if __name__ == '__main__':
@@ -71,8 +70,9 @@ if __name__ == '__main__':
         'names': diseaseList
     }) + "\n")
     sys.stdout.flush()
-    obj = SimilaritySearch(train_csv_path, image_base_path, model_vectors_path, cuda_or_cpu = 'cpu', selected_cols = diseaseList)
-    
+    similarity_obj = SimilaritySearch(train_csv_path, image_base_path, model_vectors_path, cuda_or_cpu = 'cpu', selected_cols = diseaseList)
+    prototype_obj = PrototypeSearch(prototype_path = prototype_path)
+    heatmap_obj = HeatmapSearch(model_path=model_vectors_path, cuda_or_cpu = 'cpu')
     
     print(json.dumps({
         'msgType': 'status',
@@ -85,24 +85,52 @@ if __name__ == '__main__':
             'message': 'got request ' + line
         }) + "\n")
         sys.stdout.flush()
+
+
         request = json.loads(line)
-        out_prediction, out_images_and_similarities = obj.run(request.get('fileName'))
-        # outPrediction = {'inputFileName': request.fileName, 'diagnosis': out_prediction }
-        # # outPrediction = "{fileName: '8310923871.png', diagnosis: [['00000', 0.85], ['00010', 0.25], ['00000', 0.99]]}"
-        # outSimilarity = {'inputFileName': request.fileName, 'outputFileNames': out_images_and_similarities}
 
-        # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
-        # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
+        ######***inferenceRequest****###########
+        if request.get('msgType') == 'inferenceRequest':
+            out_prediction, out_images_and_similarities = similarity_obj.run(request.get('fileName'))
+        #  outPrediction = [['00000', 0.85], ['00010', 0.25], ['00000', 0.99]]"
+        # out_images_and_similarities =[['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]"
     
+            print(json.dumps({
+                'msgType': 'inferenceResponse',
+                'fileName': request.get('fileName'),
+                'prediction': out_prediction,
+                'similarity': out_images_and_similarities
+            }) + "\n")        
+            sys.stdout.flush()
+
+        ######***prototypeRequest****###########
+        elif request.get('msgType') == 'prototypeRequest':           
+            out_prototypes, out_heatmaps = prototype_obj.run(request.get('disease'))
+        # out_prototypes = ['190329.png','120422.png','132445.png'] 
+        # out_heatmaps = ['heatmap1.png','heatmap2.png','heatmap3.png']
+
+            print(json.dumps({
+                'msgType': 'prototypeResponse',
+                'inputDisease': request.get('disease'),
+                'prototype': out_prototypes,
+                'heatmap': out_heatmaps
+    
+            }) + "\n")
+            sys.stdout.flush()
+
+        ######***heatmapRequest****###########
+        elif request.get('msgType') == 'heatmapRequest':           
+            out_heatmap = heatmap_obj.run(request.get('disease'), request.get('fileName'))
+        # out_heatmap = [320*320], values range from 0 to 255
+
         print(json.dumps({
-            'msgType': 'inferenceResponse',
+            'msgType': 'heatmapResponse',
             'fileName': request.get('fileName'),
-            'prediction': out_prediction,
-            'similarity': out_images_and_similarities
+            'disease':  request.get('disease'),
+            'heatmap': out_heatmap,##
+            'size': 320
+ 
         }) + "\n")
-
-
-        
         sys.stdout.flush()
     
     print(json.dumps({
