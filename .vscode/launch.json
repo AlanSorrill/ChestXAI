@@ -7,19 +7,6 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch (win)",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "preLaunchTask": "buildTsc",
-            "program": "${workspaceFolder}\\src\\Server\\serverIndex.ts",
-            "outFiles": [
-                "${workspaceFolder}/build/**/*.js"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
             "name": "Launch (mac/linux)",
             "skipFiles": [
                 "<node_internals>/**"
@@ -30,6 +17,19 @@
             "autoAttachChildProcesses": true,
             "program": "${workspaceFolder}/src/Server/serverIndex.ts",
             "internalConsoleOptions": "openOnSessionStart",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch (win)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "buildTsc",
+            "program": "${workspaceFolder}\\src\\Server\\serverIndex.ts",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]

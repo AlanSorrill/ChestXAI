@@ -57,7 +57,7 @@ export class UISimilarityCard extends UIElement {
                 ths.image.fitHorizontally();
             })
         })
-        let getBtnWidth = () => (ths.getWidth())
+        let getBtnWidth = () => (ths.getWidth() / ths.similarityData[2].length)
         let generateBtn = (index: number, def: DiseaseDefinition) => {
             console.log(`Similar image has ${def.displayName}`)
             let btn = new UIButton(def.displayName, () => {
@@ -70,11 +70,11 @@ export class UISimilarityCard extends UIElement {
                 measureCorner: UICorner.downLeft
 
             }), this.brist);
-            btn.backgroundColor = fColor.purple.base;
+            btn.backgroundColor = fColor.darkMode[10];
             btn.frame.topY = linearInterp(
                 () => (ths.getBottom() - ths.getHeight() * 0.1),
                 () => (ths.getBottom() - ths.getHeight() * 0.2),
-                () => (btn.mouseState == MouseState.Over ? 'A' : 'B'),
+                () => (btn.mouseState == 'Hover' ? 'A' : 'B'),
                 { durration: 200 });
 
             btn.frame.description.y = () => (ths.getHeight() - btn.getHeight())

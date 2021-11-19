@@ -1,7 +1,7 @@
 import {
     evalOptionalFunc, optFunc, UIFrameDescription_CornerWidthHeight,
     BristolFontFamily, BristolHAlign, BristolVAlign, UIElement, UIFrameResult,
-    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent
+    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, 
 } from "../ClientImports";
 
 
@@ -11,7 +11,7 @@ export class UIProgressBar extends UIElement {
     backgroundColor: optFunc<FColor> = null;
     foregroundColor: optFunc<FColor> = fColor.red.base;
     onClick: () => void;
-    mouseState: MouseState = MouseState.Gone;
+    
     progress: optFunc<number>;
     text: {
         getText: (progress: number) => string,
@@ -76,39 +76,7 @@ export class UIProgressBar extends UIElement {
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
 
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseEnter(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseExit(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return false;
-    }
-    shouldDragLock(event: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseDragged(evt: MouseDraggedInputEvent): boolean {
-        return false;
-    }
-    mousePinched(evt: MousePinchedInputEvent): boolean {
-        return false;
-    }
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
-        return false;
-    }
-    keyPressed(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
-    keyReleased(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
+   
     // onDrawForeground(frame: UIFrameResult, deltaMs: number) {
     //     this.setupFont(frame);
     //     this.brist.text(evalOptionalFunc(this.text), frame.centerX, frame.centerY);
@@ -121,7 +89,7 @@ export class UIProgressBar extends UIElement {
     //     this.onClick();
     //     return true;
     // }
-    // mouseReleased(evt: MouseBtnInputEvent) {
+    //  mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }) {
     //     this.mouseState = this.isMouseTarget ? MouseState.Over : MouseState.Gone;
     //     return true;
     // }

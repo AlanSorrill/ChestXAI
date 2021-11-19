@@ -2,7 +2,7 @@
 import {
     evalOptionalFunc, optFunc, UIFrameDescription_CornerWidthHeight,
     BristolFontFamily, BristolHAlign, BristolVAlign, UIElement, UIFrameResult,
-    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom, MouseBtnInputEvent, MouseInputEvent, KeyboardInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent
+    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom,  MouseInputEvent, KeyboardInputEvent, MouseScrolledInputEvent
 } from "../ClientImports";
 
 
@@ -69,7 +69,7 @@ import {
 //         this.onClick();
 //         return true;
 //     }
-//     mouseReleased(evt: MouseBtnInputEvent){
+//      mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }){
 //         this.mouseState = this.isMouseTarget ? MouseState.Over : MouseState.Gone;
 //         return true;
 //     }

@@ -4,8 +4,7 @@ import { UIFrame_CornerWidthHeight } from "bristolboard";
 import {
     BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp, UIStackRecycler,
     BristolBoard, UIResultCard, UIElement, UISimilarityCard, UploadResponse,
-    UIFrame, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent,
-    MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent,
+    UIFrame,
     UIFrameDescription_CornerWidthHeight, UIFrameResult, Interp, DiseaseDefinition, UI_Image
 } from "../../ClientImports";
 
@@ -79,11 +78,12 @@ export class UIP_Gallary_V0 extends UIElement {
             bindData: (index: number, data: string, child: UI_Image) => {
                 console.log(`Binding ${index}: ${JSON.stringify(data)}`)
                 child.setImage(data).then(()=>{
+                    
                     child.fitHorizontally();
                 });
             },
             cols: 2,
-            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 2)
+            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 2) * 1.1
         }, UIFrame.Build({
             x: () => (ths.getWidth() / 2 + ths.margin / 2),
             y: prototypeAnimation,

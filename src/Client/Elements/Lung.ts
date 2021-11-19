@@ -1,8 +1,9 @@
+import { MouseBtnListener, RawPointerMoveData } from "bristolboard";
 import {
-    FColor, lerp, MouseDragListener, UIFrame_CornerWidthHeight, KeyboardInputEvent, MouseBtnInputEvent,
-    MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent,
+    FColor, lerp, MouseDragListener, UIFrame_CornerWidthHeight, KeyboardInputEvent,
+    MouseInputEvent, MouseScrolledInputEvent,
     Vector2, UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult,
-    UIElement, optFunc, MainBristol
+    UIElement, optFunc, MainBristol, RawPointerData
 } from "../ClientImports";
 
 
@@ -16,7 +17,7 @@ export class Lung extends UIElement {
     root: Vector2 = null;
     baseOffset = [0.5, 0.3]
     colorsAndAlphas: [color: FColor, alpha: () => number][];
-    constructor(colorsAndAlphas: [color: FColor,alpha: ()=>number][], frame: UIFrameDescription_CornerWidthHeight | UIFrame, brist: BristolBoard<any>) {
+    constructor(colorsAndAlphas: [color: FColor, alpha: () => number][], frame: UIFrameDescription_CornerWidthHeight | UIFrame, brist: BristolBoard<any>) {
         super(`Lung${Lung.instCount++}`, UIFrame.Build(frame), brist)
         this.colorsAndAlphas = colorsAndAlphas;
         this.frame.measureHeight = this.frame.measureWidth;
@@ -112,8 +113,8 @@ export class Lung extends UIElement {
             this.lungRef = new UI_ImageElement({
                 x: () => refOffset[0] * ths.getWidth(),
                 y: () => refOffset[1] * ths.getHeight(),
-                width: () => ths.getHeight()* refRatio * refScale,
-                height: ths.getHeight()* refScale,
+                width: () => ths.getHeight() * refRatio * refScale,
+                height: ths.getHeight() * refScale,
                 measureCorner: UICorner.upLeft,
                 parentCorner: UICorner.upLeft
             }, ths.brist, `./LungOutline.png`);
@@ -146,7 +147,7 @@ export class Lung extends UIElement {
 
         this.brist.strokeWeight(this.lineThickness);
         this.brist.ctx.lineCap = this.lineCap;
-        for(let i = 0;i<this.colorsAndAlphas.length;i++){
+        for (let i = 0; i < this.colorsAndAlphas.length; i++) {
             this.brist.strokeColor(this.colorsAndAlphas[i][0]);
             this.drawLung(this.colorsAndAlphas[i][1](), frame);
         }
@@ -253,42 +254,9 @@ export class Lung extends UIElement {
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
 
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
 
-        return false;
-    }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseEnter(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseExit(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return false;
-    }
-    shouldDragLock(event: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseDragged(evt: MouseDraggedInputEvent): boolean {
-        return false;
-    }
-    mousePinched(evt: MousePinchedInputEvent): boolean {
-        return false;
-    }
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
-        return false;
-    }
-    keyPressed(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
-    keyReleased(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
 }
-export class LungHandle extends UIElement implements MouseDragListener {
+export class LungHandle extends UIElement implements MouseDragListener, MouseBtnListener {
     link: ChainLink;
     lung: Lung;
     constructor(link: ChainLink, parent: Lung, frame: UIFrame, brist: MainBristol) {
@@ -297,9 +265,13 @@ export class LungHandle extends UIElement implements MouseDragListener {
         this.lung = parent;
         this.link.handle = this;
     }
-    onDragEnd(event: MouseBtnInputEvent | MouseDraggedInputEvent): boolean {
+    shouldDragLock(event: RawPointerData | [start: RawPointerData, lastMove: RawPointerMoveData]): boolean {
         return true;
     }
+    onDragEnd(event: RawPointerData | RawPointerMoveData): boolean {
+        return true;
+    }
+
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.fillColor(this.isDragLocked ? fColor.red.base : fColor.blue.base);
         this.brist.ellipseFrame(frame, false, true)
@@ -308,8 +280,8 @@ export class LungHandle extends UIElement implements MouseDragListener {
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
 
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
-        if (evt.btn == 3 && !this.link.next) {
+    mousePressed(evt: RawPointerData): boolean {
+        if (evt.buttonOrFingerIndex == 3 && !this.link.next) {
 
             let offset: (x: number, y: number) => [number, number] = (x: number, y: number) => {
                 if (Array.isArray(this.link.vector)) {
@@ -325,30 +297,20 @@ export class LungHandle extends UIElement implements MouseDragListener {
             this.lung.setLinkAlpha(this.link.next[1], this.link);
             this.lung.editable(this.link.next[0])
             this.lung.editable(this.link.next[1])
-        } else if (evt.btn == 2) {
+        } else if (evt.buttonOrFingerIndex == 2) {
             this.link.next = undefined
             this.lung.editable();
         }
         return false;
     }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
+    mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }): boolean {
         return false;
     }
-    mouseEnter(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseExit(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return false;
-    }
-    shouldDragLock(event: MouseBtnInputEvent): boolean {
-        return true;
-    }
-    mouseDragged(evt: MouseDraggedInputEvent): boolean {
+
+
+    mouseDragged(evt: RawPointerMoveData): boolean {
         console.log(JSON.stringify(evt));
-        let delta = [evt.deltaX / this.parent.getWidth(), evt.deltaY / this.parent.getHeight()];
+        let delta = [evt.delta[0] / this.parent.getWidth(), evt.delta[1] / this.parent.getHeight()];
         if (Array.isArray(this.link.vector)) {
             this.link.vector[0] += delta[0];
             this.link.vector[1] += delta[1];
@@ -361,18 +323,8 @@ export class LungHandle extends UIElement implements MouseDragListener {
 
         return true;
     }
-    mousePinched(evt: MousePinchedInputEvent): boolean {
-        return false;
-    }
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
-        return false;
-    }
-    keyPressed(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
-    keyReleased(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
+
+ 
 }
 interface ChainLink {
     vector: Vector2 | [number, number]

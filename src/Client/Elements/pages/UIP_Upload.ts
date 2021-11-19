@@ -1,7 +1,8 @@
+import { BristolBoard, BristolFontFamily, BristolHAlign, BristolVAlign, logger, LogLevel, Lung, MouseState, smoothFloat, UIButton, UICorner, UIElement, UIFrame, UIFrameDescription_CornerWidthHeight, UIFrameResult, UIP_Gallary_V0, UploadResponse } from "../../ClientImports";
 
 
-import { BristolHAlign, BristolVAlign, smoothFloat, UIStackOptions } from "bristolboard";
-import { UIP_Gallary_V0, UIFrameResult, MouseBtnInputEvent, MouseMovedInputEvent, MouseDraggedInputEvent, MousePinchedInputEvent, KeyboardInputEvent, MouseScrolledInputEvent, LogLevel, UIButton, BristolBoard, UIElement, UICorner, BristolFontFamily, MouseInputEvent, UIFrame_CornerWidthHeight, MouseState, UIProgressBar, logger, UploadResponse, ClientSession, UIFrame, UIFrameDescription_CornerWidthHeight, Lung, linearInterp, UISimilarityCard, UIStackRecycler } from "../../ClientImports";
+
+
 let log = logger.local("UIP_Upload")
 
 log.allowBelowLvl(LogLevel.naughty);
@@ -79,15 +80,15 @@ export class UIP_Upload_V0 extends UIElement {
         uploadButton.autoWidth().autoHeight().autoPadding();
         uploadButton.backgroundColor = (mouse: MouseState) => {
             switch (mouse) {
-                case MouseState.Gone:
+                case 'Gone':
                     return fColor.red.base
-                case MouseState.Pressed:
-                    return fColor.red.darken1
-                case MouseState.Over:
+                case 'Hover':
                     return fColor.red.lighten2
+                default:
+                    return fColor.red.darken1
             }
         };
-        
+
         this.addChild(uploadButton);
 
         let startTime = Date.now();

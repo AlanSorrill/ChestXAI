@@ -7,7 +7,7 @@ import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
 import sharp from 'sharp'
-import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 import path from "path";
@@ -76,7 +76,7 @@ export class BackendServer {
             let fullPath = `/dual_data/not_backed_up/CheXpert/CheXpert-v1.0/${(idNumber < 64541) ? 'train' : 'valid'}/${patientId}/${req.params.studyId}/${req.params.imageName}`
             return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
         })
-        app.get('/prototype/:bitString/:imageName', async (req: Request, resp: Response)=>{
+        app.get('/prototype/:bitString/:imageName', async (req: Request, resp: Response) => {
             let bitString: string = req.params.bitString;
             let imageName: string = req.params.imageName;
             let fullPath = Path.join(__dirname, `/../../public/prototypes/${bitString}/${imageName}`)
@@ -118,16 +118,16 @@ export class BackendServer {
         })
         return backend;
     }
-    async serveScaledImage(fullPath: string, scaleAlpha: number, resp: Response){
-        let uidName = fullPath.replaceAll('/','-').replaceAll('.','_');
+    async serveScaledImage(fullPath: string, scaleAlpha: number, resp: Response) {
+        let uidName = fullPath.replaceAll('/', '-').replaceAll('.', '_');
         let lastDot = uidName.lastIndexOf('_');
         uidName = uidName.substr(0, lastDot) + '.' + uidName.substr(lastDot + fullPath.length)
-     
+
         if (fs.existsSync(fullPath)) {
-            if(scaleAlpha != 1){
+            if (scaleAlpha != 1) {
                 let scale = Number(scaleAlpha) / 100;
                 log.info(`Requested image at ${scale}: ${fullPath}`);
-                let scaledPath = path.join(__dirname, `/../../uploads/scaledImages/${scaleAlpha}_${uidName}`)
+                let scaledPath = path.join(__dirname, `/../../generated/scaledImages/${scaleAlpha}_${uidName}`)
                 if (fs.existsSync(scaledPath)) {
                     resp.sendFile(scaledPath);
                     return;
@@ -147,6 +147,7 @@ export class BackendServer {
             resp.sendStatus(404).send('File not found');
         }
     }
+
     handleInferenceRequest(fileName: string, resp: Response) {
         //TODO handle bad uploads
 
@@ -238,67 +239,57 @@ export class BackendServer {
         }
     }
 
-    reflectionTest: TSReflection
-    setupReflectionTest() {
-
-        this.reflectionTest = new TSReflection();
-    }
-
     protected constructor(app: Express, httpServer: http.Server, socketServer: WebSocket.Server) {
         this.express = app;
         this.httpServer = httpServer;
         this.socketServer = socketServer;
-        this.setupReflectionTest();
-        this.startPython();
     }
 
 
     inferenceWaiters: Map<string, (resp: InferenceResponse) => void> = new Map();
-    async runInferance(fileName: string): Promise<InferenceResponse> {
+    async runInferance(fullFilePath: string): Promise<InferenceResponse> {
+        let ths = this;
+
         return new Promise((acc, rej) => {
-            let startTime = Date.now();
-            this.inferenceWaiters.set(fileName, (resp: InferenceResponse) => {
-                let endTime = Date.now();
-                log.info(`Inference took ${endTime - startTime}ms ---------------------`)
-                acc(resp);
-            })
-            this.sendToPython(JSON.stringify({
-                'msgType': 'inferenceRequest',
-                'fileName': fileName
-            }))
-
+            if (fs.existsSync(fullFilePath)) {
+                let startTime = Date.now();
+                ths.inferenceWaiters.set(fullFilePath, (resp: InferenceResponse) => {
+                    let endTime = Date.now();
+                    log.info(`Inference took ${endTime - startTime}ms ---------------------`)
+                    acc(resp);
+                })
+                ths.sendToPython(JSON.stringify({
+                    'msgType': 'inferenceRequest',
+                    'fileName': fullFilePath
+                }))
+            } else {
+                log.error(`Unknown file path ${fullFilePath}`)
+                return rej(`No such file ${fullFilePath}`);
+            }
         })
-    }
-    // async runSimilarity(fileName: string): Promise<SimilarityResult> {
-    //     return new Promise((acc, rej) => {
-    //         this.runPython('SimilarityScript.py', (response: string) => {
-    //             try {
-    //                 let data: SimilarityResult = JSON.parse(response);
-    //                 acc(data);
-    //             } catch (err) {
-    //                 rej(err);
-    //             }
-    //         }, fileName);
-    //     })
-    // }
-    // testSimilarity(onData: (data: [string, number][]) => void) {
-    //     let dirPath = Path.join(__dirname, `../../public/patients/`)
-    //     let subDir: string;
-    //     let out: [string, number][] = [];
-    //     fs.promises.readdir(dirPath).then((fileNames: string[]) => {
 
-    //         for (let i = 0; i < fileNames.length; i++) {
-    //             console.log(i)
-    //             let subDir = Path.join(dirPath, fileNames[i]);
-    //             if (fs.lstatSync(subDir).isDirectory()) {
-    //                 fs.readdirSync(subDir).forEach((imageName: string) => {
-    //                     out.push([imageName, Math.random()])
-    //                 })
-    //             }
-    //         }
-    //         onData(out);
-    //     })
-    // }
+    }
+    heatmapWaiters: Map<string, (resp: HeatmapResponse) => void> = new Map();
+    //DiseaseDefinition or bitstringid
+    async generateHeatmap(fullFilePath: string, disease: DiseaseDefinition) {
+
+        let ths = this;
+        return new Promise((acc, rej) => {
+            if (fs.existsSync(fullFilePath)) {
+                let startTime = Date.now();
+                ths.heatmapWaiters.set(fullFilePath, (resp: HeatmapResponse) => {
+                    let endTime = Date.now();
+                    log.info(`Heatmap took ${endTime - startTime}ms ---------------------`)
+                    acc(resp);
+                })
+            } else {
+                log.error(`Unknown file path ${fullFilePath}`)
+                return rej(`No such file ${fullFilePath}`);
+            }
+        });
+
+    }
+
     python: ChildProcess.ChildProcessWithoutNullStreams
     sendToPython(data: string) {
         this.python.stdin.write(data + "\n", 'utf8');
@@ -396,6 +387,7 @@ export class BackendServer {
     }
 
     async onInitialized() {
+        this.startPython();
         let directoryPath = Path.join(__dirname, '/../../public/patients');//`${__dirname}/../../public/patients`;
         log.info(`Loading patients from ${directoryPath}`);
         try {
@@ -447,44 +439,5 @@ export class BackendServer {
                 this.indicies.get(key).push(record);
             }
         }
-
-
-
     }
-
-
 }
-
-
-
-// {
-//     noFinding: ScanRecord[],
-//     enlargedCardiomediastinum: ScanRecord[],
-//     cardiomegaly: ScanRecord[],
-//     lungOpacity: ScanRecord[],
-//     lungLesion: ScanRecord[],
-//     edema: ScanRecord[],
-//     consolidation: ScanRecord[],
-//     pneumonia: ScanRecord[],
-//     atelectasis: ScanRecord[],
-//     pneumothorax: ScanRecord[],
-//     pleuralEffusion: ScanRecord[],
-//     pleuralOther: ScanRecord[],
-//     fracture: ScanRecord[],
-//     supportDevices: ScanRecord[]
-// } = {
-//         noFinding: [],
-//         enlargedCardiomediastinum: [],
-//         cardiomegaly: [],
-//         lungOpacity: [],
-//         lungLesion: [],
-//         edema: [],
-//         consolidation: [],
-//         pneumonia: [],
-//         atelectasis: [],
-//         pneumothorax: [],
-//         pleuralEffusion: [],
-//         pleuralOther: [],
-//         fracture: [],
-//         supportDevices: []
-//     }

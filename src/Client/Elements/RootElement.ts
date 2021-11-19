@@ -1,6 +1,7 @@
+import { BristolBoard, CoordType, KeyboardInputEvent, logger, MouseInputEvent, MouseScrolledInputEvent, RawPointerData, UIElement, UIFrame, UIFrameResult, UIP_Gallary_V0, UIP_Upload_V0, UploadResponse, UrlDataType, UrlListener } from "../ClientImports";
 
 
-import { UIP_Gallary_V0, UICorner, UIP_Upload_V0, Lung, UrlDataType, TestDot, UIFrameResult, MouseBtnInputEvent, BristolBoard, UIElement, UIFrame, CoordType, UrlListener, logger, KeyboardInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UploadResponse } from "../ClientImports";
+
 
 
 
@@ -33,7 +34,7 @@ let log = logger.local('RootElement');
 //     //     return this.machine.lever.mousePressed(evt);
 //     // }
 
-//     // mouseReleased(evt: MouseBtnInputEvent) {
+//     //  mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }) {
 //     //     return this.machine.lever.mouseReleased(evt);
 //     // }
 //     // mouseDragged(evt: MouseDraggedInputEvent) {
@@ -108,44 +109,12 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseEnter(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseExit(evt: MouseInputEvent): boolean {
-        return false;
-    }
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return false;
-    }
-    shouldDragLock(event: MouseBtnInputEvent): boolean {
-        return false;
-    }
-    mouseDragged(evt: MouseDraggedInputEvent): boolean {
-        return false;
-    }
-    mousePinched(evt: MousePinchedInputEvent): boolean {
-        return false;
-    }
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
-        return false;
-    }
-    keyPressed(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
-    keyReleased(evt: KeyboardInputEvent): boolean {
-        return false;
-    }
+    
     // mousePressed(evt: MouseBtnInputEvent) {
     //     this.addChild(new TestDot(UIFrame.Build({ x: evt.x, y: evt.y, radius: 10 }), this.brist, fColor.green.accent1));
     //     return true;
     // }
-    // mouseReleased(evt: MouseBtnInputEvent) {
+    //  mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }) {
 
     //     return true;
     // }

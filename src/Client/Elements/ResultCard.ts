@@ -1,6 +1,6 @@
+import { RawPointerMoveData } from "bristolboard";
+import { BristolBoard, BristolCursor, BristolFontFamily, BristolHAlign, BristolVAlign, DiseaseDefinition, Interp, linearInterp, logger, MainBristol, MouseBtnListener, MouseInputEvent, MouseMovementListener, MouseState, RawPointerData, UIElement, UIFrame, UIFrameResult, UIFrame_CornerWidthHeight, UIProgressBar, UIP_Gallary_V0, UIStackRecycler, UI_Image, UploadResponse } from "../ClientImports";
 
-import { BristolBoard, BristolCursor, Interp, linearInterp, MouseBtnListener, MouseMovementListener, MouseState, UIStackRecycler } from "bristolboard";
-import { BristolFontFamily, BristolHAlign, BristolVAlign, KeyboardInputEvent, MouseBtnInputEvent, MouseDraggedInputEvent, MouseInputEvent, MouseMovedInputEvent, MousePinchedInputEvent, MouseScrolledInputEvent, UIFrameResult, UIFrame_CornerWidthHeight, MainBristol, UI_Image, UIElement, UIFrame, UploadResponse, UIProgressBar, removeCammelCase, logger, UIP_Gallary_V0, DiseaseDefinition } from "../ClientImports";
 let log = logger.local('ResultCard');
 
 
@@ -48,7 +48,9 @@ export class UIResultCard extends UIElement {
         })
         this.addChild(this.image);
 
-
+        let recylerHeightAnim = linearInterp( () => ths.bottomCardHeight,
+        () => ((ths.bottomCardHeight / 3)),
+        () => (ths.parent?.prototypeData != null ? 'A' : 'B'), {});
         let recycler = UIStackRecycler.create<[DiseaseDefinition, number], any>({
             count: () => ths.uploadResponse?.diagnosis.length | 0,
             get: (i: number) => ths.uploadResponse.diagnosis[i]
@@ -65,22 +67,22 @@ export class UIResultCard extends UIElement {
                 return disp;
             }, bindData: (index: number, data: [DiseaseDefinition, number], child: DiseaseDisplay) => {
                 child.setData(index, data);
-                
+
             },
             childLength: (index: number) => ((ths.parent.prototypeData == null || ths.uploadResponse?.diagnosis[index][0].bitStringID == ths.parent.prototypeData?.bitStringID) ? ths.bottomCardHeight / 3 : 0),
             isVertical: true,
 
         }, new UIFrame_CornerWidthHeight({
             x: 0,
-            y: () => (ths.getHeight() - ths.bottomCardHeight),
+            y: () => (ths.getHeight() - recylerHeightAnim()),
             width: () => ths.getWidth(),
-            height: () => ths.bottomCardHeight
+            height: recylerHeightAnim
         }), brist);
         let buildFrame = (index: number) => {
 
             let yAnim = linearInterp(
                 () => (ths.getHeight() - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
-                () => (ths.getHeight() - (ths.bottomCardHeight / 3)),
+                () => (ths.getHeight() - (ths.bottomCardHeight / 3) * 1.5),
                 () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData == this.uploadResponse.diagnosis[index][0] ? 'A' : 'B'), {
                 onAnimStart() {
                     console.log('Starting transition')
@@ -193,36 +195,37 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
         this.addChild(this.progress);
         this.onClick = onClick;
     }
-    mousePressed(evt: MouseBtnInputEvent): boolean {
+    mouseMoved(evt: RawPointerMoveData): boolean {
         return true;
     }
-    mouseReleased(evt: MouseBtnInputEvent): boolean {
+    mousePressed(evt: RawPointerData): boolean {
+        return true;
+    }
+    mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }): boolean {
         this.onClick(this.data)
         return true;
     }
 
-    mouseMoved(evt: MouseMovedInputEvent): boolean {
-        return true;
-    }
+
     setData(indexInParent: number, data: [DiseaseDefinition, number]) {
         this.data = data;
         this.indexInParent = indexInParent;
     }
 
-    mouseState: MouseState = MouseState.Gone;
+
     mouseEnter(evt: MouseInputEvent) {
-        this.mouseState = MouseState.Over;
+
         this.brist.cursor(BristolCursor.pointer)
         return true;
     }
     mouseExit(evt: MouseInputEvent) {
-        this.mouseState = MouseState.Gone;
+
         this.brist.cursor(BristolCursor.default)
         return true;
     }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.ctx.save();
-        this.brist.fillColor(fColor.red.accent1);//)fColor.darkMode[this.mouseState == MouseState.Over ? 7 : 5])
+        this.brist.fillColor(fColor.darkMode[this.mouseState == 'Hover' ? 7 : 5])
         this.brist.rectFrame(frame, false, true)
         this.brist.ctx.clip();
     }
