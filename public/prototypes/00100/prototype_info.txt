@@ -1,0 +1,4 @@
+patient09904/study1/view1_frontal.jpg	76   131    35    93
+patient22551/study1/view1_frontal.jpg	142   202    78   141
+patient16025/study5/view1_frontal.jpg	89    155    56   103
+patient40008/study10/view1_frontal.jpg	 61   178    50   101
