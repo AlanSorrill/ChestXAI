@@ -1,4 +1,4 @@
-import { Express, Request, Response } from "express";
+import { Express, Request, response, Response } from "express";
 
 import { Socket } from "net";
 import * as ChildProcess from "child_process";
@@ -7,7 +7,7 @@ import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
 import sharp from 'sharp'
-import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse, InferenceRequest, HeatmapRequest } from './ServerImports'
 import { ServerSession } from "./ServerSession";
 import { TSReflection } from "../Common/TypeScriptReflection";
 import path from "path";
@@ -74,13 +74,25 @@ export class BackendServer {
 
             ///dual_data/not_backed_up/CheXpert/CheXpert-v1.0/train/patient00001/study1/view1_frontal.jpg
             let fullPath = `/dual_data/not_backed_up/CheXpert/CheXpert-v1.0/${(idNumber < 64541) ? 'train' : 'valid'}/${patientId}/${req.params.studyId}/${req.params.imageName}`
-            return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+            if (req.query.hasOwnProperty('res')) {
+                return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+            } else if (req.query.hasOwnProperty('heatmap')) {
+                return resp.send(await backend.getHeatmap(fullPath))
+            } else {
+                return resp.sendFile(fullPath);
+            }
         })
         app.get('/prototype/:bitString/:imageName', async (req: Request, resp: Response) => {
             let bitString: string = req.params.bitString;
             let imageName: string = req.params.imageName;
             let fullPath = Path.join(__dirname, `/../../public/prototypes/${bitString}/${imageName}`)
-            return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+            if (req.query.hasOwnProperty('res')) {
+                return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+            } else if (req.query.hasOwnProperty('heatmap')) {
+                return resp.send(await backend.getHeatmap(fullPath))
+            } else {
+                return resp.sendFile(fullPath);
+            }
         })
 
 
@@ -118,6 +130,34 @@ export class BackendServer {
         })
         return backend;
     }
+    async getHeatmap(fullPath: string) {
+        let uidName = fullPath.replaceAll('/', '-').replaceAll('.', '_');
+        let lastDot = uidName.lastIndexOf('_');
+        uidName = uidName.substr(0, lastDot) + '.' + uidName.substr(lastDot + fullPath.length)
+
+        if (fs.existsSync(fullPath)) {
+
+            console.log(`Getting ${DiseaseManager.getAllDiseases()[0]} heatmap for ${fullPath}`)
+            let imgData: number[] = (await this.generateHeatmap(fullPath, DiseaseManager.getAllDiseases()[0])).heatmap;//[];
+            // for (let x = 0; x < 256; x++) {
+            //     for (let y = 0; y < 256; y++) {
+            //         imgData.push(Math.round(Math.random() * 255));
+            //     }
+            // }
+            return imgData;
+            // let buff = await sharp(new Uint8Array(imgData), {
+            //     raw: {
+            //         width: 256,
+            //         height: 256,
+            //         channels: 1
+            //     }
+            // }).png().toBuffer();
+            // return buff;
+
+        } else {
+            return null;
+        }
+    }
     async serveScaledImage(fullPath: string, scaleAlpha: number, resp: Response) {
         let uidName = fullPath.replaceAll('/', '-').replaceAll('.', '_');
         let lastDot = uidName.lastIndexOf('_');
@@ -128,17 +168,19 @@ export class BackendServer {
                 let scale = Number(scaleAlpha) / 100;
                 log.info(`Requested image at ${scale}: ${fullPath}`);
                 let scaledPath = path.join(__dirname, `/../../generated/scaledImages/${scaleAlpha}_${uidName}`)
-                if (fs.existsSync(scaledPath)) {
-                    resp.sendFile(scaledPath);
-                    return;
-                } else {
-                    let originalImage = sharp(fullPath);
-                    let metadata = await originalImage.metadata();
+                // if (fs.existsSync(scaledPath)) {
+                //     resp.sendFile(scaledPath);
+                //     return;
+                // } else {
+                let originalImage = sharp(fullPath);
+                let metadata = await originalImage.metadata();
 
-                    await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).toFile(scaledPath);
-                    resp.sendFile(scaledPath);
-                    return;
-                }
+                // await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).toFile(scaledPath);
+                // resp.sendFile(scaledPath);
+                resp.setHeader('Content-Type', 'image/png');
+                resp.send(await originalImage.resize(Math.round(metadata.width * scale), Math.round(metadata.height * scale)).png().toBuffer())
+                return;
+                // }
             }
 
             log.info(`Sending ${fullPath}`)
@@ -271,7 +313,7 @@ export class BackendServer {
     }
     heatmapWaiters: Map<string, (resp: HeatmapResponse) => void> = new Map();
     //DiseaseDefinition or bitstringid
-    async generateHeatmap(fullFilePath: string, disease: DiseaseDefinition) {
+    async generateHeatmap(fullFilePath: string, disease: DiseaseDefinition): Promise<HeatmapResponse> {
 
         let ths = this;
         return new Promise((acc, rej) => {
@@ -282,6 +324,7 @@ export class BackendServer {
                     log.info(`Heatmap took ${endTime - startTime}ms ---------------------`)
                     acc(resp);
                 })
+                ths.sendToPython({ 'msgType': 'heatmapRequest', 'fileName': fullFilePath, 'disease': disease.bitStringID });
             } else {
                 log.error(`Unknown file path ${fullFilePath}`)
                 return rej(`No such file ${fullFilePath}`);
@@ -291,7 +334,11 @@ export class BackendServer {
     }
 
     python: ChildProcess.ChildProcessWithoutNullStreams
-    sendToPython(data: string) {
+    sendToPython(data: InferenceRequest | HeatmapRequest | string) {
+        console.log(`Send to python`,data);
+        if (typeof data != 'string') {
+            data = JSON.stringify(data);
+        }
         this.python.stdin.write(data + "\n", 'utf8');
 
     }

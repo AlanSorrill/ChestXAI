@@ -76,6 +76,13 @@ export class DiseaseManager {
     static getDiseaseByBitStringId(bitId: string) {
         return this.bitIndex.get(bitId);
     }
+    static getAllDiseases(){
+        let out: DiseaseDefinition[] = [];
+        DiseaseManager.nameIndex.forEach((val: DiseaseDefinition)=>{
+out.push(val);
+        })
+        return out;
+    }
     static clear() {
         this.nameIndex.clear();
         this.bitIndex.clear();

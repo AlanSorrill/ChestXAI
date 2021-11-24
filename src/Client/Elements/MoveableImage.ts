@@ -1,8 +1,42 @@
 
 import { MouseDragListener, RawPointerData, RawPointerMoveData } from "bristolboard";
 import { KeyboardInputEvent, MouseInputEvent, MouseScrolledInputEvent, UIFrameResult, MainBristol, UIElement, UIFrame } from "../ClientImports";
+import { ImageEditor, RGBA } from "../ImageEditing";
 
 export class UI_Image extends UIElement implements MouseDragListener {
+    async setHeatmap(heatmapLink: string) {
+        let data = await (await fetch(heatmapLink)).json();
+        let dataWidth = Math.floor(Math.sqrt(data.length))
+        let getHeat = (xAlpha: number, yAlpha: number) => {
+            let xCoord = dataWidth * xAlpha;
+            let yCoord = dataWidth * yAlpha;
+            let index = yCoord * dataWidth + xCoord;
+            return data[Math.floor(index)];
+        }
+        let canvas = new OffscreenCanvas(this.image.width, this.image.height);
+        let ctx = canvas.getContext('2d');
+        ctx.drawImage(this.image, 0, 0);
+        let originalData = ctx.getImageData(0, 0, this.image.width, this.image.height, {});
+
+
+        let setPixelData = (xx: number, yy: number, pixel: [r: number, g: number, b: number, a: number]) => {
+            let index = yy * originalData.width * 4 + xx * 4;
+            for (let channel = 0; channel < pixel.length; channel++) {
+                originalData[index + channel] = pixel[channel];
+            }
+
+        }
+        for (let x = 0; x < this.image.width; x++) {
+            for (let y = 0; y < this.image.height; y++) {
+                setPixelData(x, y, [255, 0, y % 255, 255]);
+            }
+        }
+        ctx.putImageData(originalData, 0, 0);
+        this.image.src = await ImageEditor.editImage(this.image, (x: number, y: number, oldPixel: RGBA) => {
+            return [getHeat(x / originalData.width, y / originalData.height), 0, 0, 255]
+        });//URL.createObjectURL(await canvas.convertToBlob());
+
+    }
     image: HTMLImageElement = null;
     maxFreeScaleVelocity: number = 0.001;
     maxFreeOffsetVelocity: number = 10;
@@ -203,7 +237,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
         this.offset[1] += evt.delta[1];
         return true;
     }
-    
+
     mouseWheel(delta: MouseScrolledInputEvent): boolean {
         console.log(`Image Mouse wheel${delta.amount}`)
         this.scale += delta.amount / 10.0;
@@ -216,3 +250,4 @@ export class UI_Image extends UIElement implements MouseDragListener {
         return false;
     }
 }
+

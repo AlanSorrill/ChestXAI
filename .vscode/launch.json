@@ -14,8 +14,9 @@
             "console": "internalConsole",
             "preLaunchTask": "buildTscMac",
             "outputCapture": "std",
+          
             "autoAttachChildProcesses": true,
-            "program": "${workspaceFolder}/src/Server/serverIndex.ts",
+            "program": "${workspaceFolder}/src/Server/ServerIndex.ts",
             "internalConsoleOptions": "openOnSessionStart",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
@@ -29,7 +30,7 @@
                 "<node_internals>/**"
             ],
             "preLaunchTask": "buildTsc",
-            "program": "${workspaceFolder}\\src\\Server\\serverIndex.ts",
+            "program": "${workspaceFolder}\\src\\Server\\ServerIndex.ts",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]

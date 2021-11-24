@@ -187,7 +187,7 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
         this.progress.text = {
             align: BristolHAlign.Right,
             getText: (prog: number) => `${(prog * 100).toFixed(1)}%`,
-            backgroundColor: fColor.darkMode[11],
+            backgroundColor: fColor.lightText[0],
             foregroundColor: fColor.lightText[1]
         };
         this.progress.foregroundColor = fColor.green.base;

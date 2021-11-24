@@ -54,6 +54,8 @@ build/
 # Upload Directory
 uploads/
 
+generated/
+
 # Optional npm cache directory
 .npm
 

@@ -7,7 +7,7 @@ const {
 
 
 module.exports = {
-    entry: './src/Server/serverIndex.ts',
+    entry: './src/Server/ServerIndex.ts',
     mode: NODE_ENV,
     target: 'node',
     sourceMap: true,
@@ -23,7 +23,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'build'),
-        filename: './Index/serverIndex.js'
+        filename: './Index/ServerIndex.js'
     },
     resolve: {
         extensions: ['.ts', '.js'],

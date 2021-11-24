@@ -1,5 +1,6 @@
 
 import { BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp, MouseState, UIButton, UICorner, UIElement, UIFrame_CornerWidthHeight } from "bristolboard";
+import { EnumType } from "typescript";
 import { UIFrame, UIFrameResult, MainBristol, UI_Image, DiseaseDefinition } from "../ClientImports";
 
 
@@ -36,8 +37,24 @@ export class UISimilarityCard extends UIElement {
         }
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
+        this.brist.textAlign(BristolHAlign.Right, BristolVAlign.Top);
+
         //        (ths.padding * 2 + ths.textSize) - ths.margin * 2
-        // this.brist.fillColor(fColor.darkMode[8]);
+        this.brist.fillColor(fColor.red.lighten1);
+        this.brist.strokeWeight(2);
+        this.brist.strokeColor(fColor.black);
+        this.brist.fontFamily(BristolFontFamily.Monospace);
+        this.brist.textSize(frame.height * 0.1)
+        if (this.similarityData != null) {
+            let text = `${(this.similarityData[1] * 100).toFixed(0)}%`;
+            let txtBB = this.brist.ctx.measureText(text);
+            let width = txtBB.actualBoundingBoxRight - txtBB.actualBoundingBoxLeft;
+            this.brist.ctx.fillText(text, frame.right, frame.top);
+            this.brist.fillColor(fColor.darkMode[10])
+            this.brist.rect(frame.right - width, frame.top, width, frame.height * 0.1)
+
+        }
+        // this.brist.ctx.strokeText(`${(this.similarityData[1] * 100).toFixed(2)}%`, frame.left, frame.top);
         // this.brist.ctx.beginPath();
         // this.brist.rect(frame.left + this.margin, frame.top + this.margin, this.image.getWidth(), this.getHeight() - this.margin * 2, false, true);
         // this.brist.ctx.beginPath();
@@ -55,6 +72,7 @@ export class UISimilarityCard extends UIElement {
             ths.addOnAttachToBristolListener(() => {
                 console.log('Fitting similarity image')
                 ths.image.fitHorizontally();
+                ths.image.setHeatmap(`patients/${similarityData[0]}?heatmap=10000`);
             })
         })
         let getBtnWidth = () => (ths.getWidth() / ths.similarityData[2].length)
@@ -70,7 +88,7 @@ export class UISimilarityCard extends UIElement {
                 measureCorner: UICorner.downLeft
 
             }), this.brist);
-            btn.backgroundColor = fColor.darkMode[10];
+            btn.backgroundColor = fColor.darkMode[10]// () => btn.mouseState ? ;
             btn.frame.topY = linearInterp(
                 () => (ths.getBottom() - ths.getHeight() * 0.1),
                 () => (ths.getBottom() - ths.getHeight() * 0.2),
@@ -79,11 +97,11 @@ export class UISimilarityCard extends UIElement {
 
             btn.frame.description.y = () => (ths.getHeight() - btn.getHeight())
             btn.frame.bottomY = () => (ths.parent as UIElement).getBottom();
-            btn.frame.measureHeight = ()=>(btn.frame.bottomY() - btn.frame.topY())
+            btn.frame.measureHeight = () => (btn.frame.bottomY() - btn.frame.topY())
 
             btn.textSize = () => btn.getHeight() * 0.8
             btn.zOffset = 1 + index;
-            return btn;
+            return btn; 9
         }
         while (ths.buttons.length > 0) {
             ths.buttons.pop().removeFromParent();
@@ -98,4 +116,8 @@ export class UISimilarityCard extends UIElement {
     }
     buttons: Array<UIButton> = []
 
+}
+
+function switchOnEnum<T extends EnumType, ValueType>(valueMap: { [Property in keyof T]: ValueType }) {
+    return (prop: keyof T) => valueMap[prop];
 }
