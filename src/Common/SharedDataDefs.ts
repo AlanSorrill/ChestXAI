@@ -13,7 +13,7 @@ export interface Progress {
 
 // # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
 // # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
-export type MsgType = 'heatmapResponse' | 'prototypeResponse' | 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs' | 'heatmapRequest';
+export type MsgType = 'heatmapResponse' | 'prototypeResponse' | 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs' | 'heatmapRequest' | 'partialHeatmapResponse';
 export interface DiseaseDefinition {
     bitStringID: string
     displayName: string
@@ -76,10 +76,10 @@ export class DiseaseManager {
     static getDiseaseByBitStringId(bitId: string) {
         return this.bitIndex.get(bitId);
     }
-    static getAllDiseases(){
+    static getAllDiseases() {
         let out: DiseaseDefinition[] = [];
-        DiseaseManager.nameIndex.forEach((val: DiseaseDefinition)=>{
-out.push(val);
+        DiseaseManager.nameIndex.forEach((val: DiseaseDefinition) => {
+            out.push(val);
         })
         return out;
     }
@@ -110,7 +110,7 @@ if (typeof window != 'undefined') {
     window.DiseaseManagerClass = DiseaseManager;
 }
 export class PythonMessage {
-    private static isType<T extends PythonInterfaceMessage>(typeName: MsgType, obj: PythonInterfaceMessage): obj is T {
+    static isType<T extends PythonInterfaceMessage>(typeName: MsgType, obj: PythonInterfaceMessage): obj is T {
         return obj.msgType == typeName
     }
     static isInterfaceRequest(obj: PythonInterfaceMessage): obj is InferenceRequest {
@@ -122,6 +122,10 @@ export class PythonMessage {
     static isStatus(obj: PythonInterfaceMessage): obj is PythonStatusMessage {
         return this.isType('status', obj);
     }
+    static isPartialHeatmapResp(obj: PythonInterfaceMessage): obj is PartialHeatmapResponse{
+        return this.isType('partialHeatmapResponse', obj);
+    }
+    
     static isDiseaseDefs(obj: PythonInterfaceMessage): obj is DiseaseDefsMessage {
         return this.isType('diseaseDefs', obj);
     }
@@ -154,10 +158,51 @@ export interface HeatmapResponse extends PythonInterfaceMessage {
     msgType: 'heatmapResponse'
     fileName: string
     disease: string,
-    heatmap: Array<number>;
+    heatmap: Array<Array<number>>;
     size: number
 }
+export interface PartialHeatmapResponse extends PythonInterfaceMessage {
+    msgType: 'partialHeatmapResponse'
+    fileName: string
+    disease: string,
+    heatmap: string;
+    index: number
+    size: number
+}
+// export class HeatmapWaiter {
+//     callback: (resp: HeatmapResponse)=>void
+//     parts: Array<number[]> = []
+//     recieved: number = 0;
+//     total: number = -1;
+//     constructor(callback: (resp: HeatmapResponse)=>void){
+//         this.callback = callback;
+//     }
+//     addPart(partial: PartialHeatmapResponse){
+//         if(this.total == -1){
+//             this.total = partial.size;
+//         }
+//         if(typeof this.parts[partial.index] == 'undefined'){
+//             this.parts[partial.index] = partial.heatmap.split('-').map((val: string)=>Number(val))
+//             this.recieved++;
+//             console.log(`Heatmap Recieved ${this.recieved}/${this.total}`)
+//             if(this.recieved == this.total - 1){
+//                 console.log(`Emitting heatmap`);
+//                 let out: HeatmapResponse = {
+//                     disease: partial.disease,
+//                     fileName: partial.fileName,
+//                     heatmap: this.parts,
+//                     msgType: 'heatmapResponse',
+//                     size: partial.size
+//                 }
+//                 this.callback(out);
+//             }
+//         }
+//     }
 
+//     static HeatmapKeyname(filePath: string, disease: DiseaseDefinition | string) {
+//         return filePath + '-' + ((typeof disease == 'string') ? disease : disease.bitStringID);
+//     }
+// }
 
 
 

@@ -17,6 +17,7 @@ export class ImageEditor {
             log.error(`No image to edit`);
         }
         let size = [original.width, original.height];
+        log.info(`Editing image of size ${size[0]} by ${size[1]}`)
         let canvas = new OffscreenCanvas(size[0], size[1]);
         let ctx = canvas.getContext('2d');
         ctx.drawImage(original, 0, 0);

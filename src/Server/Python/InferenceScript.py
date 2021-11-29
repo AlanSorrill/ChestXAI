@@ -122,16 +122,28 @@ if __name__ == '__main__':
         elif request.get('msgType') == 'heatmapRequest':           
             out_heatmap = heatmap_obj.run(request.get('disease'), request.get('fileName'))
         # out_heatmap = [320*320], values range from 0 to 255
-
+          
             print(json.dumps({
                 'msgType': 'heatmapResponse',
                 'fileName': request.get('fileName'),
                 'disease':  request.get('disease'),
-                'heatmap': out_heatmap,##
+                'heatmap': out_heatmap.tolist(),##
                 'size': 320
  
             }) + "\n")
             sys.stdout.flush()
+            # for row in range(320):
+            #     outData = '-'.join([str(x) for x in out_heatmap[row].tolist()])
+            #     outLine = json.dumps({
+            #         'msgType': 'partialHeatmapResponse',
+            #         'fileName': request.get('fileName'),
+            #         'disease':  request.get('disease'),
+            #         'heatmap': outData,##
+            #         'size': 320,
+            #         'index': row
+            #     })
+            #     print(outLine + "\n")
+            #     sys.stdout.flush()
     
     print(json.dumps({
         'msgType': 'status',

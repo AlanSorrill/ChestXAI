@@ -137,8 +137,8 @@ export class BackendServer {
 
         if (fs.existsSync(fullPath)) {
 
-            console.log(`Getting ${DiseaseManager.getAllDiseases()[0]} heatmap for ${fullPath}`)
-            let imgData: number[] = (await this.generateHeatmap(fullPath, DiseaseManager.getAllDiseases()[0])).heatmap;//[];
+            log.info(`Getting ${DiseaseManager.getAllDiseases()[0]} heatmap for ${fullPath}`)
+            let imgData: number[][] = (await this.generateHeatmap(fullPath, DiseaseManager.getAllDiseases()[0])).heatmap;//[];
             // for (let x = 0; x < 256; x++) {
             //     for (let y = 0; y < 256; y++) {
             //         imgData.push(Math.round(Math.random() * 255));
@@ -312,6 +312,10 @@ export class BackendServer {
 
     }
     heatmapWaiters: Map<string, (resp: HeatmapResponse) => void> = new Map();
+    keyForHeatmap(filePath: string, disease: DiseaseDefinition | string) {
+        return filePath + '-' + ((typeof disease == 'string') ? disease : disease.bitStringID);
+    }
+
     //DiseaseDefinition or bitstringid
     async generateHeatmap(fullFilePath: string, disease: DiseaseDefinition): Promise<HeatmapResponse> {
 
@@ -319,7 +323,8 @@ export class BackendServer {
         return new Promise((acc, rej) => {
             if (fs.existsSync(fullFilePath)) {
                 let startTime = Date.now();
-                ths.heatmapWaiters.set(fullFilePath, (resp: HeatmapResponse) => {
+
+                ths.heatmapWaiters.set(this.keyForHeatmap(fullFilePath, disease), (resp: HeatmapResponse) => {
                     let endTime = Date.now();
                     log.info(`Heatmap took ${endTime - startTime}ms ---------------------`)
                     acc(resp);
@@ -335,7 +340,7 @@ export class BackendServer {
 
     python: ChildProcess.ChildProcessWithoutNullStreams
     sendToPython(data: InferenceRequest | HeatmapRequest | string) {
-        console.log(`Send to python`,data);
+        log.info(`Send to python`, data);
         if (typeof data != 'string') {
             data = JSON.stringify(data);
         }
@@ -364,43 +369,59 @@ export class BackendServer {
         // this.python = ChildProcess.spawn('conda', [`run`, `-n`, `cheX`, `python ${pathToScript}`]);
 
         // this.python = ChildProcess.exec(command, (error: ChildProcess.ExecException, stdout: string, stderr: string)=>{
-        //     console.log('error',error);
-        //     console.log('stdout',stdout);
-        //     console.log('stderror',stderr);
+        //     log.info('error',error);
+        //     log.info('stdout',stdout);
+        //     log.info('stderror',stderr);
         // })
 
+        let partialLine: string = null;
         this.python.stdout.on('data', (data) => {
             let lines = data.toString('utf8').split('\n');
-            log.info(`Python:`, lines);
-
+            // log.info(`Python:`, lines);
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i] == '' || lines[i] == 'flusher') {
                     continue;
+                }
+                if (partialLine != null) {
+                    lines[i] = partialLine + lines[i];
+                    log.debug(`Using partial line`);
+                    partialLine = null;
                 }
                 try {
                     let message: PythonInterfaceMessage = JSON.parse(lines[i]) as any;
 
                     if (PythonMessage.isStatus(message)) {
-                        console.log(`Python status: ${message.message}`)
+                        log.debug(`Python status: ${message.message}`)
                     } else if (PythonMessage.isDiseaseDefs(message)) {
-                        console.log(`Got disease list: ${message.names.join(', ')}`)
+                        log.debug(`Got disease list: ${message.names.join(', ')}`)
                         DiseaseManager.initDiseases(message.names);
 
                     } else if (PythonMessage.isInterfaceResponse(message)) {
-                        console.log(`Got inference response for ${message.fileName}`);
+                        log.debug(`Got inference response for ${message.fileName}`);
                         if (ths.inferenceWaiters.has(message.fileName)) {
                             ths.inferenceWaiters.get(message.fileName)(message)
+                            ths.inferenceWaiters.delete(message.fileName);
                         } else {
                             log.error(`No waiters for ${message.fileName}`)
                         }
+                    } else if (PythonMessage.isType<HeatmapResponse>('heatmapResponse', message)) {
+                        log.debug(`Got heatmap`, message);
+                        let key = ths.keyForHeatmap(message.fileName, message.disease);
+                        ths.heatmapWaiters.get(key)(message);
+                        ths.heatmapWaiters.delete(key);
                     } else {
-                        console.log(`Unknown python message ${Object.keys(message)}`)
+                        log.error(`Unknown python message ${Object.keys(message)}`)
                     }
                 } catch (err) {
-                    log.error(`Error parsing python message: ${err}`)
+                    if ((err.message as string).includes('Unexpected end of JSON input')) {
+
+                        partialLine = lines[i];
+                    } else {
+                        log.error(`Error parsing python message: ${lines[i]}`, err);
+                    }
                 }
             }
-            //console.log(data.toString('utf8'));
+            //log.info(data.toString('utf8'));
         })
 
         this.python.stderr.on('data', (error) => {
@@ -422,7 +443,7 @@ export class BackendServer {
         // let python = this.runPython(, (response: string) => {
         //     try {
         //        // let data = JSON.parse(response);
-        //         console.log(`Python: ${response}`);
+        //         log.info(`Python: ${response}`);
         //       //  acc(data);
         //     } catch (err) {
         //         rej(err);
