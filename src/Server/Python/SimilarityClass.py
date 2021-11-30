@@ -25,7 +25,7 @@ class SimilaritySearch(object):
         self.images_list =  [path for path in self.df['Path'].tolist()]### 
 
         self.train_vecs = np.load(model_vectors_path + 'train_vecs_pre_none.npz')['vectors'].astype('float32')
-        self.train_truth = np.load(model_vectors_path + 'train_truth_pre_none.npy').astype('int')
+        self.train_truth = np.load(model_vectors_path + 'train_truth_pre_none_updated.npy').astype('int')
         
         index = faiss.index_factory(1024, "Flat")
         # index = faiss.IndexFlatIP(1024)
