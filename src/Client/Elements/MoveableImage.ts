@@ -1,6 +1,6 @@
 
-import { clamp, MouseDragListener, RawPointerData, RawPointerMoveData } from "bristolboard";
-import { KeyboardInputEvent, MouseInputEvent, MouseScrolledInputEvent, UIFrameResult, MainBristol, UIElement, UIFrame } from "../ClientImports";
+import { clamp, MouseDragListener, RawPointerData, RawPointerMoveData, RawPointerScrollData } from "bristolboard";
+import { KeyboardInputEvent,UIFrameResult, MainBristol, UIElement, UIFrame } from "../ClientImports";
 import { ImageEditor, RGBA } from "../ImageEditing";
 
 export class UI_Image extends UIElement implements MouseDragListener {
@@ -209,10 +209,10 @@ export class UI_Image extends UIElement implements MouseDragListener {
         // this.brist.cursor('grab')
         return false;
     }
-    mouseEnter(evt: MouseInputEvent): boolean {
+    mouseEnter(evt: RawPointerMoveData): boolean {
         return false;
     }
-    mouseExit(evt: MouseInputEvent): boolean {
+    mouseExit(evt: RawPointerMoveData): boolean {
         // this.brist.cursor('default')
         return false;
     }
@@ -254,7 +254,7 @@ export class UI_Image extends UIElement implements MouseDragListener {
         return true;
     }
 
-    mouseWheel(delta: MouseScrolledInputEvent): boolean {
+    mouseWheel(delta: RawPointerScrollData): boolean {
         console.log(`Image Mouse wheel${delta.amount}`)
         this.scale += delta.amount / 10.0;
         return false;

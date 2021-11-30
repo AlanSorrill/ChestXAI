@@ -1,5 +1,5 @@
 
-import { BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp, MouseState, UIButton, UICorner, UIElement, UIFrame_CornerWidthHeight } from "bristolboard";
+import { BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp,  UIButton, UICorner, UIElement, UIFrame_CornerWidthHeight } from "bristolboard";
 import { EnumType } from "typescript";
 import { UIFrame, UIFrameResult, MainBristol, UI_Image, DiseaseDefinition } from "../ClientImports";
 
@@ -92,7 +92,7 @@ export class UISimilarityCard extends UIElement {
             btn.frame.topY = linearInterp(
                 () => (ths.getBottom() - ths.getHeight() * 0.1),
                 () => (ths.getBottom() - ths.getHeight() * 0.2),
-                () => (btn.mouseState == 'Hover' ? 'A' : 'B'),
+                () => (btn.isMouseOver ? 'A' : 'B'),
                 { durration: 200 });
 
             btn.frame.description.y = () => (ths.getHeight() - btn.getHeight())

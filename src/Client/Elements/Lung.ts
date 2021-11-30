@@ -1,7 +1,7 @@
-import { MouseBtnListener, RawPointerMoveData } from "bristolboard";
+
 import {
     FColor, lerp, MouseDragListener, UIFrame_CornerWidthHeight, KeyboardInputEvent,
-    MouseInputEvent, MouseScrolledInputEvent,
+    MouseTapListener, RawPointerMoveData,
     Vector2, UICorner, BristolBoard, UIFrameDescription_CornerWidthHeight, UIFrame, UI_ImageElement, UIFrameResult,
     UIElement, optFunc, MainBristol, RawPointerData
 } from "../ClientImports";
@@ -25,7 +25,7 @@ export class Lung extends UIElement {
         let ths = this;
         let refOffset = [0.08, 0.15]
 
-        this.base = new Vector2({ t: 'leftX', v: () => ths.frame.leftX() }, { t: 'topY', v: () => ths.frame.topY() }).addFunc(new Vector2(this.baseOffset[0], this.baseOffset[1]).scaleFunc({ t: 'frameWidth', v: () => ths.frame.measureWidth() }));
+        this.base = new Vector2(() => ths.frame.leftX(), () => ths.frame.topY()).addFunc(new Vector2(this.baseOffset[0], this.baseOffset[1]).scaleFunc(() => ths.frame.measureWidth()));
         this.root = this.base.subtractFunc(new Vector2(0, () => (ths.frame.measureWidth() * 0.2))).setName('root');
         // this.buildVector(this.chainData, this.base);
         let refRatio = 151.99 / 300.26
@@ -256,7 +256,7 @@ export class Lung extends UIElement {
     }
 
 }
-export class LungHandle extends UIElement implements MouseDragListener, MouseBtnListener {
+export class LungHandle extends UIElement implements MouseDragListener, MouseTapListener {
     link: ChainLink;
     lung: Lung;
     constructor(link: ChainLink, parent: Lung, frame: UIFrame, brist: MainBristol) {
@@ -265,6 +265,7 @@ export class LungHandle extends UIElement implements MouseDragListener, MouseBtn
         this.lung = parent;
         this.link.handle = this;
     }
+
     shouldDragLock(event: RawPointerData | [start: RawPointerData, lastMove: RawPointerMoveData]): boolean {
         return true;
     }
@@ -280,7 +281,8 @@ export class LungHandle extends UIElement implements MouseDragListener, MouseBtn
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
 
     }
-    mousePressed(evt: RawPointerData): boolean {
+
+    mouseTapped(evt: RawPointerData): boolean {
         if (evt.buttonOrFingerIndex == 3 && !this.link.next) {
 
             let offset: (x: number, y: number) => [number, number] = (x: number, y: number) => {
@@ -303,10 +305,6 @@ export class LungHandle extends UIElement implements MouseDragListener, MouseBtn
         }
         return false;
     }
-    mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }): boolean {
-        return false;
-    }
-
 
     mouseDragged(evt: RawPointerMoveData): boolean {
         console.log(JSON.stringify(evt));
@@ -324,7 +322,7 @@ export class LungHandle extends UIElement implements MouseDragListener, MouseBtn
         return true;
     }
 
- 
+
 }
 interface ChainLink {
     vector: Vector2 | [number, number]
