@@ -57,6 +57,13 @@ export class BackendServer {
     static async Create(app: Express, httpServer: http.Server, socketServer: WebSocket.Server): Promise<BackendServer> {
         let backend = new BackendServer(app, httpServer, socketServer);
         await backend.onInitialized();
+        let rootPath = path.join(__dirname, '/../../');
+        let paths = {
+            nodeModules: path.join(rootPath, '/node_modules'),
+            root: path.join(rootPath, '/public'),
+            favIco: path.join(rootPath, '/public/favicon.ico'),
+            userContent: path.join(rootPath, '/uploads')
+        }
         app.get('/similar', (req: Request, resp: Response) => {
             // log.info(req.query);
             let possibilities = [];
@@ -77,7 +84,7 @@ export class BackendServer {
             if (req.query.hasOwnProperty('res')) {
                 return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
             } else if (req.query.hasOwnProperty('heatmap')) {
-                return resp.send(await backend.getHeatmap(fullPath))
+                return resp.send(await backend.getHeatmap(fullPath,DiseaseManager.getDiseaseByBitStringId(req.query.heatmap as string)))
             } else {
                 return resp.sendFile(fullPath);
             }
@@ -89,13 +96,24 @@ export class BackendServer {
             if (req.query.hasOwnProperty('res')) {
                 return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
             } else if (req.query.hasOwnProperty('heatmap')) {
-                return resp.send(await backend.getHeatmap(fullPath))
+                return resp.send(await backend.getHeatmap(fullPath, DiseaseManager.getDiseaseByBitStringId(req.query.bitstring as string)))
             } else {
                 return resp.sendFile(fullPath);
             }
         })
 
-
+        app.get('/userContent/:fileName', async (req: Request, resp: Response) => {
+            let fullPath = path.join(paths.userContent, req.params.fileName);
+            if (!fs.existsSync(fullPath)) {
+                resp.sendStatus(404);
+            } else if (req.query.hasOwnProperty('res')) {
+                return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+            } else if (req.query.hasOwnProperty('heatmap')) {
+                return resp.send(await backend.getHeatmap(fullPath, DiseaseManager.getDiseaseByBitStringId(req.query.bitstring as string)))
+            } else {
+                return resp.sendFile(fullPath);
+            }
+        })
 
 
         app.get('/reuse', (req: Request, resp: Response) => {
@@ -130,15 +148,15 @@ export class BackendServer {
         })
         return backend;
     }
-    async getHeatmap(fullPath: string) {
+    async getHeatmap(fullPath: string, disease: DiseaseDefinition) {
         let uidName = fullPath.replaceAll('/', '-').replaceAll('.', '_');
         let lastDot = uidName.lastIndexOf('_');
         uidName = uidName.substr(0, lastDot) + '.' + uidName.substr(lastDot + fullPath.length)
 
         if (fs.existsSync(fullPath)) {
 
-            log.info(`Getting ${DiseaseManager.getAllDiseases()[0]} heatmap for ${fullPath}`)
-            let imgData: number[][] = (await this.generateHeatmap(fullPath, DiseaseManager.getAllDiseases()[0])).heatmap;//[];
+            log.info(`Getting ${disease.displayName} heatmap for ${fullPath}`)
+            let imgData: number[][] = (await this.generateHeatmap(fullPath, disease)).heatmap;//[];
             // for (let x = 0; x < 256; x++) {
             //     for (let y = 0; y < 256; y++) {
             //         imgData.push(Math.round(Math.random() * 255));

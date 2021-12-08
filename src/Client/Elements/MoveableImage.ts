@@ -1,54 +1,8 @@
+import { KeyboardInputEvent,UIFrameResult, MainBristol, UIElement, UIFrame,MouseDragListener, RawPointerData, RawPointerMoveData, RawPointerScrollData } from "../ClientImports";
 
-import { clamp, MouseDragListener, RawPointerData, RawPointerMoveData, RawPointerScrollData } from "bristolboard";
-import { KeyboardInputEvent,UIFrameResult, MainBristol, UIElement, UIFrame } from "../ClientImports";
-import { ImageEditor, RGBA } from "../ImageEditing";
 
 export class UI_Image extends UIElement implements MouseDragListener {
-    async setHeatmap(heatmapLink: string) {
-        let data = await (await fetch(heatmapLink)).json();
-        let dataWidth = data.length;
-
-        let lastValTstTmpDeleteThis: [number,number,number] = [0,0,0];
-        let getHeat = (xAlpha: number, yAlpha: number) => {
-            let xCoord = Math.floor(dataWidth * xAlpha);
-            let yCoord = Math.floor(dataWidth * yAlpha);
-            let output = data[yCoord][xCoord] 
-            
-            if (xCoord != lastValTstTmpDeleteThis[0] || yCoord != lastValTstTmpDeleteThis[1]) {
-               // console.log(`getHeat[${xCoord},${yCoord}](${xAlpha},${yAlpha}) = ${output}`);
-                lastValTstTmpDeleteThis[0] = xCoord;
-                lastValTstTmpDeleteThis[1] = yCoord;
-            }
-            //let index = yCoord * dataWidth + xCoord;
-            return output;//(Math.cos(yAlpha * Math.PI) + 1) / 2 * 255;
-        }
-        // let canvas = new OffscreenCanvas(this.image.width, this.image.height);
-        // let ctx = canvas.getContext('2d');
-        // ctx.drawImage(this.image, 0, 0);
-        // let originalData = ctx.getImageData(0, 0, this.image.width, this.image.height, {});
-
-
-        // let setPixelData = (xx: number, yy: number, pixel: [r: number, g: number, b: number, a: number]) => {
-        //     let index = yy * originalData.width * 4 + xx * 4;
-        //     for (let channel = 0; channel < pixel.length; channel++) {
-        //         originalData[index + channel] = pixel[channel];
-        //     }
-
-        // }
-        // // for (let x = 0; x < this.image.width; x++) {
-        // //     for (let y = 0; y < this.image.height; y++) {
-        // //         setPixelData(x, y, [255, 0, y % 255, 255]);
-        // //     }
-        // // }
-        // ctx.putImageData(originalData, 0, 0);
-        let imageSize = [this.image.width, this.image.height];
-        
-        this.image.src = await ImageEditor.editImage(this.image, (x: number, y: number, oldPixel: RGBA) => {
-          //  console.log(`Edit image at (${x}, ${y}) alpha=(${x / imageSize[0]}, ${y / imageSize[1]})`);
-            return [oldPixel[0], oldPixel[1],oldPixel[1], getHeat(x / imageSize[0], y / imageSize[1])];
-        });//URL.createObjectURL(await canvas.convertToBlob());
-        console.log(`Completed heatmap`)
-    }
+    
     image: HTMLImageElement = null;
     maxFreeScaleVelocity: number = 0.001;
     maxFreeOffsetVelocity: number = 10;
