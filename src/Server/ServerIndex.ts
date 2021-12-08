@@ -46,14 +46,7 @@ async function setup() {
     app.use('/node_modules/', express.static(paths.nodeModules));
     app.use('/', express.static(paths.root));
     app.use('/userContent/', express.static(paths.userContent))
-    app.get('/userContent/:fileName', (req: Request, resp: Response) => {
-        let filePath = path.join(paths.userContent, req.params.fileName);
-        if (fs.existsSync(filePath)) {
-            resp.sendFile(filePath);
-        } else {
-            resp.sendStatus(404);
-        }
-    })
+    
     //app.use(favicon(paths.favIco))
 
 
