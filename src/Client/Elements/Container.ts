@@ -1,4 +1,4 @@
-import { KeyboardInputEvent, MouseInputEvent, MouseScrolledInputEvent, RawPointerData, UIElement, UIFrameResult } from "../ClientImports";
+import { KeyboardInputEvent,  RawPointerData, UIElement, UIFrameResult } from "../ClientImports";
 
 export class VerticalContainer extends UIElement {
     

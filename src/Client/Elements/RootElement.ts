@@ -1,4 +1,4 @@
-import { BristolBoard, CoordType, KeyboardInputEvent, logger, MouseInputEvent, MouseScrolledInputEvent, RawPointerData, UIElement, UIFrame, UIFrameResult, UIP_Gallary_V0, UIP_Upload_V0, UploadResponse, UrlDataType, UrlListener } from "../ClientImports";
+import { BristolBoard, CoordType, KeyboardInputEvent, logger, RawPointerData, UIElement, UIFrame, UIFrameResult, UIP_Gallary_V0, UIP_Upload_V0, UploadResponse, UrlDataType, UrlListener } from "../ClientImports";
 
 
 

@@ -1,4 +1,4 @@
-import { BristolBoard, BristolFontFamily, BristolHAlign, BristolVAlign, logger, LogLevel, Lung, MouseState, smoothFloat, UIButton, UICorner, UIElement, UIFrame, UIFrameDescription_CornerWidthHeight, UIFrameResult, UIP_Gallary_V0, UploadResponse } from "../../ClientImports";
+import { BristolBoard, BristolFontFamily, BristolHAlign, BristolVAlign, logger, LogLevel, Lung,  smoothFloat, UIButton, UICorner, UIElement, UIFrame, UIFrameDescription_CornerWidthHeight, UIFrameResult, UIP_Gallary_V0, UploadResponse } from "../../ClientImports";
 
 
 
@@ -78,15 +78,9 @@ export class UIP_Upload_V0 extends UIElement {
         uploadButton.textSize = 36 * 2;
         uploadButton.fontFamily = BristolFontFamily.Raleway
         uploadButton.autoWidth().autoHeight().autoPadding();
-        uploadButton.backgroundColor = (mouse: MouseState) => {
-            switch (mouse) {
-                case 'Gone':
-                    return fColor.red.base
-                case 'Hover':
-                    return fColor.red.lighten2
-                default:
-                    return fColor.red.darken1
-            }
+        uploadButton.backgroundColor = () => {
+            return uploadButton.isMouseOver ? fColor.red.lighten2 : fColor.red.base;
+           
         };
 
         this.addChild(uploadButton);

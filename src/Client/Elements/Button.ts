@@ -2,7 +2,7 @@
 import {
     evalOptionalFunc, optFunc, UIFrameDescription_CornerWidthHeight,
     BristolFontFamily, BristolHAlign, BristolVAlign, UIElement, UIFrameResult,
-    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform, MouseState, evalOptionalTransfrom,  MouseInputEvent, KeyboardInputEvent, MouseScrolledInputEvent
+    UIFrame_CornerWidthHeight, UI_ChestXAI, BristolBoard, FColor, optTransform,  evalOptionalTransfrom,   KeyboardInputEvent,
 } from "../ClientImports";
 
 

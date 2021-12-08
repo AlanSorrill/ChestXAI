@@ -8,3 +8,4 @@ export * from "./PatientData";
 export * from "./SharedDataDefs";
 export * from "./Session";
 export * from "./ITask";
+export * from './XRay'

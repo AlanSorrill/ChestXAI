@@ -1,5 +1,5 @@
 import { RawPointerMoveData } from "bristolboard";
-import { BristolBoard, BristolCursor, BristolFontFamily, BristolHAlign, BristolVAlign, DiseaseDefinition, Interp, linearInterp, logger, MainBristol, MouseBtnListener, MouseInputEvent, MouseMovementListener, MouseState, RawPointerData, UIElement, UIFrame, UIFrameResult, UIFrame_CornerWidthHeight, UIProgressBar, UIP_Gallary_V0, UIStackRecycler, UI_Image, UploadResponse } from "../ClientImports";
+import { BristolBoard, BristolCursor, BristolFontFamily, BristolHAlign, BristolVAlign, DiseaseDefinition, Interp, linearInterp, logger, MainBristol, MouseTapListener,  MouseMovementListener,  RawPointerData, UIElement, UIFrame, UIFrameResult, UIFrame_CornerWidthHeight, UIProgressBar, UIP_Gallary_V0, UIStackRecycler, UI_Image, UploadResponse } from "../ClientImports";
 
 let log = logger.local('ResultCard');
 
@@ -48,9 +48,9 @@ export class UIResultCard extends UIElement {
         })
         this.addChild(this.image);
 
-        let recylerHeightAnim = linearInterp( () => ths.bottomCardHeight,
-        () => ((ths.bottomCardHeight / 3)),
-        () => (ths.parent?.prototypeData != null ? 'A' : 'B'), {});
+        let recylerHeightAnim = linearInterp(() => ths.bottomCardHeight,
+            () => ((ths.bottomCardHeight / 3)),
+            () => (ths.parent?.prototypeData != null ? 'A' : 'B'), {});
         let recycler = UIStackRecycler.create<[DiseaseDefinition, number], any>({
             count: () => ths.uploadResponse?.diagnosis.length | 0,
             get: (i: number) => ths.uploadResponse.diagnosis[i]
@@ -162,7 +162,7 @@ export class UIResultCard extends UIElement {
 
 }
 
-export class DiseaseDisplay extends UIElement implements MouseMovementListener, MouseBtnListener {
+export class DiseaseDisplay extends UIElement implements MouseMovementListener, MouseTapListener {
     private data: [DiseaseDefinition, number];
     progress: UIProgressBar;
     barWidth: number = 0.6;
@@ -195,16 +195,16 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
         this.addChild(this.progress);
         this.onClick = onClick;
     }
+
+    isMouseOver: boolean;
+    mouseTapped(upEvt: RawPointerData): boolean {
+        this.onClick(this.data);
+        return true;
+    }
     mouseMoved(evt: RawPointerMoveData): boolean {
         return true;
     }
-    mousePressed(evt: RawPointerData): boolean {
-        return true;
-    }
-    mouseReleased(evt: { start: RawPointerData; end: RawPointerData; timeDown: number; }): boolean {
-        this.onClick(this.data)
-        return true;
-    }
+
 
 
     setData(indexInParent: number, data: [DiseaseDefinition, number]) {
@@ -213,19 +213,19 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     }
 
 
-    mouseEnter(evt: MouseInputEvent) {
+    mouseEnter(evt: RawPointerMoveData) {
 
         this.brist.cursor(BristolCursor.pointer)
         return true;
     }
-    mouseExit(evt: MouseInputEvent) {
+    mouseExit(evt: RawPointerMoveData) {
 
         this.brist.cursor(BristolCursor.default)
         return true;
     }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.ctx.save();
-        this.brist.fillColor(fColor.darkMode[this.mouseState == 'Hover' ? 7 : 5])
+        this.brist.fillColor(fColor.darkMode[this.isMouseOver ? 7 : 5])
         this.brist.rectFrame(frame, false, true)
         this.brist.ctx.clip();
     }
