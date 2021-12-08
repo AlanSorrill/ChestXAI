@@ -18,7 +18,7 @@ export class UI_XRay_Image extends UI_Image {
         
 
         this.heatmapImages.set(diseaseBitString, await ImageEditor.editImage(await this.getOriginalImage(20), (x: number, y: number, oldPixel: RGBA, imgData: ImageData) => {
-           let p = (x * imgData.width + y) / (imgData.width * imgData.height);
+           let p = (x * imgData.height + y) / (imgData.width * imgData.height);
            //console.log(`Edit image at (${x}, ${y}) alpha=(${p})`);
             ths.heatmapProgress.set(diseaseBitString, p);
             return [oldPixel[0], oldPixel[1], oldPixel[1], getHeat(x / imgData.width, y / imgData.height)];

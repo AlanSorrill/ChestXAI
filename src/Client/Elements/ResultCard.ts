@@ -1,5 +1,6 @@
 import { RawPointerMoveData } from "bristolboard";
-import { BristolBoard, BristolCursor, BristolFontFamily, BristolHAlign, BristolVAlign, DiseaseDefinition, Interp, linearInterp, logger, MainBristol, MouseTapListener,  MouseMovementListener,  RawPointerData, UIElement, UIFrame, UIFrameResult, UIFrame_CornerWidthHeight, UIProgressBar, UIP_Gallary_V0, UIStackRecycler, UI_Image, UploadResponse } from "../ClientImports";
+import { BristolBoard, BristolCursor, BristolFontFamily, BristolHAlign, BristolVAlign, DiseaseDefinition, Interp, linearInterp, logger, MainBristol, MouseTapListener, MouseMovementListener, RawPointerData, UIElement, UIFrame, UIFrameResult, UIFrame_CornerWidthHeight, UIProgressBar, UIP_Gallary_V0, UIStackRecycler, UI_Image, UploadResponse } from "../ClientImports";
+import { UI_XRay_Image } from "./XRayImage";
 
 let log = logger.local('ResultCard');
 
@@ -7,7 +8,7 @@ let log = logger.local('ResultCard');
 export class UIResultCard extends UIElement {
 
     uploadResponse: UploadResponse;
-    image: UI_Image = null;
+    image: UI_XRay_Image = null;
     displayCount = 3;
     parent: UIP_Gallary_V0
     constructor(data: UploadResponse, uiFrame: UIFrame_CornerWidthHeight, brist: MainBristol) {
@@ -23,12 +24,16 @@ export class UIResultCard extends UIElement {
             () => ths.hasPrototype ? 'A' : 'B',
             {}
         );
-        this.image = new UI_Image(data.imageBlob != null ? data.imageBlob : `./userContent/${this.uploadResponse.fileName}`, UIFrame.Build({
+        this.image = new UI_XRay_Image(data.imageBlob != null ? data.imageBlob : `./userContent/${this.uploadResponse.fileName}`, UIFrame.Build({
             x: 0,
             y: 0,
             width: () => (ths.getWidth()),
             height: imageHeight
         }), brist);
+        this.image.ogSrc = data.imageBlob != null ? data.imageBlob : `./userContent/${this.uploadResponse.fileName}`;
+        
+
+
         this.image.zOffset = 2;
 
         let tst = true;
@@ -42,6 +47,9 @@ export class UIResultCard extends UIElement {
                 if (tst) {
                     tst = false;
                     //classes.ImageEditor.testBuilder()
+                }
+                for (let i = 0; i < ths.uploadResponse.diagnosis.length; i++) {
+                    ths.image.preloadHeatmap(ths.uploadResponse.diagnosis[i][0].bitStringID, 100);
                 }
             })
 
@@ -59,11 +67,13 @@ export class UIResultCard extends UIElement {
                 let disp = new DiseaseDisplay(null, (selectedDisease: [disease: DiseaseDefinition, prediction: number]) => {
                     if (ths.parent.prototypeData?.bitStringID == selectedDisease[0].bitStringID) {
                         ths.parent.setPrototypeData(null);
+                        ths.image.displayHeatmap(null);
                     } else {
                         ths.parent.setPrototypeData(selectedDisease[0])
+                        ths.image.displayHeatmap(selectedDisease[0].bitStringID);
                         recycler.addScroll(-1);
                     }
-                }, frame, brist);
+                }, frame, brist, ths);
                 return disp;
             }, bindData: (index: number, data: [DiseaseDefinition, number], child: DiseaseDisplay) => {
                 child.setData(index, data);
@@ -78,36 +88,36 @@ export class UIResultCard extends UIElement {
             width: () => ths.getWidth(),
             height: recylerHeightAnim
         }), brist);
-        let buildFrame = (index: number) => {
+        // let buildFrame = (index: number) => {
 
-            let yAnim = linearInterp(
-                () => (ths.getHeight() - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
-                () => (ths.getHeight() - (ths.bottomCardHeight / 3) * 1.5),
-                () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData == this.uploadResponse.diagnosis[index][0] ? 'A' : 'B'), {
-                onAnimStart() {
-                    console.log('Starting transition')
-                }
-            }
-            )
-            let widthAnim = linearInterp(
-                () => 0,
-                () => ths.getWidth(),
-                () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData != this.uploadResponse.diagnosis[index][0] ? 'B' : 'A'), {
-                onAnimStart(interp: Interp<number>) {
-                    ths.brist.requestHighFps(() => interp.isTransitioning)
-                }
-            }
-            )
-            let out = new UIFrame_CornerWidthHeight({
-                x: () => 0,
-                y: yAnim,
-                width: widthAnim,
-                height: () => ((ths.bottomCardHeight / ths.displayCount)),
+        //     let yAnim = linearInterp(
+        //         () => (ths.getHeight() - ths.bottomCardHeight) + (ths.bottomCardHeight / 3) * index,
+        //         () => (ths.getHeight() - (ths.bottomCardHeight / 3) * 1.5),
+        //         () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData == this.uploadResponse.diagnosis[index][0] ? 'A' : 'B'), {
+        //         onAnimStart() {
+        //             console.log('Starting transition')
+        //         }
+        //     }
+        //     )
+        //     let widthAnim = linearInterp(
+        //         () => 0,
+        //         () => ths.getWidth(),
+        //         () => (ths.parent?.prototypeData != null && ths.parent?.prototypeData != this.uploadResponse.diagnosis[index][0] ? 'B' : 'A'), {
+        //         onAnimStart(interp: Interp<number>) {
+        //             ths.brist.requestHighFps(() => interp.isTransitioning)
+        //         }
+        //     }
+        //     )
+        //     let out = new UIFrame_CornerWidthHeight({
+        //         x: () => 0,
+        //         y: yAnim,
+        //         width: widthAnim,
+        //         height: () => ((ths.bottomCardHeight / ths.displayCount)),
 
-            })
+        //     })
 
-            return out;
-        }
+        //     return out;
+        // }
         this.addChild(recycler);
         // for (let i = 0; i < this.uploadResponse.diagnosis.length; i++) {
         //     let display = new DiseaseDisplay(this.uploadResponse.diagnosis[i], (selectedDisease: [disease: DiseaseDefinition, prediction: number]) => {
@@ -171,9 +181,10 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
     get padding(): number {
         return this.getHeight() * (3 / 12);
     };
-
-    constructor(data: [DiseaseDefinition, number], onClick: (value: [DiseaseDefinition, number]) => void, frame: UIFrame, brist: MainBristol) {
+    resultCard: UIResultCard
+    constructor(data: [DiseaseDefinition, number], onClick: (value: [DiseaseDefinition, number]) => void, frame: UIFrame, brist: MainBristol, parent: UIResultCard) {
         super(UIElement.createUID('DiseaseDisplay'), frame, brist)
+        this.resultCard = parent;
         this.data = data;
         let ths = this;
         this.progress = new UIProgressBar(
@@ -223,10 +234,21 @@ export class DiseaseDisplay extends UIElement implements MouseMovementListener, 
         this.brist.cursor(BristolCursor.default)
         return true;
     }
+    getHeatmapProgress() {
+        return this.resultCard.image.getHeatmapProgress(this.data[0].bitStringID);
+    }
     onDrawBackground(frame: UIFrameResult, deltaTime: number): void {
         this.brist.ctx.save();
-        this.brist.fillColor(fColor.darkMode[this.isMouseOver ? 7 : 5])
+        this.brist.fillColor(fColor.darkMode[this.isMouseOver ? 2 : 0])
+        if (this.getHeatmapProgress() != -1) {
+            this.brist.fillColor(fColor.darkMode[this.isMouseOver ? 7 : 5])
+            this.brist.ctx.beginPath();
+            this.brist.ctx.rect(frame.left, frame.top, frame.width * this.getHeatmapProgress(), frame.height);
+            this.brist.ctx.fill();
+        }
+        this.brist.ctx.beginPath();
         this.brist.rectFrame(frame, false, true)
+        
         this.brist.ctx.clip();
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {

@@ -31,6 +31,7 @@ export * from "./Elements/ProgressBar";
 export * from './Elements/XRayImage'
 export * from "./Elements/pages/UIP_Gallary";
 export * from "./Elements/pages/UIP_Upload";
+export * from "./Elements/pages/UIP_Loading";
 export * from "./Elements/UI_ImageElement";
 
 export * from "./Elements/ResultCard";

@@ -45,7 +45,7 @@ async function setup() {
 
     app.use('/node_modules/', express.static(paths.nodeModules));
     app.use('/', express.static(paths.root));
-    app.use('/userContent/', express.static(paths.userContent))
+    //app.use('/userContent/', express.static(paths.userContent))
     
     //app.use(favicon(paths.favIco))
 

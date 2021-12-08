@@ -108,7 +108,7 @@ export class UISimilarityCard extends UIElement {
             btn.onMouseExit = () => {
                 ths.brist.cursor(BristolCursor.default);
             }
-            btn.backgroundColor = fColor.darkMode[8]// () => btn.mouseState ? ;
+            btn.backgroundColor = fColor.darkMode[1]// () => btn.mouseState ? ;
             btn.progressColor = () => isComplete() ? fColor.darkMode[10] : (getProgress() != -1 ? fColor.green.darken1 : fColor.darkMode[9]);
             btn.frame.topY = linearInterp(
                 () => (ths.getBottom() - ths.getHeight() * 0.1),

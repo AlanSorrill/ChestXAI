@@ -109,7 +109,7 @@ export class BackendServer {
             } else if (req.query.hasOwnProperty('res')) {
                 return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
             } else if (req.query.hasOwnProperty('heatmap')) {
-                return resp.send(await backend.getHeatmap(fullPath, DiseaseManager.getDiseaseByBitStringId(req.query.bitstring as string)))
+                return resp.send(await backend.getHeatmap(fullPath, DiseaseManager.getDiseaseByBitStringId(req.query.heatmap as string)))
             } else {
                 return resp.sendFile(fullPath);
             }

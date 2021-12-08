@@ -1,4 +1,4 @@
-import { BristolBoard, CoordType, KeyboardInputEvent, logger, RawPointerData, UIElement, UIFrame, UIFrameResult, UIP_Gallary_V0, UIP_Upload_V0, UploadResponse, UrlDataType, UrlListener } from "../ClientImports";
+import { BristolBoard, CoordType, KeyboardInputEvent, logger, RawPointerData, UIElement, UIFrame, UIFrameResult, UIP_Gallary_V0, UIP_Loading, UIP_Upload_V0, UploadResponse, UrlDataType, UrlListener } from "../ClientImports";
 
 
 
@@ -47,9 +47,9 @@ let log = logger.local('RootElement');
 // }
 
 export class UI_ChestXAI extends UIElement implements UrlListener {
-   
-    currentPage: UIP_Upload_V0 | UIP_Gallary_V0 = null
-    
+
+    currentPage: UIP_Upload_V0 | UIP_Gallary_V0 | UIP_Loading = null
+
 
 
 
@@ -74,7 +74,7 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
         //     gallary: [UIP_Gallary_V0]
         // }
     }
-    showUpload(): UIP_Upload_V0{
+    showUpload(): UIP_Upload_V0 {
         this.currentPage?.removeFromParent();
         this.currentPage = new UIP_Upload_V0(this.brist);
         this.addChild(this.currentPage)
@@ -87,20 +87,28 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
         this.currentPage.setUploadResponse(uploadResponse);
         return this.currentPage;
     }
+    showLoading(message: string) {
+        this.currentPage?.removeFromParent();
+        this.currentPage = new UIP_Loading(message, this.brist);
+        this.addChild(this.currentPage);
+        return this.currentPage;
+    }
 
     onUrlParamSet(key: string, value: UrlDataType): void {
-        switch(key){
+        switch (key) {
             case 'upload':
-            fetch(`${window.location.origin}/reuse?upload=${value}`).then(async (httpResp: Response)=>{
-                let resp: UploadResponse = await httpResp.json();
-                log.info(`Upload responded `, resp);
-                // let blob = await UIP_Upload_V0.fileToBlob(file);
-                // resp.imageBlob = blob;
-               // urlManager.set('upload',resp.fileName,false);
-                let gallary: UIP_Gallary_V0 = mainBristol.rootElement.showGallary(resp);
-                gallary.setUploadResponse(resp);
-            }).catch()
-            break;
+                this.showLoading('Loading');
+                let ths = this;
+                fetch(`${window.location.origin}/reuse?upload=${value}`).then(async (httpResp: Response) => {
+                    let resp: UploadResponse = await httpResp.json();
+                    log.info(`Upload responded `, resp);
+                    // let blob = await UIP_Upload_V0.fileToBlob(file);
+                    // resp.imageBlob = blob;
+                    // urlManager.set('upload',resp.fileName,false);
+                    let gallary: UIP_Gallary_V0 = ths.showGallary(resp);
+                    gallary.setUploadResponse(resp);
+                }).catch()
+                break;
             default:
                 log.error(`Unknown URL parameter: ${key}`)
                 break;
@@ -109,7 +117,7 @@ export class UI_ChestXAI extends UIElement implements UrlListener {
     }
     onDrawForeground(frame: UIFrameResult, deltaTime: number): void {
     }
-    
+
     // mousePressed(evt: MouseBtnInputEvent) {
     //     this.addChild(new TestDot(UIFrame.Build({ x: evt.x, y: evt.y, radius: 10 }), this.brist, fColor.green.accent1));
     //     return true;
