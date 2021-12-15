@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
         ######***prototypeRequest****###########
         elif request.get('msgType') == 'prototypeRequest':           
-            out_prototypes, out_heatmaps = prototype_obj.run(request.get('disease'))
+            out_prototypes, out_heatmaps, out_texts = prototype_obj.run(request.get('disease'))
         # out_prototypes = ['190329.png','120422.png','132445.png'] 
         # out_heatmaps = ['heatmap1.png','heatmap2.png','heatmap3.png']
 
@@ -113,8 +113,9 @@ if __name__ == '__main__':
                 'msgType': 'prototypeResponse',
                 'disease': request.get('disease'),
                 'prototype': out_prototypes,
-                'heatmap': out_heatmaps
-    
+                'heatmap': out_heatmaps,
+                'text': out_texts
+                
             }) + "\n")
             sys.stdout.flush()
 
