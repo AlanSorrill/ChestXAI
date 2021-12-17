@@ -7,8 +7,8 @@ import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
 import sharp from 'sharp'
-import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse, TaskListener, delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse, InferenceRequest, HeatmapRequest } from './ServerImports'
-import { ServerSession } from "./ServerSession";
+import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse,  delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse, InferenceRequest, HeatmapRequest } from './ServerImports'
+
 import { TSReflection } from "../Common/TypeScriptReflection";
 import path from "path";
 let log = logger.local('BackendServer');
@@ -48,12 +48,12 @@ export class BackendServer {
     express: Express;
     httpServer: http.Server;
     socketServer: WebSocket.Server;
-    sessions: Map<string, ServerSession> = new Map();
+
     patients: Map<string, PatientData> = new Map();
     indicies: Map<string, ScanRecord[]> = new Map();
     rawPatientData: unknown[];
-    taskListeners: Map<string, TaskListener[]> = new Map();
 
+    
     static async Create(app: Express, httpServer: http.Server, socketServer: WebSocket.Server): Promise<BackendServer> {
         let backend = new BackendServer(app, httpServer, socketServer);
         await backend.onInitialized();
@@ -135,17 +135,17 @@ export class BackendServer {
 
         });
 
-        httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
-            try {
-                socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
-                    let url: urlParse = urlParse(request.url, true);
-                    backend.onSocketUpgrade(url, request, client);
-                })
-            } catch (err) {
+        // httpServer.on('upgrade', (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
+        //     try {
+        //         socketServer.handleUpgrade(request, socket, head, (client: WebSocket, request: http.IncomingMessage) => {
+        //             let url: urlParse = urlParse(request.url, true);
+        //             backend.onSocketUpgrade(url, request, client);
+        //         })
+        //     } catch (err) {
 
-                log.error(`Failed to upgrade to socket:`, err)
-            }
-        })
+        //         log.error(`Failed to upgrade to socket:`, err)
+        //     }
+        // })
         return backend;
     }
     async getHeatmap(fullPath: string, disease: DiseaseDefinition) {
@@ -221,7 +221,7 @@ export class BackendServer {
             similarity: null
         }
         resp.set('Connection', 'keep-alive');
-        backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
+        // backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
         let fullPath = Path.join(__dirname, `/../../uploads/${fileName}`)
         log.info(`Running inference on ${fullPath}`);
 
@@ -241,63 +241,48 @@ export class BackendServer {
 
         })
     }
-    updateTask(taskId: string, message: string, progAlpha: number) {
-        let taskListeners = this.taskListeners.get(taskId);
-        if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
-            return;
-        }
-        for (let i = 0; i < taskListeners.length; i++) {
-            taskListeners[i].onUpdate(message, progAlpha);
-        }
-    }
-    completeTask(taskId: string) {
-        let taskListeners = this.taskListeners.get(taskId);
-        if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
-            return;
-        }
-        for (let i = 0; i < taskListeners.length; i++) {
-            taskListeners[i].onComplete();
-        }
-    }
-    addTaskListener(taskId: string, listener: TaskListener) {
-        if (!this.taskListeners.has(taskId)) {
-            this.taskListeners.set(taskId, []);
-        }
-        this.taskListeners.get(taskId).push(listener)
-    }
-    async makeDiagnosis(uploadId: string, listener: TaskListener) {
-        if (listener != null) {
-            this.addTaskListener(uploadId, listener)
-        }
-        let possibilities = ["cardiomegaly", "edema", "consolidation", "atelectasis", "pleuralEffusion"]
-        let out: [string, number][] = [];
-        for (let i = 0; i < possibilities.length; i++) {
-            if (Math.random() < 0.5) {
-                out.push([possibilities[i], Math.random()]);
-            }
-            await delay(1000 / possibilities.length);
-            this.updateTask(uploadId, 'Diagnosing', i / possibilities.length);
-        }
-        this.completeTask(uploadId);
-        return out;
-    }
-    onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
-        let seshId = url.query.seshId;
-        if (this.sessions.has(seshId)) {
-            this.sessions.get(seshId).registerSocket(client);
-        } else {
-            log.info('Generating session id')
-            seshId = ServerSession.getFreshId();
-            let freshSesh = new ServerSession(seshId);
-            freshSesh.registerSocket(client);
-            this.sessions.set(seshId, freshSesh);
-            // client.send({
-            //     status: 404,
-            //     message: `No session found for ${seshId}`
-            // })
-            // client.close();
-        }
-    }
+    // updateTask(taskId: string, message: string, progAlpha: number) {
+    //     let taskListeners = this.taskListeners.get(taskId);
+    //     if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
+    //         return;
+    //     }
+    //     for (let i = 0; i < taskListeners.length; i++) {
+    //         taskListeners[i].onUpdate(message, progAlpha);
+    //     }
+    // }
+    // completeTask(taskId: string) {
+    //     let taskListeners = this.taskListeners.get(taskId);
+    //     if (typeof taskListeners == 'undefined' || taskListeners == null || taskListeners.length == 0) {
+    //         return;
+    //     }
+    //     for (let i = 0; i < taskListeners.length; i++) {
+    //         taskListeners[i].onComplete();
+    //     }
+    // }
+    // addTaskListener(taskId: string, listener: TaskListener) {
+    //     if (!this.taskListeners.has(taskId)) {
+    //         this.taskListeners.set(taskId, []);
+    //     }
+    //     this.taskListeners.get(taskId).push(listener)
+    // }
+  
+    // onSocketUpgrade(url: urlParse, request: http.IncomingMessage, client: WebSocket) {
+    //     let seshId = url.query.seshId;
+    //     if (this.sessions.has(seshId)) {
+    //         this.sessions.get(seshId).registerSocket(client);
+    //     } else {
+    //         log.info('Generating session id')
+    //         seshId = ServerSession.getFreshId();
+    //         let freshSesh = new ServerSession(seshId);
+    //         freshSesh.registerSocket(client);
+    //         this.sessions.set(seshId, freshSesh);
+    //         // client.send({
+    //         //     status: 404,
+    //         //     message: `No session found for ${seshId}`
+    //         // })
+    //         // client.close();
+    //     }
+    // }
 
     protected constructor(app: Express, httpServer: http.Server, socketServer: WebSocket.Server) {
         this.express = app;
