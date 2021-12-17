@@ -171,10 +171,6 @@ export interface PartialHeatmapResponse extends PythonInterfaceMessage {
 }
 
 
-
-
-
-
 export interface PrototypeResponse extends PythonInterfaceMessage {
     msgType: 'prototypeResponse',
     inputDisease: string, // bit string eg 00010
