@@ -174,8 +174,9 @@ export interface PartialHeatmapResponse extends PythonInterfaceMessage {
 export interface PrototypeResponse extends PythonInterfaceMessage {
     msgType: 'prototypeResponse',
     inputDisease: string, // bit string eg 00010
-    prototype: Array<[filePath: string, description: string]>, // full file path of large image
-    heatmap: Array<string>
+    prototype: Array<string>, // full file path of large image
+    heatmap: Array<string>, //file path of heatmap images, this is a temporary version
+    text: Array<string>,  //decription of image
 
 }
 

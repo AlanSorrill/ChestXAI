@@ -44,10 +44,12 @@ class PrototypeSearch(object):
     def run(self, disease):
         out_prototypes = self.path[disease]
         out_heatmaps = []
+        out_texts = []
         for i in range(self.num_prototypes):
             out_heatmaps.append(self.prototype_path+disease+'/prototype-img-heatmap'+str(i)+'.png') 
+            out_texts.append('this is a prototype image, whose id is '+ str(i))
 
-        return out_prototypes, out_heatmaps
+        return out_prototypes, out_heatmaps, out_texts
 
 
 
