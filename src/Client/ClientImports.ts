@@ -2,9 +2,6 @@
 export * from "../Common/CommonImports";
 export * from 'bristolboard'
 
-export * from "./RestClient";
-
-
 
 import { BristolBoard, FColor, FColorDirectory, FColorSwath, UrlManager } from 'bristolboard'
 let fColor = new FColorDirectory();
@@ -15,12 +12,9 @@ window.fColor = fColor;
 
 import { UI_ChestXAI } from './Elements/RootElement';
 
-import { Socker } from './RestClient';
-import { ClientSession } from './ClientSession';
+
 import { ImageEditor } from "./ImageEditing";
 
-
-export * from './ClientSession'
 export * from './ImageEditing'
 export * from "./Elements/MoveableImage";
 export * from "./Elements/RootElement";
@@ -43,10 +37,10 @@ declare global {
     var mainBristol: BristolBoard<UI_ChestXAI>
     var fColor: FColorDirectory
     var urlManager: UrlManager
-    var session: ClientSession
+    
     var showDebug: (visible?: boolean) => void
     var classes: {
-        Rest: typeof Socker
+        
         ImageEditor: typeof ImageEditor
 
     }
@@ -56,4 +50,4 @@ window.showDebug = (visible: boolean = true)=>{
     urlManager.set('debugUIFrames', visible, false)
 }
 //Allow client console to access static classes inside webpack
-window.classes = { Rest: Socker, ImageEditor: ImageEditor };
+window.classes = {ImageEditor: ImageEditor };

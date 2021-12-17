@@ -1,6 +1,0 @@
-
-
-
-self.onmessage = ()=>{
-    
-}

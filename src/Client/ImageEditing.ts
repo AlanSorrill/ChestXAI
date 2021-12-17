@@ -1,11 +1,8 @@
 import { clamp, delay, LogLevel } from 'bristolboard';
-import SimplexNoise from 'simplex-noise'
+
 import { logger } from './ClientImports';
 let log = logger.local('ImageEditor').allowBelowLvl(LogLevel.naughty);
-// export async function noiseSameSizeAsImage(imagePath: string) {
-//     let originalMeta = await sharp(imagePath).metadata();
-//     this.buildImage((x,y)=>[255,0,0,255], [originalMeta.width, originalMeta.height]);
-// }
+
 export type RGBA = [r: number, g: number, b: number, a: number];
 export class ImageEditor {
 
@@ -22,7 +19,7 @@ export class ImageEditor {
         let ctx = canvas.getContext('2d');
         ctx.drawImage(original, 0, 0);
         let data = ctx.getImageData(0, 0, size[0], size[1]);
-        
+
         let startColor: RGBA = [0, 0, 0, 0];
         let startIndex: number;
         let lastYeildRow = 0;
@@ -39,14 +36,14 @@ export class ImageEditor {
                 for (let channel = 0; channel < 4; channel++) {
                     data.data[startIndex + channel] = clamp(color[channel], 0, 255);
                 }
-                if(yieldOn == 'pixel'){
+                if (yieldOn == 'pixel') {
                     await delay(0);
                 }
             }
-            if(yieldOn == 'row'){
+            if (yieldOn == 'row') {
                 await delay(0);
-            } else if(typeof yieldOn == 'number'){
-                if(x - lastYeildRow > yieldIncrement){
+            } else if (typeof yieldOn == 'number') {
+                if (x - lastYeildRow > yieldIncrement) {
                     lastYeildRow = x;
                     await delay(0);
                 }
@@ -62,9 +59,6 @@ export class ImageEditor {
         });
 
 
-        // let urlToBlob = URL.createObjectURL(blob);
-        // console.log(urlToBlob);
-        // return URL.createObjectURL(canvas.convertToBlob());
     }
 
     static async loadImage(urlOrImage: string): Promise<HTMLImageElement | null> {
@@ -92,7 +86,7 @@ export class ImageEditor {
             callback = acc;
         });
     }
-    
+
     static async buildImage(pixels: (x: number, y: number) => RGBA, size: [width: number, height: number]) {
         size[0] = Math.round(size[0])
         size[1] = Math.round(size[1])
@@ -114,26 +108,5 @@ export class ImageEditor {
         return URL.createObjectURL(await canvas.convertToBlob());
     }
 
-    static async testBuilder() {
-        let simplex = new SimplexNoise();
-        let scale = 0.01;
-        // let blob = await this.buildImage(
-        //     (x, y) => {
-        //         let noise = simplex.noise2D(x * scale, y * scale);
-        //         let val = (noise + 1) / 2 * 255
-        //         return [0, val, 0, 255];
-        //     }, [500, 500])
-        let blob = await this.editImage(mainBristol.rootElement.childElements[0].yourResultCard.image.image.src,
-            (x: number, y: number, oldPixel: RGBA) => {
-                let noise = simplex.noise2D(x * scale, y * scale);
-                let val = (noise + 1) / 2 * 255
-                return [oldPixel[0], oldPixel[1], oldPixel[2], val];
-            });
 
-        //let img: HTMLImageElement = document.createElement('img');
-        (mainBristol.rootElement.childElements[0].childElements[1].image.image as HTMLImageElement).src = blob;
-        //console.log(img.src);
-        // img.style.zIndex = '10';
-        // document.body.prepend(img);
-    }
 }

@@ -1,5 +1,5 @@
 import { LogLevel } from "bristolboard";
-import { UIElement, UI_ChestXAI, FHTML, BristolBoard, UIFrame, ClientSession, UrlManager, DiseaseManager, logger } from "./ClientImports";
+import { UIElement, UI_ChestXAI, FHTML, BristolBoard,  UrlManager, DiseaseManager, logger } from "./ClientImports";
 
 let log = logger.local('ClientIndex').allowBelowLvl(LogLevel.naughty)
 
@@ -13,10 +13,8 @@ containerDiv.setCss([
     ['left', '0px'],
     ['top', '0px']
 ]);
-
 window.urlManager = new UrlManager();
 
-window.session = new ClientSession(window.urlManager.get('seshId', null));
 window.mainBristol = new BristolBoard(containerDiv.element, async (brist: BristolBoard<any>) => {
     let rootElement = new UI_ChestXAI(brist);
 

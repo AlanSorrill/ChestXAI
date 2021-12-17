@@ -169,48 +169,6 @@ export interface PartialHeatmapResponse extends PythonInterfaceMessage {
     index: number
     size: number
 }
-// export class HeatmapWaiter {
-//     callback: (resp: HeatmapResponse)=>void
-//     parts: Array<number[]> = []
-//     recieved: number = 0;
-//     total: number = -1;
-//     constructor(callback: (resp: HeatmapResponse)=>void){
-//         this.callback = callback;
-//     }
-//     addPart(partial: PartialHeatmapResponse){
-//         if(this.total == -1){
-//             this.total = partial.size;
-//         }
-//         if(typeof this.parts[partial.index] == 'undefined'){
-//             this.parts[partial.index] = partial.heatmap.split('-').map((val: string)=>Number(val))
-//             this.recieved++;
-//             console.log(`Heatmap Recieved ${this.recieved}/${this.total}`)
-//             if(this.recieved == this.total - 1){
-//                 console.log(`Emitting heatmap`);
-//                 let out: HeatmapResponse = {
-//                     disease: partial.disease,
-//                     fileName: partial.fileName,
-//                     heatmap: this.parts,
-//                     msgType: 'heatmapResponse',
-//                     size: partial.size
-//                 }
-//                 this.callback(out);
-//             }
-//         }
-//     }
-
-//     static HeatmapKeyname(filePath: string, disease: DiseaseDefinition | string) {
-//         return filePath + '-' + ((typeof disease == 'string') ? disease : disease.bitStringID);
-//     }
-// }
-
-
-
-
-
-
-
-
 
 
 export interface PrototypeResponse extends PythonInterfaceMessage {
@@ -219,6 +177,7 @@ export interface PrototypeResponse extends PythonInterfaceMessage {
     prototype: Array<string>, // full file path of large image
     heatmap: Array<string>, //file path of heatmap images, this is a temporary version
     text: Array<string>,  //decription of image
+
 }
 
 
@@ -237,11 +196,3 @@ export interface UploadResponse {
     //filePath, matchPercentage, diseaseName[]
     similarity: [otherImageUrl: string, matchConfidence: number, diseases: DiseaseDefinition[]][]
 }
-// export interface PredictionResult {
-//     fileName: string,
-//     diagnosis: Array<[Disease, number]>
-// }
-// export interface SimilarityResult {
-//     inputFileName: string,
-//     outputFileNames: Array<[string, number, Disease]>
-// }
