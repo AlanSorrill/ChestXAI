@@ -7,12 +7,12 @@ import Path from 'path'
 import fs from 'fs';
 import multer from 'multer'
 import sharp from 'sharp'
-import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse,  delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse, InferenceRequest, HeatmapRequest } from './ServerImports'
+import { LogLevel, csvToJson, logger, PatientData, PythonInterfaceMessage, RawScanData, ScanRecord, WebSocket, UploadResponse,  delay, InferenceResponse, urlParse, PythonMessage, DiseaseManager, DiseaseDefinition, HeatmapResponse, InferenceRequest, HeatmapRequest, PrototypeResponse, PrototypeRequest, prototypeResponseToDatas } from './ServerImports'
 
 import { TSReflection } from "../Common/TypeScriptReflection";
 import path from "path";
 let log = logger.local('BackendServer');
-log.allowBelowLvl(LogLevel.silly);
+log.allowBelowLvl(LogLevel.info);
 
 if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads')
@@ -89,17 +89,19 @@ export class BackendServer {
                 return resp.sendFile(fullPath);
             }
         })
-        app.get('/prototype/:bitString/:imageName', async (req: Request, resp: Response) => {
+        app.get('/prototype/:bitString', async (req: Request, resp: Response) => {
             let bitString: string = req.params.bitString;
-            let imageName: string = req.params.imageName;
-            let fullPath = Path.join(__dirname, `/../../public/prototypes/${bitString}/${imageName}`)
-            if (req.query.hasOwnProperty('res')) {
-                return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
-            } else if (req.query.hasOwnProperty('heatmap')) {
-                return resp.send(await backend.getHeatmap(fullPath, DiseaseManager.getDiseaseByBitStringId(req.query.bitstring as string)))
-            } else {
-                return resp.sendFile(fullPath);
-            }
+            let protoData = await backend.getPrototypeData(bitString);
+            resp.setHeader('Content-Type', 'application/json');
+            resp.send(protoData);
+            // let fullPath = Path.join(__dirname, `/../../public/prototypes/${bitString}/${imageName}`)
+            // if (req.query.hasOwnProperty('res')) {
+            //     return backend.serveScaledImage(fullPath, req.query.res !== undefined ? Number(req.query.res) : 1, resp);
+            // } else if (req.query.hasOwnProperty('heatmap')) {
+            //     return resp.send(await backend.getHeatmap(fullPath, DiseaseManager.getDiseaseByBitStringId(req.query.bitstring as string)))
+            // } else {
+            //     return resp.sendFile(fullPath);
+            // }
         })
 
         app.get('/userContent/:fileName', async (req: Request, resp: Response) => {
@@ -218,17 +220,19 @@ export class BackendServer {
             fileName: fileName,
             uploadId: fileName.split('.').first,
             diagnosis: null,
-            similarity: null
+            similarity: null,
+            prototypes: {}
         }
         resp.set('Connection', 'keep-alive');
         // backend.updateTask(respPayload.uploadId, 'Diagnosing', 0);
         let fullPath = Path.join(__dirname, `/../../uploads/${fileName}`)
         log.info(`Running inference on ${fullPath}`);
 
-        backend.runInferance(fullPath).then((data: InferenceResponse) => {
+        backend.runInferance(fullPath).then(async (data: InferenceResponse) => {
             respPayload.diagnosis = [];
             for (let i = 0; i < data.prediction.length; i++) {
                 respPayload.diagnosis.push([DiseaseManager.getDiseaseByBitStringId(data.prediction[i][0]), data.prediction[i][1]])
+                respPayload.prototypes[data.prediction[i][0]] = prototypeResponseToDatas(await backend.getPrototypeData(data.prediction[i][0]))
             }
             respPayload.diagnosis = respPayload.diagnosis.sort((a: [DiseaseDefinition, number], b: [DiseaseDefinition, number]) => b[1] - a[1])
             respPayload.similarity = [];
@@ -237,6 +241,9 @@ export class BackendServer {
                 val = data.similarity[i];
                 respPayload.similarity.push([val[0], val[1], DiseaseManager.bitStringToDiseases(val[2])])
             }
+
+            
+
             resp.send(JSON.stringify(respPayload));
 
         })
@@ -302,6 +309,7 @@ export class BackendServer {
                     let endTime = Date.now();
                     log.info(`Inference took ${endTime - startTime}ms ---------------------`)
                     acc(resp);
+                    ths.inferenceWaiters.delete(fullFilePath);
                 })
                 ths.sendToPython(JSON.stringify({
                     'msgType': 'inferenceRequest',
@@ -313,6 +321,26 @@ export class BackendServer {
             }
         })
 
+    }
+    prototypeWaiters: Map<string, (resp: PrototypeResponse)=>void> = new Map();
+    prototypeData: Map<string, PrototypeResponse> = new Map();
+    async getPrototypeData(diseaseBitString: string){
+        let ths = this;
+        if(this.prototypeData.has(diseaseBitString)){
+            return this.prototypeData.get(diseaseBitString);
+        }
+        let request: PrototypeRequest = {
+            msgType: 'prototypeRequest',
+            disease: diseaseBitString
+        };
+        this.sendToPython(request);
+        return new Promise<PrototypeResponse>((acc, rej)=>{
+            this.prototypeWaiters.set(diseaseBitString, (resp: PrototypeResponse)=>{
+                ths.prototypeData.set(diseaseBitString, resp);
+                acc(resp);
+                ths.prototypeWaiters.delete(diseaseBitString);
+            })
+        });
     }
     heatmapWaiters: Map<string, (resp: HeatmapResponse) => void> = new Map();
     keyForHeatmap(filePath: string, disease: DiseaseDefinition | string) {
@@ -342,7 +370,7 @@ export class BackendServer {
     }
 
     python: ChildProcess.ChildProcessWithoutNullStreams
-    sendToPython(data: InferenceRequest | HeatmapRequest | string) {
+    sendToPython(data: InferenceRequest | HeatmapRequest | PrototypeRequest | string) {
         log.info(`Send to python`, data);
         if (typeof data != 'string') {
             data = JSON.stringify(data);
@@ -412,6 +440,10 @@ export class BackendServer {
                         let key = ths.keyForHeatmap(message.fileName, message.disease);
                         ths.heatmapWaiters.get(key)(message);
                         ths.heatmapWaiters.delete(key);
+                    } else if(PythonMessage.isType<PrototypeResponse>('prototypeResponse', message)){
+                        log.debug('Got prototype', message);
+                        ths.prototypeWaiters.get(message.disease)(message);
+                        ths.prototypeWaiters.delete(message.disease)
                     } else {
                         log.error(`Unknown python message ${Object.keys(message)}`)
                     }

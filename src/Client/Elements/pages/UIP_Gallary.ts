@@ -1,12 +1,10 @@
-
-
-import { UIFrame_CornerWidthHeight } from "bristolboard";
-import {
+import {UIFrame_CornerWidthHeight,
     BristolFontFamily, BristolHAlign, BristolVAlign, linearInterp, UIStackRecycler,
     BristolBoard, UIResultCard, UIElement, UISimilarityCard, UploadResponse,
-    UIFrame,
-    UIFrameDescription_CornerWidthHeight, UIFrameResult, Interp, DiseaseDefinition, UI_Image
+    UIFrame, UIPrototypeCard,
+    UIFrameDescription_CornerWidthHeight, UIFrameResult, Interp, DiseaseDefinition, UI_Image, PrototypeData
 } from "../../ClientImports";
+
 
 
 
@@ -46,14 +44,11 @@ export class UIP_Gallary_V0 extends UIElement {
     // }
     setPrototypeData(def: DiseaseDefinition) {
         this.prototypeDataDef = def;
-        if(def == null){
+        if (def == null) {
             return
         }
         let ths = this;
-        let urls = [];
-        for (let i = 0; i < 4; i++) {
-            urls.push(`/prototypes/${def.bitStringID}/prototype_${i}.png`)
-        }
+        let protoData = this.yourResult.prototypes[def.bitStringID];
 
 
 
@@ -68,22 +63,20 @@ export class UIP_Gallary_V0 extends UIElement {
                 ths.brist.requestHighFps(() => interp.isTransitioning)
             }
         });
-        if(this.prototypeRecycler != null){
+        if (this.prototypeRecycler != null) {
             this.prototypeRecycler.removeFromParent();
         }
-        this.prototypeRecycler = UIStackRecycler.GridFixedColumns<string, UI_Image>(urls, {
+        this.prototypeRecycler = UIStackRecycler.GridFixedColumns<PrototypeData, UIPrototypeCard>(protoData, {
             buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
-                return new UI_Image(null,frame, brist);
+                return new UIPrototypeCard(frame, brist);
             },
-            bindData: (index: number, data: string, child: UI_Image) => {
+            bindData: (index: number, data: PrototypeData, child: UIPrototypeCard) => {
                 console.log(`Binding ${index}: ${JSON.stringify(data)}`)
-                child.setImage(data).then(()=>{
-                    
-                    child.fitHorizontally();
-                });
+                child.setData(data);
+                
             },
             cols: 2,
-            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 2) * 1.1
+            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 3)
         }, UIFrame.Build({
             x: () => (ths.getWidth() / 2 + ths.margin / 2),
             y: prototypeAnimation,
@@ -91,9 +84,26 @@ export class UIP_Gallary_V0 extends UIElement {
             height: () => (ths.getHeight() - ths.margin * 2)
         }), this.brist);
         this.addChild(this.prototypeRecycler)
+
+        // this.similarityRecycler = UIStackRecycler.GridFixedColumns<[string, number, DiseaseDefinition[]], UISimilarityCard>(resp.similarity, {
+        //     buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
+        //         return new UISimilarityCard(frame, brist);
+        //     },
+        //     bindData: (index: number, data: [string, number, DiseaseDefinition[]], child: UISimilarityCard) => {
+        //         console.log(`Binding ${index}: ${JSON.stringify(data)}`)
+        //         child.setData(data);
+        //     },
+        //     cols: 3,
+        //     rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 3)
+        // }, UIFrame.Build({
+        //     x: prototypeAnimation,
+        //     y: () => ths.margin,
+        //     width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
+        //     height: () => (ths.getHeight() - ths.margin * 2)
+        // }), this.brist);
     }
     similarityCards: UISimilarityCard[];
-    prototypeRecycler: UIStackRecycler<string,any>
+    prototypeRecycler: UIStackRecycler<PrototypeData, any>
     constructor(brist: BristolBoard<any>) {
         super(UIElement.createUID('gallary'), UIFrame.Build({
             x: 0,

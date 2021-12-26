@@ -13,7 +13,7 @@ export interface Progress {
 
 // # outSimilarity = "{inputFileName: '1980138012.png', outputFileNames: [['190329.png', 0.3,'00010'], 
 // # ['819023.png', 0.4, '00000'], ['934.png', 0.3, '10000']]}"
-export type MsgType = 'heatmapResponse' | 'prototypeResponse' | 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs' | 'heatmapRequest' | 'partialHeatmapResponse';
+export type MsgType = 'heatmapResponse' | 'prototypeRequest' | 'prototypeResponse' | 'inferenceResponse' | 'inferenceRequest' | 'status' | 'diseaseDefs' | 'heatmapRequest' | 'partialHeatmapResponse';
 export interface DiseaseDefinition {
     bitStringID: string
     displayName: string
@@ -122,10 +122,10 @@ export class PythonMessage {
     static isStatus(obj: PythonInterfaceMessage): obj is PythonStatusMessage {
         return this.isType('status', obj);
     }
-    static isPartialHeatmapResp(obj: PythonInterfaceMessage): obj is PartialHeatmapResponse{
+    static isPartialHeatmapResp(obj: PythonInterfaceMessage): obj is PartialHeatmapResponse {
         return this.isType('partialHeatmapResponse', obj);
     }
-    
+
     static isDiseaseDefs(obj: PythonInterfaceMessage): obj is DiseaseDefsMessage {
         return this.isType('diseaseDefs', obj);
     }
@@ -170,18 +170,39 @@ export interface PartialHeatmapResponse extends PythonInterfaceMessage {
     size: number
 }
 
-
+export interface PrototypeRequest extends PythonInterfaceMessage {
+    msgType: 'prototypeRequest',
+    disease: string, // bit string eg 00010
+}
 export interface PrototypeResponse extends PythonInterfaceMessage {
     msgType: 'prototypeResponse',
-    inputDisease: string, // bit string eg 00010
+    disease: string, // bit string eg 00010
     prototype: Array<string>, // full file path of large image
     heatmap: Array<string>, //file path of heatmap images, this is a temporary version
     text: Array<string>,  //decription of image
 
 }
 
+export interface PrototypeData {
+    disease: string
+    originalImage: string
+    heatmapImage: string
+    description: string
+}
 
 
+export function prototypeResponseToDatas(response: PrototypeResponse): PrototypeData[] {
+    let out: PrototypeData[] = [];
+    for (let i = 0; i < response.prototype.length; i++) {
+        out.push({
+            disease: response.disease,
+            originalImage: response.prototype[i],
+            heatmapImage: response.heatmap[i],
+            description: response.text[i]
+        })
+    }
+    return out;
+}
 export interface PythonStatusMessage extends PythonInterfaceMessage {
     msgType: 'status'
     message: string
@@ -195,4 +216,5 @@ export interface UploadResponse {
     diagnosis: Array<[disease: DiseaseDefinition, confidence: number]>
     //filePath, matchPercentage, diseaseName[]
     similarity: [otherImageUrl: string, matchConfidence: number, diseases: DiseaseDefinition[]][]
+    prototypes: { [key: string]: PrototypeData[] }
 }

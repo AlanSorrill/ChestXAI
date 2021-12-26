@@ -55,7 +55,7 @@ from HeatmapClass import HeatmapSearch
 image_base_path = './public/patients/' ###To be checked
 train_csv_path = './public/patients/train.csv'  ###To be checked
 model_vectors_path = './models/'  ###To be checked
-prototype_path = './public/prototypes/'
+prototype_path = './prototypes/'
 
 diseaseList = ['Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis',  'Pleural Effusion']
 if __name__ == '__main__':
