@@ -2,7 +2,7 @@ const path = require('path');
 const CircularDependencyPlugin = require('circular-dependency-plugin')
 const nodeExternals = require('webpack-node-externals');
 const {
-    NODE_ENV = 'production',
+    NODE_ENV = 'developement',
 } = process.env;
 
 
@@ -15,7 +15,7 @@ module.exports = {
     module: {
         
         rules: [{
-            test: /\.ts$/,
+            test: /\.tsx?$/,
             use: [
                 'ts-loader',
             ]
@@ -26,7 +26,7 @@ module.exports = {
         filename: './Index/ServerIndex.js'
     },
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: ['tsx', '.ts', '.js'],
         // alias: {
         //     jquery: "jquery/src/jquery"
         // }

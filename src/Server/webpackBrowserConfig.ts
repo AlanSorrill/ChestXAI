@@ -11,6 +11,7 @@ let clientWebpackConfig: Configuration = {
         //  tensorflowJs: '@tensorflow/tfjs',
         // client: './src/Index/clientIndex.ts'
         // editor: './src/Index/clientEditorIndex.ts',
+        reactIndex: './src/ReactClient/ReactClient.tsx',
         clientIndex: './src/Client/ClientIndex.ts'
         // vendor: 'jquery'
     },

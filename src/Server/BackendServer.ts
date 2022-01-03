@@ -239,7 +239,7 @@ export class BackendServer {
             let val: [string, number, string];
             for (let i = 0; i < data.similarity.length; i++) {
                 val = data.similarity[i];
-                respPayload.similarity.push([val[0], val[1], DiseaseManager.bitStringToDiseases(val[2])])
+                respPayload.similarity.push(['patients/' + val[0], val[1], DiseaseManager.bitStringToDiseases(val[2])])
             }
 
             

@@ -1,0 +1,15 @@
+.hoverBG {
+    background-color: seagreen
+}
+
+.hoverBG:hover {
+    background-color: red !important
+}
+
+.unselectable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}
