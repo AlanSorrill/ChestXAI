@@ -22,7 +22,7 @@ export class UI_XRay_Image extends UI_Image {
            //console.log(`Edit image at (${x}, ${y}) alpha=(${p})`);
             ths.heatmapProgress.set(diseaseBitString, p);
             return [oldPixel[0], oldPixel[1], oldPixel[1], getHeat(x / imgData.width, y / imgData.height)];
-        }, yeildCount));
+        }, {yieldOn: yeildCount}));
         console.log(`Completed heatmap`)
     }
     currentHeatmap: string = null

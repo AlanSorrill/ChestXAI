@@ -12,7 +12,8 @@ let clientWebpackConfig: Configuration = {
         // client: './src/Index/clientIndex.ts'
         // editor: './src/Index/clientEditorIndex.ts',
         reactIndex: './src/ReactClient/ReactClient.tsx',
-        clientIndex: './src/Client/ClientIndex.ts'
+        clientIndex: './src/Client/ClientIndex.ts',
+        heatMapperWorker: './src/ReactClient/HeatMapper/HeatMapper_Worker.ts'
         // vendor: 'jquery'
     },
     // This forces webpack not to compile TypeScript for one time, but to stay running, watch for file changes in project directory and re-compile if needed

@@ -1,5 +1,4 @@
 import React from "react";
-import CSS from 'csstype';
 import { UploadPage } from "./Pages/UploadPage";
 import { GallaryPage } from "./Pages/GallaryPage";
 import { render } from "react-dom";
@@ -14,6 +13,7 @@ export interface App_State {
   imageName?: string
   uploadResponse?: UploadResponse
 }
+
 export class App extends React.Component<App_Props, App_State> {
   constructor(props: App_Props) {
     super(props);
@@ -31,6 +31,7 @@ export class App extends React.Component<App_Props, App_State> {
       console.log(`Pulling ${imageName}`)
       let resp: UploadResponse = await httpResp.json();
       log.info(`Upload responded `, resp);
+      window.uploadResponse = resp;
       ths.setState({
         uploadResponse: resp
       })

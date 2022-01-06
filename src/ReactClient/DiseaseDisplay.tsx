@@ -32,6 +32,7 @@ export class DiseaseDisplay extends React.Component<DiseaseDisplay_Props> {
                 height: this.textHeight,
                 width: '60%',
                 // flexGrow: 6, 
+                position: 'relative',
                 marginRight: this.padding,
                 marginLeft: this.padding, 
                 backgroundColor: fColor.darkMode[4].toHexString()
@@ -41,6 +42,12 @@ export class DiseaseDisplay extends React.Component<DiseaseDisplay_Props> {
                     width: `${this.props.confidence * 100}%`,
                     backgroundColor: fColor.green.base.toHexString()
                 }}></div>
+                <div style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0
+                }}>Test</div>
             </div>
             <div style={{
                 fontSize: this.textHeight,

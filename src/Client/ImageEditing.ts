@@ -4,9 +4,17 @@ import { logger } from './ClientImports';
 let log = logger.local('ImageEditor').allowBelowLvl(LogLevel.naughty);
 
 export type RGBA = [r: number, g: number, b: number, a: number];
+export interface ImageEditorOptions {
+    yieldOn?: 'pixel' | 'row' | 'none' | number,
+    onStart?: (getImageData: () => Promise<string>, stop: () => void) => void
+}
+
 export class ImageEditor {
 
-    static async editImage(original: string | HTMLImageElement, pixels: (x: number, y: number, oldPixel: RGBA, imgData: ImageData) => RGBA, yieldOn: 'pixel' | 'row' | 'none' | number = 'row'): Promise<string> {
+    static async editImage(original: string | HTMLImageElement | ImageData, pixels: (x: number, y: number, oldPixel: RGBA, imgData: ImageData) => RGBA, options: ImageEditorOptions): Promise<string> {
+        if (typeof options.yieldOn == 'undefined') {
+            options.yieldOn = 'row'
+        }
         if (typeof original == 'string') {
             original = await this.loadImage(original);
         }
@@ -17,14 +25,31 @@ export class ImageEditor {
         log.info(`Editing image of size ${size[0]} by ${size[1]}`)
         let canvas = new OffscreenCanvas(size[0], size[1]);
         let ctx = canvas.getContext('2d');
-        ctx.drawImage(original, 0, 0);
+        if (original instanceof ImageData) {
+            ctx.putImageData(original, 0, 0);
+        } else {
+            ctx.drawImage(original, 0, 0);
+        }
+
         let data = ctx.getImageData(0, 0, size[0], size[1]);
 
         let startColor: RGBA = [0, 0, 0, 0];
         let startIndex: number;
         let lastYeildRow = 0;
-        let yieldIncrement = typeof yieldOn == 'number' ? size[0] / yieldOn : 10;
-        for (let x = 0; x <= size[0]; x++) {
+        let yieldIncrement = typeof options.yieldOn == 'number' ? size[0] / options.yieldOn : 10;
+
+        let stopFlag = false;
+        let imageToDataUrl = () => new Promise<string>(async (acc, rej) => {
+            let reader = new FileReader();
+            reader.onload = () => {
+                acc(reader.result as string);
+            }
+            reader.readAsDataURL(await canvas.convertToBlob());
+        });
+        if (typeof options.onStart == 'function') {
+            options.onStart(imageToDataUrl, () => { stopFlag = false });
+        }
+        for (let x = 0; x <= size[0] && !stopFlag; x++) {
             for (let y = 0; y < size[1]; y++) {
                 startIndex = y * size[0] * 4 + x * 4;
                 for (let channel = 0; channel < 4; channel++) {
@@ -36,13 +61,13 @@ export class ImageEditor {
                 for (let channel = 0; channel < 4; channel++) {
                     data.data[startIndex + channel] = clamp(color[channel], 0, 255);
                 }
-                if (yieldOn == 'pixel') {
-                    await delay(0);
-                }
+                // if (yieldOn == 'pixel') {
+                //     await delay(0);
+                // }
             }
-            if (yieldOn == 'row') {
+            if (options.yieldOn == 'row') {
                 await delay(0);
-            } else if (typeof yieldOn == 'number') {
+            } else if (typeof options.yieldOn == 'number') {
                 if (x - lastYeildRow > yieldIncrement) {
                     lastYeildRow = x;
                     await delay(0);
@@ -50,13 +75,7 @@ export class ImageEditor {
             }
         }
         ctx.putImageData(data, 0, 0)
-        return new Promise(async (acc, rej) => {
-            let reader = new FileReader();
-            reader.onload = () => {
-                acc(reader.result as string);
-            }
-            reader.readAsDataURL(await canvas.convertToBlob());
-        });
+        return imageToDataUrl()
 
 
     }

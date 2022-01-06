@@ -17,7 +17,7 @@ export class UploadPage extends React.Component<UploadPage_Props, UploadPage_Sta
         this.inputReference = React.createRef();
         this.onChange = this.onChange.bind(this);
         this.state = {
-            progress: 25
+            progress: 0
         }
     }
     uploadFile(file: File) {
@@ -83,7 +83,7 @@ export class UploadPage extends React.Component<UploadPage_Props, UploadPage_Sta
             <div style={{ cursor: 'pointer', backgroundColor: 'red',  color: 'white', fontSize: '20px', padding: '10px', position: 'relative' }} onClick={() => this.inputReference.current.click()}>
 
                 Upload
-                <div id='progressBarContainer' style={{backgroundColor: 'blue', position: "absolute", bottom: '-10px', left: '0px', right: '0px', height: '10px'}}>
+                <div id='progressBarContainer' style={{backgroundColor: 'blue', position: "absolute", bottom: this.state.progress > 0 ? '-10px' : 0, left: '0px', right: '0px', height: this.state.progress > 0 ? '10px' : 0}}>
                     <div id='prog' style={{height: '100%', width: `${this.state.progress}%`, backgroundColor: 'green'}}></div>
                 </div>
             </div>
