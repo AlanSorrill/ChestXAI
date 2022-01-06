@@ -178,7 +178,7 @@ export interface PrototypeResponse extends PythonInterfaceMessage {
     msgType: 'prototypeResponse',
     disease: string, // bit string eg 00010
     prototype: Array<string>, // full file path of large image
-    heatmap: Array<string>, //file path of heatmap images, this is a temporary version
+    heatmap: Array<Array<Array<number>>>, //4 matrix now!!!!!!!!!
     text: Array<string>,  //decription of image
 
 }

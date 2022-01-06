@@ -25,7 +25,7 @@ class SimilaritySearch(object):
         self.images_list =  [path for path in self.df['Path'].tolist()]### 
 
         self.train_vecs = np.load(model_vectors_path + 'train_vecs_pre_none.npz')['vectors'].astype('float32')
-        self.train_truth = np.load(model_vectors_path + 'train_truth_pre_none_updated.npy').astype('int')
+        self.train_truth = np.load(model_vectors_path + 'train_truth_pre_none_uncertainty.npy').astype('int')
         
         index = faiss.index_factory(1024, "Flat")
         # index = faiss.IndexFlatIP(1024)
@@ -37,19 +37,7 @@ class SimilaritySearch(object):
         self.index.train(self.train_vecs)
         self.index.add(self.train_vecs)
         
-        self.topK = topK
-            
-        # proccess missing values 
-        for col in selected_cols:
-            if col in ['Edema', 'Atelectasis']:
-                self.df[col].replace(-1, 1, inplace=True)  
-                self.df[col].fillna(0, inplace=True) 
-            elif col in ['Cardiomegaly','Consolidation',  'Pleural Effusion']:
-                self.df[col].replace(-1, 0, inplace=True) 
-                self.df[col].fillna(0, inplace=True)
-            else:
-                self.df[col].fillna(0, inplace=True)
-                
+        self.topK = topK                
         self.image_size = image_size
         
         ###load model

@@ -11,8 +11,15 @@ import torch.nn.functional as F
 
 class PrototypeSearch(object):
     def __init__(self, prototype_path, num_prototypes = 4):
-        self.prototype_path = prototype_path
         self.num_prototypes = num_prototypes
+        self.heatmap_dict = {}
+        
+        diseases = ['10000','01000','00100','00010','00001']
+        for dis in diseases:
+            prototypes = []
+            for i in range(self.num_prototypes):
+                prototypes.append(cv2.imread(prototype_path+dis+'/prototype-img-heatmap'+str(i)+'.png', 0))
+            self.heatmap_dict.update({dis: prototypes})
 
         self.path = {'10000':['patients/patient02893/study5/view1_frontal.jpg',
                             'patients/patient40569/study10/view1_frontal.jpg',
@@ -43,10 +50,9 @@ class PrototypeSearch(object):
 
     def run(self, disease):
         out_prototypes = self.path[disease]
-        out_heatmaps = []
+        out_heatmaps = self.heatmap_dict[disease]
         out_texts = []
         for i in range(self.num_prototypes):
-            out_heatmaps.append(self.prototype_path+disease+'/prototype-img-heatmap'+str(i)+'.png') 
             out_texts.append('this is a prototype image, whose id is '+ str(i))
 
         return out_prototypes, out_heatmaps, out_texts
