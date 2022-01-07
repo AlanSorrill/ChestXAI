@@ -30,6 +30,11 @@ export class App extends React.Component<App_Props, App_State> {
     fetch(`${window.location.origin}/reuse?upload=${imageName}`).then(async (httpResp: Response) => {
       console.log(`Pulling ${imageName}`)
       let resp: UploadResponse = await httpResp.json();
+      resp.similarity.forEach((value, index)=>{
+        if(value[2].length as any == 0){
+          resp.similarity[index][2] = [[],[]]
+        }
+      })
       log.info(`Upload responded `, resp);
       window.uploadResponse = resp;
       ths.setState({

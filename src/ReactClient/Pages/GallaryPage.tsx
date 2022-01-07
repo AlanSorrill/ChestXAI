@@ -196,8 +196,8 @@ export class GallaryPage extends React.Component<GallaryPage_Props, GallaryPage_
 
                 <div style={{ flex: 6, display: 'grid', gridGap: 4, gridTemplateColumns: '1fr 1fr 1fr', gridAutoRows: '33.333%', overflowY: 'scroll' }}>
                     {(this.state.selectedIndex == -1) ?
-                        this.props.uploadResponse.similarity.map((value: [otherImageUrl: string, matchConfidence: number, diseases: DiseaseDefinition[]], index: number) => (
-                            <SimilarityView key={index + "-" + value[0]} ogSrc={`${value[0]}`} diseases={value[2]} similarity={value[1]} ></SimilarityView>
+                        this.props.uploadResponse.similarity.map((value: [otherImageUrl: string, matchConfidence: number, diseases: [certian: DiseaseDefinition[], uncertian: DiseaseDefinition[]]], index: number) => (
+                            <SimilarityView key={index + "-" + value[0]} ogSrc={`${value[0]}`} diseases={value[2][value[2][0].length > 0 ? 1 : 0]} similarity={value[1]} isCertian={value[2][0].length > 0} ></SimilarityView>
                         )) :
                         (this.props.uploadResponse.prototypes[this.selectedBitStringId].map((protoData: PrototypeData, index: number) => (<ProtoView key={protoData.originalImage + '~' + protoData.disease} disease={protoData.disease} originalImage={protoData.originalImage} description={protoData.description} ></ProtoView>))
                         )}

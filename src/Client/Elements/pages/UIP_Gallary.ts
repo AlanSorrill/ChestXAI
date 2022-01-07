@@ -159,22 +159,22 @@ export class UIP_Gallary_V0 extends UIElement {
             }
         });
 
-        this.similarityRecycler = UIStackRecycler.GridFixedColumns<[string, number, DiseaseDefinition[]], UISimilarityCard>(resp.similarity, {
-            buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
-                return new UISimilarityCard(frame, brist);
-            },
-            bindData: (index: number, data: [string, number, DiseaseDefinition[]], child: UISimilarityCard) => {
-                console.log(`Binding ${index}: ${JSON.stringify(data)}`)
-                child.setData(data);
-            },
-            cols: 3,
-            rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 3)
-        }, UIFrame.Build({
-            x: similarityAnimation,
-            y: () => ths.margin,
-            width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
-            height: () => (ths.getHeight() - ths.margin * 2)
-        }), this.brist);
+        // this.similarityRecycler = UIStackRecycler.GridFixedColumns<[string, number, DiseaseDefinition[]], UISimilarityCard>(resp.similarity, {
+        //     buildCell: (frame: UIFrame, brist: BristolBoard<any>) => {
+        //         return new UISimilarityCard(frame, brist);
+        //     },
+        //     bindData: (index: number, data: [string, number, DiseaseDefinition[]], child: UISimilarityCard) => {
+        //         console.log(`Binding ${index}: ${JSON.stringify(data)}`)
+        //         child.setData(data);
+        //     },
+        //     cols: 3,
+        //     rowHeight: () => ((ths.getHeight() - ths.margin * 2) / 3)
+        // }, UIFrame.Build({
+        //     x: similarityAnimation,
+        //     y: () => ths.margin,
+        //     width: () => ((0.5 * (ths.frame.measureWidth() - (ths.margin * 4)))),
+        //     height: () => (ths.getHeight() - ths.margin * 2)
+        // }), this.brist);
 
         this.addChild(this.similarityRecycler);
 

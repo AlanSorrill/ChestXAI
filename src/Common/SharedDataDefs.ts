@@ -49,14 +49,16 @@ export class DiseaseManager {
 
 
 
-    static bitStringToDiseases(bitString: string): DiseaseDefinition[] | null {
+    static bitStringToDiseases(bitString: string): [certian: DiseaseDefinition[], uncertian: DiseaseDefinition[]] | null {
         if (DiseaseManager.isEmpty) {
             return null;
         }
-        let out: DiseaseDefinition[] = []
+        let out: [certian: DiseaseDefinition[], uncertian: DiseaseDefinition[]] = [[], []]
         for (let i = 0; i < Math.min(bitString.length, this.integerIndex.length); i++) {
             if (bitString[i] == '1') {
-                out.push(this.integerIndex[i]);
+                out[0].push(this.integerIndex[i]);
+            } else if(bitString[i] == '9'){
+                out[1].push(this.integerIndex[i]);
             }
         }
         return out;
@@ -186,7 +188,7 @@ export interface PrototypeResponse extends PythonInterfaceMessage {
 export interface PrototypeData {
     disease: string
     originalImage: string
-    heatmapImage: string
+    heatmapImage: number[][]
     description: string
 }
 
@@ -215,6 +217,6 @@ export interface UploadResponse {
     //diseaseName, percentage
     diagnosis: Array<[disease: DiseaseDefinition, confidence: number]>
     //filePath, matchPercentage, diseaseName[]
-    similarity: [otherImageUrl: string, matchConfidence: number, diseases: DiseaseDefinition[]][]
+    similarity: [otherImageUrl: string, matchConfidence: number, diseases: [certian: DiseaseDefinition[], uncertian: DiseaseDefinition[]]][]
     prototypes: { [key: string]: PrototypeData[] }
 }

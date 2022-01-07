@@ -333,21 +333,22 @@ export class BackendServer {
             msgType: 'prototypeRequest',
             disease: diseaseBitString
         };
-        this.sendToPython(request);
-        return new Promise<PrototypeResponse>((acc, rej)=>{
+        let out = new Promise<PrototypeResponse>((acc, rej)=>{
             this.prototypeWaiters.set(diseaseBitString, (resp: PrototypeResponse)=>{
                 ths.prototypeData.set(diseaseBitString, resp);
                 acc(resp);
                 ths.prototypeWaiters.delete(diseaseBitString);
             })
         });
+
+        this.sendToPython(request);
+        return out;
     }
     heatmapWaiters: Map<string, (resp: HeatmapResponse) => void> = new Map();
     keyForHeatmap(filePath: string, disease: DiseaseDefinition | string) {
         return filePath + '-' + ((typeof disease == 'string') ? disease : disease.bitStringID);
     }
 
-    //DiseaseDefinition or bitstringid
     async generateHeatmap(fullFilePath: string, disease: DiseaseDefinition): Promise<HeatmapResponse> {
 
         let ths = this;
@@ -381,20 +382,14 @@ export class BackendServer {
     recievePythonMsg() {
 
     }
-    //diseaseNames: string[] = null;
+    
     startPython() {
         let ths = this;
         let pathToScript = Path.join(__dirname, `../../src/Server/Python/InferenceScript.py`)
         log.info(`Starting ${pathToScript}`)
 
 
-        //let python = ChildProcess.spawn('python', params)
-        let command = `conda run -n cheX python -u ${pathToScript}`;
-        // this.python = ChildProcess.spawn(`bash -lc "${command}"`, {
-        //     shell: true,
-        //     stdio: ['pipe', 'pipe', 'pipe'],
 
-        // });
 
         this.python = ChildProcess.spawn('python', [pathToScript]);
         // this.python = ChildProcess.spawn('conda', [`run`, `-n`, `cheX`, `python ${pathToScript}`]);
@@ -428,7 +423,7 @@ export class BackendServer {
                         DiseaseManager.initDiseases(message.names);
 
                     } else if (PythonMessage.isInterfaceResponse(message)) {
-                        log.debug(`Got inference response for ${message.fileName}`);
+                        console.log(`Got inference response for ${message.fileName}`, message);
                         if (ths.inferenceWaiters.has(message.fileName)) {
                             ths.inferenceWaiters.get(message.fileName)(message)
                             ths.inferenceWaiters.delete(message.fileName);

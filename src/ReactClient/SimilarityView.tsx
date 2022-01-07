@@ -5,6 +5,7 @@ import { HeatMapper_Manager } from "./HeatMapper/HeatMapper_Manager";
 export interface SimilarityView_Props {
     ogSrc: string
     diseases: DiseaseDefinition[]
+    isCertian: boolean
     similarity: number
     // style: CSS.Properties
 
@@ -108,7 +109,7 @@ export class SimilarityView extends React.Component<SimilarityView_Props, Simila
 
                         <div className={this.hasHeatmap(index) ? 'hover-darkBackground11' : ''} style={{
                             cursor: (this.hasHeatmap(index) ? 'pointer' : 'default'),
-                            backgroundColor: fColor.darkMode[(index == this.state.selectedIndex) ? 11 : 8].toHexString(),
+                            backgroundColor: this.props.isCertian ? fColor.darkMode[(index == this.state.selectedIndex) ? 11 : 8].toHexString() : fColor.amber.darken3.toHexString(),
                             position: 'absolute',
                             left: 0,
                             top: 0,
